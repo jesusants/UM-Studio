@@ -5,16 +5,16 @@
   "programa": "Ingeniería Energética",
   "cuatrimestre_actual": 3,
   "pin_hash": "ac4a809a95da52c2ecb3b8c2e5193380435d146237874912fa770fc68e469f96",
-  "progreso_materias": "enc:v1:XDLA4B8k78VvlPP/7O9Shcs+cPEBdYXtBcOHXdvAhkSSe1Pz6Uh8/uhj9TsC5/JxiGPmRdFxv3A45mhSh9v8jZ70dIlfjbqsKnp3CN03CaeogEVgN3/1/toLB6KuPyML06T2F4te7w==",
+  "progreso_materias": "enc:v1:v1XPzjQZuT3bQG44+dFpEq91nyYkj70bLiNmL1mim3JhmnZel72sQcj94EtiB+LbCnvDLlRgLDz8jdOnR1Q5RAfe/TB8VdBQhyAuBME1S8B4u+RXSV9qwTm2DdicShocrZJFbdx7Iw==",
   "ultimos_temas_revisados": {
     "01021802": 2,
-    "02021810": 1
+    "02021810": 2
   },
   "ultimo_revisado": {
     "codigo_materia": "02021810",
-    "numero_tema": 1,
-    "actualizado_en": "2026-10-31T16:05:46.283"
+    "numero_tema": 2,
+    "actualizado_en": "2026-10-31T16:05:48.517"
   },
-  "recordatorios_calendario": "enc:v1:xKOjlbh3gjNZQI9FL5zcbFr9TtDOCvnsI5Vv4TojNWcn+w==",
-  "apuntes_personales": "enc:v1:ICNoBSgB5raXFt/i4tgfQuPZYa1vqdQZE4Cg3XlE3Eqgww=="
+  "recordatorios_calendario": "enc:v1:4HNaK/yjZihAN0Q0lCvDCiTqBjR5Al+s5hFdtNdYIQB2FQ==",
+  "apuntes_personales": "enc:v1:O3KmR+TxJiiu01ruDi/5dPYZkyP6bJRhk0PXxVsTtWaZCQ=="
 }
