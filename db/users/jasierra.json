@@ -5,11 +5,6 @@
   "programa": "Ingeniería Energética",
   "cuatrimestre_actual": 2,
   "pin_hash": "70a60076d7ddd626362129ea1b4f836d2736af553f2104f016fc05b7a5736c00",
-  "uso_diario": {
-    "actual": 15,
-    "maximo": 15,
-    "ultima_fecha": "2026-10-30"
-  },
   "progreso_materias": {
     "02021810": 50,
     "03041819": 60,
@@ -17,6 +12,14 @@
     "03031818": 35,
     "02031812": 100,
     "03041820": 20
+  },
+  "ultimos_temas_revisados": {
+    "02011807": 1
+  },
+  "ultimo_revisado": {
+    "codigo_materia": "02011807",
+    "numero_tema": 1,
+    "actualizado_en": "2026-10-30T22:57:16.959"
   },
   "recordatorios_calendario": [],
   "apuntes_personales": {}
