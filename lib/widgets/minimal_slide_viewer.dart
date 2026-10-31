@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -457,7 +458,7 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
       children: [
         // Lienzo de la Diapositiva (#121316 oscuro / #F2F2F7 claro, 1px #1F2228, radius 20px)
         Container(
-          height: 356,
+          height: (MediaQuery.sizeOf(context).height * 0.44).clamp(380.0, 500.0),
           decoration: BoxDecoration(
             color: p.card,
             borderRadius: BorderRadius.circular(20),
@@ -537,6 +538,7 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
                           children: [
                             Text(
                               slide.titulo,
+                              softWrap: true,
                               style: TextStyle(
                                 fontSize: 18,
                                 height: 1.22,
@@ -564,6 +566,7 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
                                     Expanded(
                                       child: Text(
                                         punto,
+                                        softWrap: true,
                                         style: TextStyle(
                                           fontSize: 13.2,
                                           height: 1.42,
@@ -600,6 +603,7 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
                                 ),
                                 child: Text(
                                   slide.ejemplo,
+                                  softWrap: true,
                                   style: TextStyle(
                                     fontSize: 12.2,
                                     height: 1.38,
@@ -659,7 +663,9 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
             Expanded(
               child: Align(
                 alignment: Alignment.centerRight,
-                child: ListenableBuilder(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: ListenableBuilder(
                   listenable: _queue,
                   builder: (context, _) {
                     final snap = _queue.stateFor(_downloadTaskId);
@@ -714,6 +720,7 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
                 ),
               ),
             ),
+          ),
           ],
         ),
       ],
@@ -769,63 +776,79 @@ class _CompactSlideTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (rows.isEmpty) return const SizedBox.shrink();
     final p = context.palette;
     final header = rows.first;
     final body = rows.length > 1 ? rows.sublist(1) : const <List<String>>[];
+    final colCount = header.length;
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
+        color: p.card,
         borderRadius: BorderRadius.circular(11),
         border: Border.all(color: p.cardBorder, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Table(
-        border: TableBorder(
-          horizontalInside: BorderSide(color: p.cardBorder, width: 1),
-          verticalInside: BorderSide(color: p.cardBorder, width: 1),
-        ),
-        children: [
-          TableRow(
-            decoration: BoxDecoration(color: p.green.o(0.10)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: math.max(280.0, colCount * 95.0),
+          ),
+          child: Table(
+            defaultColumnWidth: const IntrinsicColumnWidth(),
+            border: TableBorder(
+              horizontalInside: BorderSide(color: p.cardBorder, width: 1),
+              verticalInside: BorderSide(color: p.cardBorder, width: 1),
+            ),
             children: [
-              for (final cell in header)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  child: Text(
-                    cell,
-                    style: mono(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
-                      color: p.green,
+              TableRow(
+                decoration: BoxDecoration(color: p.green.o(0.12)),
+                children: [
+                  for (final cell in header)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
+                      child: Text(
+                        cell,
+                        softWrap: true,
+                        style: mono(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: p.green,
+                        ),
+                      ),
                     ),
-                  ),
+                ],
+              ),
+              for (final r in body)
+                TableRow(
+                  children: [
+                    for (var i = 0; i < colCount; i++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
+                        child: Text(
+                          i < r.length ? r[i] : '',
+                          softWrap: true,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            height: 1.35,
+                            color: p.textBody,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
             ],
           ),
-          for (final r in body)
-            TableRow(
-              children: [
-                for (var i = 0; i < header.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
-                    ),
-                    child: Text(
-                      i < r.length ? r[i] : '',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        height: 1.3,
-                        color: p.textBody,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-        ],
+        ),
       ),
     );
   }

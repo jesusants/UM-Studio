@@ -1,6 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script>
+    // Interceptor ligero pre-Flutter para OAuth 2.0 (Microsoft Entra ID)
+    (function() {
+      var search = window.location.search || '';
+      var hash = window.location.hash || '';
+      var isPopup = !!window.opener && window.opener !== window;
+      var hasAuth = search.indexOf('code=') !== -1 || search.indexOf('error=') !== -1;
+
+      // Preservar query params iniciales para que Flutter los lea aunque el router cambie la URL
+      window.__UM_INITIAL_SEARCH__ = search;
+      window.__UM_INITIAL_HASH__ = hash;
+
+      if (isPopup && hasAuth) {
+        try {
+          window.opener.postMessage({
+            type: 'MS_ENTRA_AUTH_CALLBACK',
+            search: search,
+            hash: hash
+          }, '*');
+        } catch (e) {
+          console.error('[UM-Studio] Error en postMessage a window.opener:', e);
+        }
+        window.close();
+      }
+    })();
+  </script>
+
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.

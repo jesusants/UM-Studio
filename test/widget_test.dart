@@ -22,6 +22,9 @@ import 'package:um_studio/domain/entities/subject_summary.dart';
 import 'package:um_studio/main.dart';
 import 'package:um_studio/presentation/providers/app_scopes.dart';
 import 'package:um_studio/presentation/screens/clase_viva/clase_viva_page.dart';
+import 'package:um_studio/data/models/student_user_model.dart';
+import 'package:um_studio/data/services/microsoft_entra_auth_service.dart';
+import 'package:um_studio/presentation/widgets/header_morph_avatar.dart';
 import 'package:um_studio/services/download_queue_service.dart';
 import 'package:um_studio/widgets/minimal_slide_viewer.dart';
 
@@ -434,7 +437,8 @@ void main() {
         );
 
         // 4. Cambia a la pestaña "Notación de Ingeniería (KaTeX)"
-        await tester.ensureVisible(find.text('Notación de Ingeniería (KaTeX)'));
+        await tester.drag(find.byType(ListView).first, const Offset(0, 400));
+        await tester.pump(const Duration(milliseconds: 300));
         await tester.tap(find.text('Notación de Ingeniería (KaTeX)'));
         for (var i = 0; i < 20; i++) {
           await tester.pump(const Duration(milliseconds: 100));
@@ -518,6 +522,12 @@ void main() {
           ),
         );
 
+        final legacyToggle = find.text('Opciones de acceso con PIN / Local');
+        if (legacyToggle.evaluate().isNotEmpty) {
+          await tester.tap(legacyToggle);
+          await tester.pumpAndSettle();
+        }
+
         await tester.tap(find.text('Crear Cuenta'));
         await tester.pump(const Duration(milliseconds: 250));
 
@@ -571,5 +581,199 @@ void main() {
         );
       },
     );
+  });
+
+  group('Microsoft Entra ID (Azure AD PKCE) & Migración de Identidad', () {
+    test('genera code_verifier (64 caracteres) y code_challenge S256 válido según RFC 7636', () {
+      final entraService = MicrosoftEntraAuthService();
+      final verifier = entraService.generateCodeVerifier();
+      expect(verifier.length, 64);
+      final challenge = entraService.generateCodeChallenge(verifier);
+      expect(challenge.isNotEmpty, isTrue);
+      expect(challenge.contains('='), isFalse); // Base64Url sin padding
+
+      final state = entraService.generateState();
+      expect(state.length, 32);
+
+      final authUri = entraService.buildAuthorizeUri(
+        codeChallenge: challenge,
+        state: state,
+        redirectUri: 'https://jesusants.github.io/UM-Studio/',
+      );
+      expect(authUri.scheme, 'https');
+      expect(authUri.host, 'login.microsoftonline.com');
+      expect(
+        authUri.path,
+        '/organizations/oauth2/v2.0/authorize',
+      );
+      expect(
+        authUri.queryParameters['client_id'],
+        'bb954d45-ebcd-4a04-8ac0-af00cc9cece1',
+      );
+      expect(authUri.queryParameters['code_challenge_method'], 'S256');
+      expect(authUri.queryParameters['code_challenge'], challenge);
+    });
+
+    test('decodifica claims de id_token JWT y mapea clave inmutable \${tid}_\${oid}', () {
+      final payload = {
+        'oid': '00000000-0000-0000-0000-000000000001',
+        'tid': 'b6b897f5-08ad-4ed7-8ed6-55207495fad0',
+        'preferred_username': 'estudiante@unimagdalena.edu.co',
+        'name': 'Jesús Estudiante',
+      };
+      final jsonStr = jsonEncode(payload);
+      final base64Payload = base64Url.encode(utf8.encode(jsonStr)).replaceAll('=', '');
+      final fakeJwt = 'header.$base64Payload.signature';
+
+      final claims = MicrosoftEntraAuthService.decodeIdToken(fakeJwt);
+      expect(claims['oid'], '00000000-0000-0000-0000-000000000001');
+      expect(claims['tid'], 'b6b897f5-08ad-4ed7-8ed6-55207495fad0');
+
+      final user = StudentUserModel(
+        oid: claims['oid'],
+        tid: claims['tid'],
+        username: 'estudiante',
+        email: 'estudiante@unimagdalena.edu.co',
+        nombre: 'Jesús Estudiante',
+        programa: 'Ingeniería Energética',
+        pinHash: '',
+        progresoMaterias: const {},
+        recordatoriosCalendario: const [],
+        apuntesPersonales: const {},
+      );
+      expect(
+        user.immutableKey,
+        'b6b897f5-08ad-4ed7-8ed6-55207495fad0_00000000-0000-0000-0000-000000000001',
+      );
+      expect(user.programa, 'Ingeniería Energética');
+    });
+  });
+
+  group('HeaderMorphAvatar: Alternancia Dinámica y Anti-Tilde', () {
+    testWidgets('muestra emblema institucional y rota a foto de usuario tras 5 segundos', (tester) async {
+      final mockBytes = Uint8List.fromList([
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+        0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
+        0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41,
+        0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+        0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00,
+        0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
+        0x42, 0x60, 0x82,
+      ]);
+
+      await tester.pumpWidget(
+        ThemeScope(
+          controller: ThemeController(),
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: Scaffold(
+              body: HeaderMorphAvatar(
+                size: 38,
+                photoBytes: mockBytes,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('career_logo')), findsOneWidget);
+      expect(find.byKey(const ValueKey('user_photo')), findsNothing);
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('user_photo')), findsOneWidget);
+
+      await tester.tap(find.byType(HeaderMorphAvatar));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('career_logo')), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('user_photo')), findsOneWidget);
+    });
+
+    testWidgets('sin foto permanece estático en career_logo sin timers activos', (tester) async {
+      await tester.pumpWidget(
+        ThemeScope(
+          controller: ThemeController(),
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: const Scaffold(
+              body: HeaderMorphAvatar(
+                size: 38,
+                photoBytes: null,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('career_logo')), findsOneWidget);
+      await tester.pump(const Duration(seconds: 10));
+      expect(find.byKey(const ValueKey('career_logo')), findsOneWidget);
+      expect(find.byKey(const ValueKey('user_photo')), findsNothing);
+    });
+  });
+
+  group('Layout & Scroll Overflow: 5 Niveles de Inglés en Pantallas Compactas', () {
+    const englishCodes = ['01021802', '01021803', '01021804', '01021805', '01021806'];
+
+    testWidgets('renderiza diapositivas con tablas multicomparativas en 360x640 y 320x568 sin overflow', (tester) async {
+      final mdContent = File('assets/data/ingenieria_energetica.md').readAsStringSync();
+      final database = CurriculumMarkdownParser.parse(mdContent);
+
+      for (final code in englishCodes) {
+        final asig = database.findAsignatura(code);
+        expect(asig, isNotNull);
+        final generalTopics = asig!.temasPorModalidad('general');
+        expect(generalTopics.isNotEmpty, isTrue);
+
+        final sampleTopic = generalTopics.first;
+        final slideItems = sampleTopic.slides;
+
+        for (final size in const [Size(360, 640), Size(320, 568)]) {
+          tester.view.physicalSize = size;
+          tester.view.devicePixelRatio = 1.0;
+
+          await tester.pumpWidget(
+            ThemeScope(
+              controller: ThemeController(),
+              child: MaterialApp(
+                theme: AppTheme.dark,
+                home: Scaffold(
+                  body: MinimalSlideViewer(
+                    temaId: '\${code}_\${sampleTopic.numeroTema}',
+                    codigoAsignatura: code,
+                    nombreAsignatura: asig.nombre,
+                    numeroTema: sampleTopic.numeroTema,
+                    tituloTema: sampleTopic.titulo,
+                    slides: slideItems,
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pump(const Duration(milliseconds: 300));
+
+          expect(find.byType(MinimalSlideViewer), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          if (slideItems.length > 1) {
+            final nextBtn = find.byKey(const Key('slide_next_button'));
+            if (nextBtn.evaluate().isNotEmpty) {
+              await tester.tap(nextBtn);
+              await tester.pump(const Duration(milliseconds: 300));
+              expect(tester.takeException(), isNull);
+            }
+          }
+        }
+      }
+      tester.view.reset();
+    });
   });
 }

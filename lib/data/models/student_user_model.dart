@@ -170,6 +170,8 @@ class StudentUserModel {
     this.ultimosTemasRevisados = const {},
     this.ultimoRevisado,
     this.cuatrimestreActual = 2,
+    this.oid,
+    this.tid,
   });
 
   final String username;
@@ -188,6 +190,18 @@ class StudentUserModel {
   final LastReviewedTopicModel? ultimoRevisado;
 
   final int cuatrimestreActual;
+  final String? oid;
+  final String? tid;
+
+  /// Clave inmutable única del estudiante (${tid}_${oid} o fallback a oid/username).
+  String get immutableKey {
+    final t = tid;
+    final o = oid;
+    if (t != null && t.isNotEmpty && o != null && o.isNotEmpty) {
+      return '${t}_$o';
+    }
+    return o ?? username;
+  }
 
   String get primerNombre {
     final parts = nombre.trim().split(RegExp(r'\s+'));
@@ -309,6 +323,8 @@ class StudentUserModel {
       apuntesPersonales: notes,
       ultimosTemasRevisados: reviewedMap,
       ultimoRevisado: globalLast,
+      oid: json['oid']?.toString(),
+      tid: json['tid']?.toString(),
     );
   }
 
@@ -324,6 +340,8 @@ class StudentUserModel {
     Map<String, int>? ultimosTemasRevisados,
     LastReviewedTopicModel? ultimoRevisado,
     int? cuatrimestreActual,
+    String? oid,
+    String? tid,
   }) {
     return StudentUserModel(
       username: username ?? this.username,
@@ -339,6 +357,8 @@ class StudentUserModel {
           ultimosTemasRevisados ?? this.ultimosTemasRevisados,
       ultimoRevisado: ultimoRevisado ?? this.ultimoRevisado,
       cuatrimestreActual: cuatrimestreActual ?? this.cuatrimestreActual,
+      oid: oid ?? this.oid,
+      tid: tid ?? this.tid,
     );
   }
 
@@ -353,6 +373,8 @@ class StudentUserModel {
         'ultimos_temas_revisados': ultimosTemasRevisados,
         if (ultimoRevisado != null)
           'ultimo_revisado': ultimoRevisado!.toJson(),
+        if (oid != null && oid!.isNotEmpty) 'oid': oid,
+        if (tid != null && tid!.isNotEmpty) 'tid': tid,
         'recordatorios_calendario':
             recordatoriosCalendario.map((r) => r.toJson()).toList(),
         'apuntes_personales': apuntesPersonales,

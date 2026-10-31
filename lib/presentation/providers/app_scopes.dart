@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
@@ -10,7 +11,9 @@ import '../../core/utils/institutional_validator.dart';
 import '../../data/models/curriculum_models.dart';
 import '../../data/models/student_user_model.dart';
 import '../../data/repositories/local_clase_viva_repository.dart';
+import '../../core/constants/entra_id_constants.dart';
 import '../../data/services/github_sync_service.dart';
+import '../../data/services/microsoft_entra_auth_service.dart';
 import '../../data/services/markdown_curriculum_service.dart';
 import '../../domain/entities/subject_summary.dart';
 import '../../domain/repositories/i_clase_viva_repository.dart';
@@ -75,9 +78,11 @@ class InstitutionalSessionController extends ChangeNotifier {
     required IClaseVivaRepository repository,
     GitHubSyncService? syncService,
     MarkdownCurriculumService? curriculumService,
+    MicrosoftEntraAuthService? entraService,
   })  : _repository = repository,
         _syncService = syncService ?? GitHubSyncService(),
-        _curriculumService = curriculumService {
+        _curriculumService = curriculumService,
+        _entraService = entraService ?? MicrosoftEntraAuthService() {
     _syncService.addListener(notifyListeners);
     final repo = _repository;
     if (repo is LocalReactiveClaseVivaRepository) {
@@ -92,7 +97,9 @@ class InstitutionalSessionController extends ChangeNotifier {
   final IClaseVivaRepository _repository;
   final GitHubSyncService _syncService;
   final MarkdownCurriculumService? _curriculumService;
+  final MicrosoftEntraAuthService _entraService;
 
+  Uint8List? _userPhotoBytes;
   StudentUserModel? _currentUser;
   String _fallbackEmail = AppConstants.defaultStudentEmail;
   final Map<String, int> _fallbackReviewed = {};
@@ -103,6 +110,13 @@ class InstitutionalSessionController extends ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
   StudentUserModel? get currentUser => _currentUser;
   GitHubSyncService get syncService => _syncService;
+  MicrosoftEntraAuthService get entraService => _entraService;
+
+  Uint8List? get userPhotoBytes => _userPhotoBytes;
+  String? get userOid => _currentUser?.oid;
+  String? get userTid => _currentUser?.tid;
+  String get immutableUserKey => _currentUser?.immutableKey ?? username;
+  bool get hasUserPhoto => _userPhotoBytes != null && _userPhotoBytes!.isNotEmpty;
 
   String get email => _currentUser?.email ?? _fallbackEmail;
   String get username =>
@@ -146,15 +160,76 @@ class InstitutionalSessionController extends ChangeNotifier {
   /// Carga la sesión persistente ("Recordar mis datos" activo por defecto)
   /// y sincroniza silenciosamente con GitHub en segundo plano.
   Future<void> load({bool syncRemoteOnStartup = true}) async {
+    // 1. Migración controlada de credenciales legacy
+    await _entraService.runMigrationIfNeeded();
+    _userPhotoBytes = await _entraService.loadCachedPhoto();
+
+    // 2. Comprobar si la página cargó con redirección OAuth ?code=...
+    final initialCode = _entraService.checkInitialAuthCode();
+    final initialState = _entraService.checkInitialState();
+    if (initialCode != null && initialCode.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      final savedVerifier =
+          prefs.getString(EntraIdConstants.prefsPkceVerifier) ?? '';
+      final savedState = prefs.getString(EntraIdConstants.prefsPkceState);
+      if (savedVerifier.isNotEmpty &&
+          (savedState == null || savedState == initialState)) {
+        final exchanged = await _entraService.exchangeCodeForTokens(
+          code: initialCode,
+          verifier: savedVerifier,
+          redirectUri: _entraService.effectiveRedirectUri,
+        );
+        if (exchanged.result != null) {
+          final photo =
+              await _entraService.fetchProfilePhoto(exchanged.result!.accessToken);
+          _userPhotoBytes = photo ?? _userPhotoBytes;
+          await _entraService.persistSession(
+            EntraTokenResult(
+              accessToken: exchanged.result!.accessToken,
+              idToken: exchanged.result!.idToken,
+              refreshToken: exchanged.result!.refreshToken,
+              expiresAt: exchanged.result!.expiresAt,
+              claims: exchanged.result!.claims,
+              photoBytes: photo,
+            ),
+          );
+          await _linkEntraUserToModel(exchanged.result!);
+          _entraService.cleanWebUrl();
+          _initialized = true;
+          notifyListeners();
+          return;
+        }
+      }
+      _entraService.cleanWebUrl();
+    }
+
+    // 3. Restaurar sesión persistente de Microsoft Entra ID si existe
+    final entraSession = await _entraService.restorePersistedSession();
+    if (entraSession != null) {
+      _userPhotoBytes = entraSession.photoBytes ?? _userPhotoBytes;
+    }
+
+    // 4. Restaurar modelo de usuario persistido (db/users/{username}.json)
     final persisted = await _syncService.loadPersistedSession();
     if (persisted != null) {
-      await _activateUser(persisted);
+      final activeUser = (entraSession != null && persisted.oid == null)
+          ? persisted.copyWith(oid: entraSession.oid, tid: entraSession.tid)
+          : persisted;
+      await _activateUser(activeUser);
       _initialized = true;
       notifyListeners();
 
       if (syncRemoteOnStartup) {
-        unawaited(_refreshFromGitHubInBackground(persisted));
+        unawaited(_refreshFromGitHubInBackground(activeUser));
       }
+      return;
+    }
+
+    // 5. Si hay sesión Entra ID pero el archivo local fue limpiado
+    if (entraSession != null) {
+      await _linkEntraUserToModel(entraSession);
+      _initialized = true;
+      notifyListeners();
       return;
     }
 
@@ -229,6 +304,62 @@ class InstitutionalSessionController extends ChangeNotifier {
     return null;
   }
 
+  /// Inicio de sesión institucional oficial con Microsoft Entra ID (OpenID Connect + PKCE).
+  Future<String?> loginWithMicrosoft({String? prompt}) async {
+    final res = await _entraService.loginInteractive(prompt: prompt);
+    if (res.error != null || res.result == null) {
+      return res.error ?? 'No se pudo completar el inicio de sesión institucional.';
+    }
+
+    final tokenResult = res.result!;
+    _userPhotoBytes =
+        tokenResult.photoBytes ?? await _entraService.loadCachedPhoto();
+    await _linkEntraUserToModel(tokenResult);
+    _entraService.cleanWebUrl();
+    notifyListeners();
+    return null;
+  }
+
+  Future<void> _linkEntraUserToModel(EntraTokenResult tokenResult) async {
+    final rawEmail = tokenResult.email ?? '';
+    final parsed = InstitutionalValidator.parseInstitutionalUser(rawEmail);
+    final username = parsed.identity?.username ??
+        (rawEmail.isNotEmpty
+            ? rawEmail.split('@').first.toLowerCase()
+            : tokenResult.immutableKey);
+    final cleanEmail = parsed.identity?.email ?? rawEmail.toLowerCase();
+    final cleanName = tokenResult.name ?? username;
+
+    // 1. Intentar obtener el registro remoto en GitHub: db/users/{username}.json
+    final remote = await _syncService.fetchRemoteUser(username);
+    StudentUserModel activeUser;
+
+    if (remote.exists && remote.user != null) {
+      activeUser = remote.user!.copyWith(
+        nombre: cleanName.isNotEmpty ? cleanName : remote.user!.nombre,
+        email: cleanEmail,
+        oid: tokenResult.oid,
+        tid: tokenResult.tid,
+      );
+    } else {
+      final starterCodes = _starterCodesForCuatrimestre(2);
+      activeUser = StudentUserModel.createNew(
+        username: username,
+        nombre: cleanName,
+        email: cleanEmail,
+        pinHash: 'entra_id_${tokenResult.oid ?? 'sso'}',
+        cuatrimestreActual: 2,
+        starterSubjectCodes: starterCodes,
+      ).copyWith(
+        oid: tokenResult.oid,
+        tid: tokenResult.tid,
+      );
+    }
+
+    await _syncService.saveOptimisticAndSync(activeUser);
+    await _activateUser(activeUser);
+  }
+
   /// Inicio de sesión simple contra `db/users/{username}.json` con persistencia permanente.
   Future<String?> login({
     required String userOrEmail,
@@ -249,6 +380,8 @@ class InstitutionalSessionController extends ChangeNotifier {
   /// Cierra la sesión actual para cambiar de estudiante.
   Future<void> logout() async {
     _currentUser = null;
+    _userPhotoBytes = null;
+    await _entraService.logout();
     await _syncService.clearActiveSession();
     notifyListeners();
   }

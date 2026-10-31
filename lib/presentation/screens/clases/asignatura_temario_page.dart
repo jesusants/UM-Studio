@@ -307,19 +307,22 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                                     vertical: 8,
                                     horizontal: 6,
                                   ),
-                                  child: Text(
-                                    'Inglés General (Slides)',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: _englishModalidad == 'general'
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: _englishModalidad == 'general'
-                                          ? p.green
-                                          : p.textSecondary,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      'Inglés General (Slides)',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: _englishModalidad == 'general'
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: _englishModalidad == 'general'
+                                            ? p.green
+                                            : p.textSecondary,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -328,21 +331,24 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                                     vertical: 8,
                                     horizontal: 6,
                                   ),
-                                  child: Text(
-                                    'Notación de Ingeniería (KaTeX)',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: _englishModalidad ==
-                                              'notacion_ingenieria'
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: _englishModalidad ==
-                                              'notacion_ingenieria'
-                                          ? p.indigo
-                                          : p.textSecondary,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      'Notación de Ingeniería (KaTeX)',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: _englishModalidad ==
+                                                'notacion_ingenieria'
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: _englishModalidad ==
+                                                'notacion_ingenieria'
+                                            ? p.indigo
+                                            : p.textSecondary,
+                                      ),
                                     ),
                                   ),
                                 ),

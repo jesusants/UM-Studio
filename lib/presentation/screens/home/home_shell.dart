@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/curriculum_models.dart';
 import '../../../data/services/github_sync_service.dart';
 import '../../providers/app_scopes.dart';
+import '../../widgets/header_morph_avatar.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
 import '../clases/asignatura_temario_page.dart';
@@ -96,7 +97,10 @@ class _HomeShellState extends State<HomeShell> {
                     const SizedBox(height: 14),
                     Row(
                       children: [
-                        const ProgramLogoBadge(size: 40),
+                        HeaderMorphAvatar(
+                          size: 40,
+                          photoBytes: session.userPhotoBytes,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -425,6 +429,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final top = MediaQuery.paddingOf(context).top;
+    final session = SessionScope.maybeOf(context);
 
     late final Color dotColor;
     late final String badgeText;
@@ -452,32 +457,38 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TapScale(
-            onTap: onTapIdentity,
-            child: const ProgramLogoBadge(size: 36),
+          HeaderMorphAvatar(
+            size: 36,
+            photoBytes: session?.userPhotoBytes,
+            onTap: () {
+              // Alternancia automática e interactiva con lógica anti-tilde
+            },
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppConstants.appTitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.3,
-                    color: p.textPrimary,
+            child: TapScale(
+              onTap: onTapIdentity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppConstants.appTitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
+                      color: p.textPrimary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  AppConstants.programSubtitle,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 11, color: p.textSecondary),
-                ),
-              ],
+                  const SizedBox(height: 3),
+                  Text(
+                    AppConstants.programSubtitle,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: p.textSecondary),
+                  ),
+                ],
+              ),
             ),
           ),
           const ThemeToggleButton(),

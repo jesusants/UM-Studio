@@ -26,8 +26,33 @@ class _LoginPageState extends State<LoginPage> {
   bool _isRegister = false;
   bool _obscurePin = true;
   bool _submitting = false;
+  bool _showLegacyOptions = false;
   int _selectedCuatrimestre = 2;
   String? _errorText;
+
+  Future<void> _loginWithMicrosoft() async {
+    if (_submitting) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _submitting = true;
+      _errorText = null;
+    });
+
+    final session = SessionScope.of(context);
+    final err = await session.loginWithMicrosoft();
+
+    if (!mounted) return;
+    if (err != null) {
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _submitting = false;
+        _errorText = err;
+      });
+    } else {
+      HapticFeedback.lightImpact();
+      setState(() => _submitting = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -330,7 +355,172 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 18),
 
-                    // Selector segmentado iOS: Iniciar Sesión / Crear Cuenta
+                    // Tarjeta Principal: Acceso Institucional Microsoft Entra ID (PKCE)
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: p.card,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: p.green.o(0.42), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: p.green.o(0.08),
+                            blurRadius: 18,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const _MicrosoftLogoIcon(size: 20),
+                              const SizedBox(width: 9),
+                              Expanded(
+                                child: Text(
+                                  'ACCESO INSTITUCIONAL',
+                                  style: mono(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.0,
+                                    color: p.green,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 2.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: p.elevated,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: p.cardBorder),
+                                ),
+                                child: Text(
+                                  'OIDC • PKCE',
+                                  style: mono(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: p.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Ingresa con tu cuenta institucional para vincular tu progreso, notas y horario con tu ID único.',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              height: 1.4,
+                              color: p.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          TapScale(
+                            onTap: _submitting ? null : _loginWithMicrosoft,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: p.green,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: p.green.o(0.32),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: _submitting
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          Colors.black,
+                                        ),
+                                      ),
+                                    )
+                                  : const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          _MicrosoftLogoIcon(size: 18),
+                                          SizedBox(width: 10),
+                                          Text(
+                                            'Iniciar sesión con Microsoft',
+                                            style: TextStyle(
+                                              fontSize: 14.5,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: -0.2,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    // Botón para alternar opciones secundarias
+                    Center(
+                      child: TapScale(
+                        onTap: () => setState(() {
+                          _showLegacyOptions = !_showLegacyOptions;
+                        }),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _showLegacyOptions
+                                      ? 'Ocultar acceso con PIN / Local'
+                                      : 'Opciones de acceso con PIN / Local',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: p.textTertiary,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  _showLegacyOptions
+                                      ? Icons.keyboard_arrow_up_rounded
+                                      : Icons.keyboard_arrow_down_rounded,
+                                  size: 16,
+                                  color: p.textTertiary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    if (_showLegacyOptions) ...[
+                      const SizedBox(height: 12),
+                      // Selector segmentado iOS: Iniciar Sesión / Crear Cuenta
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
@@ -606,6 +796,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
+                    ], // Fin if (_showLegacyOptions)
+
                     const SizedBox(height: 16),
 
                     // Estado del backend ligero en GitHub
@@ -715,6 +907,46 @@ class _ModeSegmentButton extends StatelessWidget {
             color: selected ? p.textPrimary : p.textSecondary,
           ),
         ),
+      ),
+    );
+  }
+}
+
+
+class _MicrosoftLogoIcon extends StatelessWidget {
+  const _MicrosoftLogoIcon({this.size = 18});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final sub = size * 0.44;
+    final gap = size * 0.12;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: sub, height: sub, color: const Color(0xFFF25022)),
+              SizedBox(width: gap),
+              Container(width: sub, height: sub, color: const Color(0xFF7FBA00)),
+            ],
+          ),
+          SizedBox(height: gap),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: sub, height: sub, color: const Color(0xFF00A4EF)),
+              SizedBox(width: gap),
+              Container(width: sub, height: sub, color: const Color(0xFFFFB900)),
+            ],
+          ),
+        ],
       ),
     );
   }

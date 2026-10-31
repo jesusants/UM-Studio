@@ -601,6 +601,7 @@ class _OfficialTopicSection extends StatelessWidget {
             : asig.temas);
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // C. Encabezado Dinámico de Asignatura
@@ -694,19 +695,22 @@ class _OfficialTopicSection extends StatelessWidget {
                     vertical: 8,
                     horizontal: 6,
                   ),
-                  child: Text(
-                    'Inglés General (Slides)',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: activeEnglishBranch == 'general'
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: activeEnglishBranch == 'general'
-                          ? p.green
-                          : p.textSecondary,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Inglés General (Slides)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: activeEnglishBranch == 'general'
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: activeEnglishBranch == 'general'
+                            ? p.green
+                            : p.textSecondary,
+                      ),
                     ),
                   ),
                 ),
@@ -715,19 +719,22 @@ class _OfficialTopicSection extends StatelessWidget {
                     vertical: 8,
                     horizontal: 6,
                   ),
-                  child: Text(
-                    'Notación de Ingeniería (KaTeX)',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: activeEnglishBranch == 'notacion_ingenieria'
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: activeEnglishBranch == 'notacion_ingenieria'
-                          ? p.indigo
-                          : p.textSecondary,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Notación de Ingeniería (KaTeX)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: activeEnglishBranch == 'notacion_ingenieria'
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: activeEnglishBranch == 'notacion_ingenieria'
+                            ? p.indigo
+                            : p.textSecondary,
+                      ),
                     ),
                   ),
                 ),
@@ -1130,6 +1137,7 @@ class _IndividualStudyModule extends StatelessWidget {
     final p = context.palette;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
