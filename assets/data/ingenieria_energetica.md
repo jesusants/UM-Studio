@@ -1,6 +1,6 @@
 ---
 database_name: "ingenieria_energetica"
-schema_version: "2.0.0"
+schema_version: "2.2.0"
 app_target: "UM_STUDIO_IOS_DARK"
 programa:
   codigo_interno: "8108"
@@ -37,17 +37,35 @@ malla_curricular:
         color: "#5E5CE6"
         temas:
           - numero: 1
-            titulo: "Límites y Continuidad de Funciones Reales"
-            objetivo: "Analizar el comportamiento asintótico y la continuidad de funciones aplicadas a modelos físicos."
-            concepto_clave_latex: "\\lim_{x \\to a} f(x) = L \\iff \\forall \\varepsilon > 0, \\exists \\delta > 0 : 0 < |x - a| < \\delta \\implies |f(x) - L| < \\varepsilon"
-            ejemplo: "Determinación de la continuidad en la curva de potencia de arranque de un generador."
-            bloque_estudio: "Pomodoro 50/10 • 5 ejercicios de límites indeterminados"
+            titulo: "Funciones Reales, Dominio, Composición e Inversas"
+            objetivo: "Modelar relaciones entre variables físicas mediante funciones algebraicas, exponenciales, logarítmicas y trigonométricas."
+            concepto_clave_latex: "(f \\circ g)(x) = f(g(x)) \\quad ; \\quad f^{-1}(f(x)) = x \\quad ; \\quad P(T) = P_0 e^{\\beta(T - T_{\\text{STC}})}"
+            ejemplo: "Modelado de la variación de potencia de un módulo solar en función de la temperatura de celda."
+            bloque_estudio: "Pomodoro 50/10 • Dominio, rango y composición de funciones"
           - numero: 2
-            titulo: "Derivada, Regla de la Cadena y Optimización"
-            objetivo: "Determinar razones de cambio instantáneas y puntos críticos de máxima eficiencia."
-            concepto_clave_latex: "\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x) \\quad ; \\quad f'(x_c) = 0"
-            ejemplo: "Cálculo del ángulo de inclinación óptimo para maximizar la radiación captada por un colector solar."
-            bloque_estudio: "Práctica Activa 45 min • Problemas de optimización"
+            titulo: "Límites Laterales, Indeterminaciones y Asíntotas"
+            objetivo: "Analizar el comportamiento local y asintótico de funciones reales mediante definición formal y álgebra de límites."
+            concepto_clave_latex: "\\lim_{x \\to a} f(x) = L \\iff \\forall \\varepsilon > 0, \\exists \\delta > 0 : 0 < |x - a| < \\delta \\implies |f(x) - L| < \\varepsilon"
+            ejemplo: "Determinación del régimen estacionario asintótico de enfriamiento de un transformador cuando el tiempo tiende a infinito."
+            bloque_estudio: "Pomodoro 50/10 • 6 límites algebraicos, trigonométricos y al infinito"
+          - numero: 3
+            titulo: "Continuidad Puntual y Teorema del Valor Intermedio"
+            objetivo: "Evaluar la continuidad en puntos e intervalos cerrados para garantizar existencia de raíces en modelos físicos."
+            concepto_clave_latex: "\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = f(c) \\quad ; \\quad f(a) < N < f(b) \\implies \\exists c \\in (a,b) : f(c) = N"
+            ejemplo: "Análisis de continuidad por tramos en la curva de potencia de un aerogenerador entre velocidad de arranque y nominal."
+            bloque_estudio: "Práctica 40 min • Clasificación de discontinuidades y TVI"
+          - numero: 4
+            titulo: "La Derivada, Regla de la Cadena y Derivación Implícita"
+            objetivo: "Calcular tasas de cambio instantáneas aplicando reglas de derivación, regla de la cadena y derivadas de orden superior."
+            concepto_clave_latex: "f'(x) = \\lim_{h \\to 0}\\frac{f(x+h)-f(x)}{h} \\quad ; \\quad \\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)"
+            ejemplo: "Obtención de la potencia instantánea P(t) = dE/dt entregada por un sistema de almacenamiento a partir de su energía acumulada."
+            bloque_estudio: "Pomodoro 50/10 • Regla de la cadena y derivación implícita/logarítmica"
+          - numero: 5
+            titulo: "Razones de Cambio, Regla de L'Hôpital y Optimización"
+            objetivo: "Aplicar criterios de primera y segunda derivada para determinar extremos absolutos y optimizar diseños de ingeniería."
+            concepto_clave_latex: "f'(x_c) = 0 \\; \\land \\; f''(x_c) < 0 \\implies x_c \\text{ es máximo} \\quad ; \\quad \\lim_{x \\to a}\\frac{f(x)}{g(x)} = \\lim_{x \\to a}\\frac{f'(x)}{g'(x)}"
+            ejemplo: "Cálculo del ángulo de inclinación óptimo para maximizar la irradiancia solar anual captada por un colector."
+            bloque_estudio: "Práctica Activa 50 min • Problemas aplicados de optimización y trazado"
       - codigo: "03011813"
         nombre: "Fundamentos de Programación e IA"
         creditos: 4
@@ -56,17 +74,35 @@ malla_curricular:
         color: "#0A84FF"
         temas:
           - numero: 1
-            titulo: "Algoritmia, Complejidad y Estructuras de Control"
-            objetivo: "Diseñar algoritmos eficientes para el procesamiento de datos energéticos y series temporales."
-            concepto_clave_latex: "T(n) = \\mathcal{O}(n \\log n) \\quad ; \\quad \\bar{x} = \\frac{1}{N}\\sum_{i=1}^{N} x_i"
-            ejemplo: "Script en Python para limpiar y promediar lecturas horarias de irradiancia solar."
-            bloque_estudio: "Pomodoro 50/10 • Estructuras iterativas y funciones"
+            titulo: "Pensamiento Computacional, Algoritmos y Tipos de Datos"
+            objetivo: "Representar soluciones estructuradas mediante pseudocódigo, diagramas de flujo, variables y expresiones lógicas."
+            concepto_clave_latex: "y = (A \\land B) \\lor (\\neg C) \\quad ; \\quad E_{\\text{kWh}} = \\frac{P_{\\text{W}} \\cdot \\Delta t_{\\text{h}}}{1000}"
+            ejemplo: "Algoritmo secuencial en Python para convertir lecturas crudas de potencia y tiempo a consumo facturable en kWh."
+            bloque_estudio: "Pomodoro 45/10 • Pseudocódigo, operadores y tipos primitivos"
           - numero: 2
-            titulo: "Introducción a Regresión y Modelos Predictivos"
-            objetivo: "Ajustar modelos lineales básicos para estimar demanda energética."
+            titulo: "Estructuras de Control Condicionales, Ciclos y Complejidad"
+            objetivo: "Diseñar bloques selectivos e iterativos eficientes evaluando su complejidad temporal asintótica."
+            concepto_clave_latex: "T(n) = \\mathcal{O}(n \\log n) \\quad ; \\quad \\bar{x} = \\frac{1}{N}\\sum_{i=1}^{N} x_i"
+            ejemplo: "Script iterativo en Python para filtrar registros nocturnos nulos y promediar series horarias de irradiancia solar."
+            bloque_estudio: "Pomodoro 50/10 • Condicionales anidados y bucles for/while"
+          - numero: 3
+            titulo: "Modularidad, Funciones, Vectores y Matrices Numéricas"
+            objetivo: "Construir subprogramas reutilizables y procesar arreglos unidimensionales y bidimensionales de mediciones."
+            concepto_clave_latex: "E_{\\text{total}} = \\sum_{i=1}^{m}\\sum_{j=1}^{n} P_{ij}\\,\\Delta t \\quad ; \\quad P_k = V_k \\cdot I_k"
+            ejemplo: "Procesamiento matricial con NumPy del despacho horario de 5 plantas solares durante los 30 días del mes."
+            bloque_estudio: "Práctica 50 min • Funciones parametrizadas y arreglos 2D"
+          - numero: 4
+            titulo: "Preprocesamiento y Análisis Exploratorio de Datos Energéticos"
+            objetivo: "Limpiar series de tiempo, tratar valores atípicos y escalar variables para algoritmos de inteligencia artificial."
+            concepto_clave_latex: "x_{\\text{norm}} = \\frac{x - x_{\\min}}{x_{\\max} - x_{\\min}} \\quad ; \\quad z = \\frac{x - \\mu}{\\sigma}"
+            ejemplo: "Normalización Min-Max y estandarización Z-score de temperatura, humedad y velocidad de viento de una estación meteorológica."
+            bloque_estudio: "Práctica 40 min • Limpieza de CSV energéticos con Pandas"
+          - numero: 5
+            titulo: "Introducción a Machine Learning y Regresión Lineal"
+            objetivo: "Entrenar y evaluar modelos supervisados básicos de regresión para pronosticar demanda energética."
             concepto_clave_latex: "\\hat{y} = w_1 x + w_0 \\quad ; \\quad \\text{MSE} = \\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2"
-            ejemplo: "Predicción del consumo eléctrico diario en función de la temperatura ambiente."
-            bloque_estudio: "Práctica 40 min • Minimización del error cuadrático medio"
+            ejemplo: "Predicción del consumo eléctrico diario de un campus universitario en función de la temperatura ambiente."
+            bloque_estudio: "Práctica 45 min • Ajuste por descenso de gradiente y métrica MSE"
       - codigo: "01021802"
         nombre: "General English I"
         creditos: 2
@@ -75,11 +111,29 @@ malla_curricular:
         color: "#8E8E93"
         temas:
           - numero: 1
-            titulo: "Technical Vocabulary & Present Structures"
-            objetivo: "Comprender fichas técnicas de equipos energéticos y magnitudes del Sistema Internacional en inglés."
-            concepto_clave_latex: "P_{\\text{rated}} = V_{\\text{nom}} \\cdot I_{\\text{nom}}"
-            ejemplo: "Lectura e interpretación de un datasheet de módulos fotovoltaicos en inglés técnico."
-            bloque_estudio: "Bloque 25 min • Flashcards de terminología técnica"
+            titulo: "Academic Profiles & Introductions (Verb To Be & Pronouns)"
+            objetivo: "Presentar información personal, institucional y perfiles de ingeniería empleando el verbo to be y posesivos (MCER A1)."
+            concepto_clave_latex: "\\text{Subject} + \\text{am / is / are} + \\text{Complement}"
+            ejemplo: "Presentación oral y escrita como estudiante de Energy Engineering en un encuentro internacional de semilleros."
+            bloque_estudio: "Bloque 25 min • Diálogos breves de presentación académica"
+          - numero: 2
+            titulo: "Technical Vocabulary, SI Units & Datasheets"
+            objetivo: "Comprender fichas técnicas de equipos energéticos, cifras y magnitudes del Sistema Internacional en inglés."
+            concepto_clave_latex: "P_{\\text{rated}} = V_{\\text{nom}} \\cdot I_{\\text{nom}} \\quad ; \\quad 1\\text{ MW} = 10^6\\text{ W}"
+            ejemplo: "Lectura e interpretación de parámetros nominales (Rated Power, Open-Circuit Voltage) en un datasheet fotovoltaico."
+            bloque_estudio: "Bloque 25 min • Flashcards de terminología eléctrica y térmica"
+          - numero: 3
+            titulo: "Engineering Routines & Facts (Present Simple)"
+            objetivo: "Describir rutinas de operación, horarios de mantenimiento y leyes físicas permanentes con el Present Simple."
+            concepto_clave_latex: "f_{\\text{grid}} = 60\\text{ Hz} \\quad ; \\quad T_{\\text{cycle}} = \\frac{1}{f_{\\text{grid}}}"
+            ejemplo: "Redacción en inglés de la rutina diaria de inspección técnica de un cuarto de inversores solares."
+            bloque_estudio: "Bloque 30 min • Oraciones afirmativas, negativas y preguntas WH"
+          - numero: 4
+            titulo: "Live Plant Monitoring (Present Continuous & Prepositions)"
+            objetivo: "Reportar acciones en progreso, ubicación de instrumentos y variaciones en tiempo real dentro del laboratorio."
+            concepto_clave_latex: "\\Delta P(t) = P_{\\text{gen}}(t) - P_{\\text{load}}(t)"
+            ejemplo: "Descripción en vivo del flujo de potencia en sala de control (The solar array is charging the battery bank now)."
+            bloque_estudio: "Bloque 25 min • Contraste Present Simple vs. Present Continuous"
       - codigo: "04011822"
         nombre: "Introducción a la Ingeniería Energética"
         creditos: 2
@@ -88,11 +142,29 @@ malla_curricular:
         color: "#FF9F0A"
         temas:
           - numero: 1
-            titulo: "Matriz Energética, Unidades y Rendimiento Global"
-            objetivo: "Comprender las cadenas de conversión de energía primaria a energía útil y su eficiencia."
+            titulo: "Formas de Energía, Sistemas de Unidades y Perfil Profesional"
+            objetivo: "Diferenciar energía primaria, secundaria, final y útil dominando las equivalencias energéticas internacionales."
+            concepto_clave_latex: "1\\text{ kWh} = 3.6\\text{ MJ} \\quad ; \\quad 1\\text{ TEP} = 41.868\\text{ GJ} = 11\\,630\\text{ kWh}"
+            ejemplo: "Conversión del consumo anual de combustible de una industria desde BTU y galones de diésel hacia MWh y TEP."
+            bloque_estudio: "Pomodoro 45/10 • Conversión dimensional (J, kWh, BTU, kcal, TEP)"
+          - numero: 2
+            titulo: "Matriz Energética Mundial, Nacional (UPME) y del Caribe"
+            objetivo: "Analizar la composición de la oferta y demanda energética colombiana y el potencial renovable de la región Caribe."
+            concepto_clave_latex: "\\text{Participación}_i(\\%) = \\frac{E_{\\text{fuente},i}}{\\sum_{k=1}^{n} E_{\\text{fuente},k}} \\times 100\\%"
+            ejemplo: "Interpretación del Plan Energético Nacional (UPME) comparando generación hidráulica, térmica y solar en Colombia."
+            bloque_estudio: "Bloque 40 min • Análisis de indicadores energéticos per cápita"
+          - numero: 3
+            titulo: "Cadenas de Conversión, Diagramas de Sankey y Eficiencia Global"
+            objetivo: "Cuantificar pérdidas por etapas en sistemas de transformación energética desde la fuente hasta el uso final."
             concepto_clave_latex: "\\eta_{\\text{global}} = \\frac{E_{\\text{útil}}}{E_{\\text{primaria}}} = \\prod_{i=1}^{n} \\eta_i"
-            ejemplo: "Cálculo de la eficiencia combinada de una central térmica considerando caldera, turbina y generador."
-            bloque_estudio: "Pomodoro 50/10 • Conversión de unidades (J, kWh, BTU, TEP)"
+            ejemplo: "Cálculo de la eficiencia combinada de una central termoeléctrica integrando caldera (88%), turbina (42%) y generador (97%)."
+            bloque_estudio: "Pomodoro 50/10 • Construcción de diagramas de Sankey"
+          - numero: 4
+            titulo: "Sostenibilidad, ODS 7, Ley 1715 y Transición Energética"
+            objetivo: "Comprender los retos ambientales, regulatorios y éticos de la descarbonización y el acceso universal a energía limpia."
+            concepto_clave_latex: "E_{\\text{CO}_2} = E_{\\text{eléc}} \\cdot \\text{FE}_{\\text{SIN}}"
+            ejemplo: "Estimación de emisiones de CO₂ evitadas anualmente al integrar autogeneración solar fotovoltaica en el campus universitario."
+            bloque_estudio: "Bloque 35 min • Mapa conceptual de ODS 7 y Ley 1715"
       - codigo: "01011801"
         nombre: "Procesos Lectores, Escriturales y Orales"
         creditos: 2
@@ -101,11 +173,29 @@ malla_curricular:
         color: "#8E8E93"
         temas:
           - numero: 1
-            titulo: "Estructura de Informes Técnicos y Artículos Científicos"
-            objetivo: "Redactar documentos de ingeniería con precisión argumentativa, citación IEEE y síntesis."
+            titulo: "Lectura Crítica, Inferencia y Superestructura Textual"
+            objetivo: "Desarrollar comprensión literal, inferencial y crítica identificando tesis, argumentos y contraargumentos en textos académicos."
+            concepto_clave_latex: "\\text{Lectura Crítica} = \\text{Literal} + \\text{Inferencial} + \\text{Valorativa}"
+            ejemplo: "Desglose argumentativo de un artículo científico sobre comunidades energéticas sostenibles en el Caribe colombiano."
+            bloque_estudio: "Bloque 35 min • Fichas de lectura analítica y macroproposiciones"
+          - numero: 2
+            titulo: "Escritura Académica: Coherencia, Cohesión y Precisión Léxica"
+            objetivo: "Producir textos expositivos y argumentativos claros mediante planeación textual, conectores lógicos y revisión estilística."
             concepto_clave_latex: "\\text{Índice de Legibilidad} = 206.835 - 1.015\\left(\\frac{\\text{Palabras}}{\\text{Oraciones}}\\right)"
-            ejemplo: "Estructuración del resumen ejecutivo (Abstract) de un proyecto de transición energética."
-            bloque_estudio: "Bloque 30 min • Redacción y síntesis conceptual"
+            ejemplo: "Redacción y depuración de un ensayo argumentativo sobre eficiencia energética y sostenibilidad urbana."
+            bloque_estudio: "Bloque 30 min • Construcción de párrafos con oración temática"
+          - numero: 3
+            titulo: "Informes Técnicos de Ingeniería y Normas de Citación (IEEE / APA)"
+            objetivo: "Estructurar artículos e informes de laboratorio bajo el formato IMRyD aplicando referenciación bibliográfica rigurosa."
+            concepto_clave_latex: "\\text{IMRyD} : \\text{Introducción} \\longrightarrow \\text{Métodos} \\longrightarrow \\text{Resultados} \\longrightarrow \\text{Discusión}"
+            ejemplo: "Estructuración del resumen ejecutivo (Abstract) y bibliografía IEEE para un proyecto de transición energética."
+            bloque_estudio: "Bloque 35 min • Citación IEEE numerada y gestión de referencias"
+          - numero: 4
+            titulo: "Oralidad Académica, Argumentación y Defensa de Proyectos"
+            objetivo: "Sustentar ideas técnicas en escenarios universitarios articulando expresión verbal, lenguaje corporal y síntesis visual."
+            concepto_clave_latex: "t_{\\text{pitch}} = t_{\\text{problema}} + t_{\\text{solución}} + t_{\\text{evidencia}} + t_{\\text{cierre}}"
+            ejemplo: "Sustentación oral estructurada de 5 minutos sobre una propuesta de ahorro energético institucional."
+            bloque_estudio: "Bloque 30 min • Ensayo cronometrado de exposición técnica"
 
   - cuatrimestre: 2
     creditos_totales: 14
@@ -118,17 +208,35 @@ malla_curricular:
         color: "#30D158"
         temas:
           - numero: 1
-            titulo: "Leyes de Newton y Dinámica con Rozamiento"
-            objetivo: "Entender la segunda ley de Newton y su relación con las fuerzas de fricción estática y cinética."
-            concepto_clave_latex: "\\sum \\vec{F} = m \\cdot \\vec{a} \\quad ; \\quad f_k = \\mu_k \\cdot N"
-            ejemplo: "Un bloque sobre un plano inclinado experimenta una fuerza de rozamiento opuesta al deslizamiento proporcional a la normal."
-            bloque_estudio: "Pomodoro 50/10 • Diagramas de Cuerpo Libre"
+            titulo: "Análisis Dimensional, Vectores y Cinemática en 1D/2D"
+            objetivo: "Describir vectorial y analíticamente el movimiento rectilíneo, parabólico y circular de partículas mediante cálculo."
+            concepto_clave_latex: "\\vec{v}(t) = \\frac{d\\vec{r}}{dt} \\quad ; \\quad \\vec{a}(t) = \\frac{d\\vec{v}}{dt} \\quad ; \\quad a_c = \\frac{v^2}{R} = \\omega^2 R"
+            ejemplo: "Cálculo de la velocidad lineal y aceleración centrípeta en el extremo de una pala eólica de 50 m de radio."
+            bloque_estudio: "Pomodoro 50/10 • Cinemática vectorial y movimiento circular"
           - numero: 2
+            titulo: "Leyes de Newton y Dinámica con Rozamiento"
+            objetivo: "Aplicar las leyes del movimiento de Newton y diagramas de cuerpo libre con fuerzas de fricción estática y cinética."
+            concepto_clave_latex: "\\sum \\vec{F} = m \\cdot \\vec{a} \\quad ; \\quad f_s \\le \\mu_s N \\quad ; \\quad f_k = \\mu_k N"
+            ejemplo: "Determinación de la aceleración y tensión de izaje de un bloque sobre un plano inclinado con rozamiento cinético."
+            bloque_estudio: "Pomodoro 50/10 • Diagramas de Cuerpo Libre en sistemas acoplados"
+          - numero: 3
             titulo: "Trabajo, Energía Mecánica y Potencia"
-            objetivo: "Aplicar el teorema del trabajo y la conservación de la energía en sistemas mecánicos."
-            concepto_clave_latex: "W = \\int_{r_1}^{r_2} \\vec{F} \\cdot d\\vec{r} = \\Delta K \\quad ; \\quad P = \\vec{F} \\cdot \\vec{v}"
-            ejemplo: "Cálculo de la potencia mecánica entregada por un eje rotatorio bajo par constante."
-            bloque_estudio: "Práctica Activa 45 min • Conservación de energía"
+            objetivo: "Aplicar el teorema del trabajo y la energía cinética, fuerzas conservativas y conservación de la energía mecánica."
+            concepto_clave_latex: "W = \\int_{r_1}^{r_2} \\vec{F} \\cdot d\\vec{r} = \\Delta K \\quad ; \\quad E_m = K + U_g + U_e \\quad ; \\quad P = \\vec{F} \\cdot \\vec{v}"
+            ejemplo: "Cálculo de la conversión de energía potencial gravitacional a cinética en la descarga de una central hidroeléctrica."
+            bloque_estudio: "Práctica Activa 45 min • Conservación de energía con pérdidas no conservativas"
+          - numero: 4
+            titulo: "Sistemas de Partículas, Impulso, Momentum Lineal y Colisiones"
+            objetivo: "Evaluar centro de masa, impulso mecánico y conservación del momentum lineal en choques elásticos e inelásticos."
+            concepto_clave_latex: "\\vec{p} = m\\vec{v} \\quad ; \\quad \\vec{J} = \\int_{t_1}^{t_2} \\vec{F}(t)\\,dt = \\Delta\\vec{p} \\quad ; \\quad \\sum \\vec{p}_i = \\sum \\vec{p}_f"
+            ejemplo: "Determinación de la fuerza impulsiva transferida por un chorro de agua de alta velocidad sobre un álabe Pelton."
+            bloque_estudio: "Pomodoro 50/10 • Colisiones 1D/2D y transferencia de momentum"
+          - numero: 5
+            titulo: "Dinámica Rotacional, Momento de Inercia y Equilibrio Estático"
+            objetivo: "Modelar el torque, momento de inercia (Steiner), energía cinética rotacional y equilibrio de cuerpos rígidos."
+            concepto_clave_latex: "\\sum \\tau = I\\alpha \\quad ; \\quad K_{\\text{rot}} = \\frac{1}{2}I\\omega^2 \\quad ; \\quad \\sum \\vec{F} = \\vec{0},\\; \\sum \\vec{\\tau} = \\vec{0}"
+            ejemplo: "Cálculo de la energía almacenada en un volante de inercia (flywheel) y reacciones estáticas en estructuras soporte solares."
+            bloque_estudio: "Práctica 50 min • Dinámica de rotores y estática estructural básica"
       - codigo: "03041819"
         nombre: "Fundamentos de la Electricidad I"
         creditos: 2
@@ -137,17 +245,29 @@ malla_curricular:
         color: "#FF9F0A"
         temas:
           - numero: 1
-            titulo: "Leyes de Ohm, Kirchhoff y Análisis de Nodos/Mallas"
-            objetivo: "Resolver circuitos resistivos en corriente continua mediante conservación de carga y energía."
-            concepto_clave_latex: "V = I \\cdot R \\quad ; \\quad \\sum_{k=1}^{n} I_k = 0 \\quad ; \\quad \\sum_{m=1}^{p} V_m = 0"
-            ejemplo: "Determinación de corrientes de rama y potencia disipada en resistencias de carga."
-            bloque_estudio: "Pomodoro 50/10 • Sistemas de ecuaciones de nodos"
+            titulo: "Variables Eléctricas, Ley de Ohm, Asociaciones y Potencia DC"
+            objetivo: "Cuantificar carga, corriente, tensión, resistencias serie/paralelo, divisores y balance de potencia en DC."
+            concepto_clave_latex: "i(t) = \\frac{dq}{dt} \\quad ; \\quad V = I \\cdot R \\quad ; \\quad P = V \\cdot I = I^2 R = \\frac{V^2}{R}"
+            ejemplo: "Cálculo de caída de tensión, pérdidas Joule y eficiencia en el cableado DC entre un string fotovoltaico y su inversor."
+            bloque_estudio: "Pomodoro 45/10 • Reducción serie-paralelo y transformación Y-Delta"
           - numero: 2
-            titulo: "Teoremas de Thévenin, Norton y Máxima Potencia"
-            objetivo: "Simplificar redes lineales activas entre dos terminales a un circuito equivalente."
+            titulo: "Leyes de Kirchhoff y Análisis Sistemático de Nodos y Mallas"
+            objetivo: "Resolver circuitos resistivos lineales con fuentes independientes y dependientes mediante LCK y LVK."
+            concepto_clave_latex: "\\sum_{k=1}^{n} I_k = 0 \\quad ; \\quad \\sum_{m=1}^{p} V_m = 0 \\quad ; \\quad \\mathbf{G}\\mathbf{v}_n = \\mathbf{i}_s"
+            ejemplo: "Determinación de tensiones de nodo y flujos de corriente en una micro-red DC con generación solar, batería y carga."
+            bloque_estudio: "Pomodoro 50/10 • Sistemas de ecuaciones por supernodos y supermallas"
+          - numero: 3
+            titulo: "Linealidad, Superposición, Thévenin, Norton y Máxima Potencia"
+            objetivo: "Simplificar redes activas entre dos terminales a circuitos equivalentes para optimizar la transferencia de potencia."
             concepto_clave_latex: "V_{th} = V_{oc} \\quad ; \\quad R_{th} = \\frac{V_{oc}}{I_{sc}} \\quad ; \\quad P_{\\max} = \\frac{V_{th}^2}{4 R_{th}}"
-            ejemplo: "Acoplamiento de impedancia resistiva para extraer la máxima potencia de una celda solar."
-            bloque_estudio: "Práctica 45 min • Reducción de Thévenin"
+            ejemplo: "Acoplamiento óptimo de carga resistiva para extraer la máxima potencia disponible de una fuente DC equivalente."
+            bloque_estudio: "Práctica 45 min • Reducción de Thévenin/Norton con fuentes controladas"
+          - numero: 4
+            titulo: "Capacitores, Inductores y Transitorios de Primer Orden (RC y RL)"
+            objetivo: "Analizar el almacenamiento de energía en campos eléctricos/magnéticos y la respuesta natural y forzada de circuitos RC y RL."
+            concepto_clave_latex: "v_C(t) = V_\\infty + [v_C(0) - V_\\infty]e^{-t/\\tau} \\quad ; \\quad \\tau_{RC} = R_{th}C \\quad ; \\quad \\tau_{RL} = \\frac{L}{R_{th}}"
+            ejemplo: "Dimensionamiento de la resistencia de precarga del bus DC capacitivo de un convertidor para limitar picos de corriente."
+            bloque_estudio: "Pomodoro 50/10 • Constantes de tiempo y curvas de carga/descarga"
       - codigo: "01021803"
         nombre: "General English II"
         creditos: 2
@@ -156,11 +276,29 @@ malla_curricular:
         color: "#8E8E93"
         temas:
           - numero: 1
-            titulo: "Comparative Analysis & Process Descriptions"
-            objetivo: "Describir procesos secuenciales y comparar tecnologías energéticas en inglés."
+            titulo: "Energy Milestones & Incident Logs (Past Simple & Continuous)"
+            objetivo: "Narrar hitos científicos y redactar bitácoras de eventos operativos pasados combinando Past Simple y Past Continuous (MCER A2)."
+            concepto_clave_latex: "\\Delta t_{\\text{outage}} = t_{\\text{restored}} - t_{\\text{fault}}"
+            ejemplo: "Reporte breve de falla eléctrica (While the turbine was operating at full load, the grid sensor detected a voltage sag)."
+            bloque_estudio: "Bloque 25 min • Verbos regulares/irregulares en reportes técnicos"
+          - numero: 2
+            titulo: "Comparative Analysis of Power Technologies"
+            objetivo: "Comparar rendimientos, costos y vida útil entre tecnologías energéticas mediante estructuras comparativas y superlativas."
             concepto_clave_latex: "\\Delta \\eta = \\eta_{\\text{new}} - \\eta_{\\text{baseline}}"
-            ejemplo: "Comparación escrita entre eficiencia de turbinas Pelton y Francis."
-            bloque_estudio: "Bloque 25 min • Redacción de diagramas de flujo en inglés"
+            ejemplo: "Comparación escrita en inglés entre turbinas hidráulicas Pelton, Francis y Kaplan según salto y eficiencia."
+            bloque_estudio: "Bloque 25 min • Tablas comparativas con adjetivos técnicos"
+          - numero: 3
+            titulo: "Laboratory Safety & Engineering Quantities (Modals & Quantifiers)"
+            objetivo: "Expresar obligaciones y recomendaciones de seguridad eléctrica usando verbos modales (must, should, have to)."
+            concepto_clave_latex: "V_{\\text{safety}} \\le 50\\text{ V}_{\\text{AC}}"
+            ejemplo: "Redacción de normas de seguridad PPE antes de energizar un banco de pruebas en el laboratorio."
+            bloque_estudio: "Bloque 25 min • Protocolos de seguridad con modales de obligación"
+          - numero: 4
+            titulo: "Energy Forecasts & Project Schedules (Future Forms)"
+            objetivo: "Describir planes de ingeniería, cronogramas de montaje y proyecciones energéticas con going to y will."
+            concepto_clave_latex: "E_{\\text{proj}} = E_0 (1 + g)^n"
+            ejemplo: "Presentación corta en inglés sobre la proyección de expansión solar y eólica para la próxima década."
+            bloque_estudio: "Bloque 30 min • Redacción de metas y proyecciones futuras"
       - codigo: "03031818"
         nombre: "Probabilidad y Estadística"
         creditos: 3
@@ -169,11 +307,29 @@ malla_curricular:
         color: "#5E5CE6"
         temas:
           - numero: 1
-            titulo: "Distribuciones de Probabilidad (Weibull y Normal)"
-            objetivo: "Modelar la variabilidad estocástica de recursos renovables como la velocidad del viento."
-            concepto_clave_latex: "f(v) = \\frac{k}{c}\\left(\\frac{v}{c}\\right)^{k-1} \\exp\\left[-\\left(\\frac{v}{c}\\right)^k\\right]"
-            ejemplo: "Ajuste de la distribución de Weibull para estimar la frecuencia de vientos útiles en la Guajira."
-            bloque_estudio: "Pomodoro 50/10 • Cálculo de factores de forma y escala"
+            titulo: "Estadística Descriptiva, Tendencia Central y Dispersión"
+            objetivo: "Resumir series experimentales mediante media, mediana, varianza muestral, cuantiles y coeficiente de variación."
+            concepto_clave_latex: "\\bar{x} = \\frac{1}{n}\\sum_{i=1}^{n} x_i \\quad ; \\quad s^2 = \\frac{1}{n-1}\\sum_{i=1}^{n}(x_i - \\bar{x})^2 \\quad ; \\quad \\text{CV} = \\frac{s}{\\bar{x}}"
+            ejemplo: "Caracterización estadística de la variabilidad horaria y estacional de radiación solar global en Santa Marta."
+            bloque_estudio: "Pomodoro 45/10 • Histogramas, boxplots y medidas de dispersión"
+          - numero: 2
+            titulo: "Axiomas de Probabilidad, Confiabilidad y Teorema de Bayes"
+            objetivo: "Calcular probabilidades condicionales, confiabilidad de sistemas serie/paralelo y actualización bayesiana de riesgos."
+            concepto_clave_latex: "P(A \\mid B) = \\frac{P(B \\mid A)P(A)}{\\sum_{j=1}^{k} P(B \\mid A_j)P(A_j)} \\quad ; \\quad R_{\\text{par}} = 1 - \\prod_{i=1}^{n}(1 - R_i)"
+            ejemplo: "Evaluación de la disponibilidad probabilística de una planta con inversores redundantes en paralelo."
+            bloque_estudio: "Pomodoro 50/10 • Árboles de probabilidad y sistemas redundantes"
+          - numero: 3
+            titulo: "Variables Aleatorias Discretas (Esperanza, Binomial y Poisson)"
+            objetivo: "Modelar conteos de fallas y eventos discretos en ventanas de tiempo mediante distribuciones Binomial y de Poisson."
+            concepto_clave_latex: "E[X] = \\sum_{x} x\\,p(x) \\quad ; \\quad P(X = k) = \\frac{\\lambda^k e^{-\\lambda}}{k!}"
+            ejemplo: "Estimación de la probabilidad mensual de desconexiones por sobretensión atmosférica en un circuito de distribución."
+            bloque_estudio: "Práctica 45 min • Problemas de tasa de llegadas de Poisson"
+          - numero: 4
+            titulo: "Distribuciones Continuas (Normal, Exponencial y Weibull) e Inferencia"
+            objetivo: "Modelar recursos renovables continuos y tiempos de vida útil construyendo intervalos de confianza estadísticos."
+            concepto_clave_latex: "f(v) = \\frac{k}{c}\\left(\\frac{v}{c}\\right)^{k-1} \\exp\\left[-\\left(\\frac{v}{c}\\right)^k\\right] \\quad ; \\quad \\bar{x} \\pm z_{\\alpha/2}\\frac{\\sigma}{\\sqrt{n}}"
+            ejemplo: "Ajuste de la distribución de Weibull para estimar el potencial energético del viento en la costa Caribe."
+            bloque_estudio: "Pomodoro 50/10 • Factores de forma/escala de Weibull y tabla Z"
       - codigo: "02031812"
         nombre: "Química Aplicada"
         creditos: 3
@@ -182,11 +338,29 @@ malla_curricular:
         color: "#30D158"
         temas:
           - numero: 1
-            titulo: "Termoquímica, Combustión y Electroquímica"
-            objetivo: "Calcular entalpías de reacción, poder calorífico y potenciales de celda."
+            titulo: "Estructura Atómica, Enlace Químico y Materiales para Energía"
+            objetivo: "Relacionar la configuración electrónica y los enlaces iónico, covalente y metálico con semiconductores y conductores."
+            concepto_clave_latex: "E_{\\text{fotón}} = h\\nu = \\frac{hc}{\\lambda} \\ge E_g"
+            ejemplo: "Análisis del enlace covalente en redes de silicio dopado (tipo n y p) y su banda prohibida de 1.12 eV en celdas solares."
+            bloque_estudio: "Pomodoro 45/10 • Propiedades periódicas y bandas electrónicas"
+          - numero: 2
+            titulo: "Estequiometría, Reactivo Límite y Balances de Combustión"
+            objetivo: "Formular balances másicos y molares en reacciones químicas y procesos de combustión con aire teórico y en exceso."
+            concepto_clave_latex: "\\text{CH}_4 + 2(\\text{O}_2 + 3.76\\text{N}_2) \\longrightarrow \\text{CO}_2 + 2\\text{H}_2\\text{O} + 7.52\\text{N}_2"
+            ejemplo: "Cálculo de la relación aire-combustible y masa de CO₂ emitida por cada metro cúbico de gas natural quemado."
+            bloque_estudio: "Pomodoro 50/10 • Balance estequiométrico con exceso de aire"
+          - numero: 3
+            titulo: "Gases Ideales y Reales, Disoluciones y Equilibrio Químico"
+            objetivo: "Aplicar ecuaciones de estado de gases, mezclas de Dalton, concentración molar y principio de Le Chatelier."
+            concepto_clave_latex: "P V = n R T \\quad ; \\quad P_i = y_i P_{\\text{tot}} \\quad ; \\quad K_c = \\frac{[\\text{C}]^c[\\text{D}]^d}{[\\text{A}]^a[\\text{B}]^b}"
+            ejemplo: "Determinación de la masa de hidrógeno comprimido almacenada en cilindros de alta presión y preparación de electrolitos KOH."
+            bloque_estudio: "Práctica 45 min • Mezclas gaseosas, molaridad y pH"
+          - numero: 4
+            titulo: "Termoquímica (Ley de Hess), Poder Calorífico y Electroquímica"
+            objetivo: "Calcular entalpías de reacción, poder calorífico superior/inferior y potenciales de celda mediante la ecuación de Nernst."
             concepto_clave_latex: "\\Delta H^\\circ_{\\text{rxn}} = \\sum \\nu_p \\Delta H^\\circ_{f,p} - \\sum \\nu_r \\Delta H^\\circ_{f,r} \\quad ; \\quad E_{\\text{celda}} = E^\\circ - \\frac{RT}{nF}\\ln Q"
-            ejemplo: "Cálculo del poder calorífico inferior (PCI) del gas natural y voltaje en una celda galvánica."
-            bloque_estudio: "Pomodoro 50/10 • Balance estequiométrico de combustión"
+            ejemplo: "Cálculo del poder calorífico inferior (PCI) de mezclas biogás-metano y tensión reversible en baterías y celdas galvánicas."
+            bloque_estudio: "Pomodoro 50/10 • Ley de Hess, Faraday y ecuación de Nernst"
 
   - cuatrimestre: 3
     creditos_totales: 15
@@ -199,11 +373,35 @@ malla_curricular:
         color: "#5E5CE6"
         temas:
           - numero: 1
-            titulo: "Técnicas de Integración e Integral Definida"
-            objetivo: "Resolver integrales por partes, sustitución trigonométrica y fracciones parciales para acumular magnitudes."
-            concepto_clave_latex: "\\int u \\, dv = u \\cdot v - \\int v \\, du \\quad ; \\quad E = \\int_{t_1}^{t_2} P(t) \\, dt"
-            ejemplo: "Integración de la curva de demanda de potencia diaria para obtener la energía consumida en MWh."
-            bloque_estudio: "Pomodoro 50/10 • 4 integrales por partes y definidas"
+            titulo: "Antiderivadas, Integral Indefinida y Método de Sustitución"
+            objetivo: "Reconstruir funciones primitivas a partir de sus tasas de variación mediante reglas directas y cambio de variable."
+            concepto_clave_latex: "\\int f(g(x))\\,g'(x)\\,dx = \\int f(u)\\,du = F(g(x)) + C"
+            ejemplo: "Determinación de la función de carga eléctrica q(t) a partir de una corriente transitoria exponencial i(t)."
+            bloque_estudio: "Pomodoro 50/10 • Antiderivadas inmediatas y sustitución simple"
+          - numero: 2
+            titulo: "Técnicas de Integración: Por Partes, Trigonométricas y Fracciones Parciales"
+            objetivo: "Resolver integrales analíticas de productos trascendentes, radicales cuadráticos y funciones racionales."
+            concepto_clave_latex: "\\int u \\, dv = u \\cdot v - \\int v \\, du \\quad ; \\quad \\frac{P(x)}{(x-a)(x-b)} = \\frac{A}{x-a} + \\frac{B}{x-b}"
+            ejemplo: "Integración analítica de una señal de potencia amortiguada P(t) = P₀·t·e^(-αt) durante una maniobra eléctrica."
+            bloque_estudio: "Pomodoro 50/10 • 6 ejercicios mixtos por partes y fracciones parciales"
+          - numero: 3
+            titulo: "Integral Definida, Teorema Fundamental e Integración Numérica"
+            objetivo: "Acumular magnitudes físicas aplicando el Teorema Fundamental del Cálculo y reglas numéricas de Trapecio y Simpson."
+            concepto_clave_latex: "E = \\int_{t_1}^{t_2} P(t) \\, dt = F(t_2) - F(t_1) \\quad ; \\quad P_{\\text{prom}} = \\frac{1}{T}\\int_0^T P(t)\\,dt"
+            ejemplo: "Integración de la curva diaria de demanda eléctrica (y regla de Simpson sobre lecturas horarias) para obtener MWh consumidos."
+            bloque_estudio: "Práctica 45 min • Valor medio, TFC y regla de Simpson 1/3"
+          - numero: 4
+            titulo: "Aplicaciones Geométricas y Físicas: Áreas, Volúmenes y Trabajo de Bombeo"
+            objetivo: "Calcular áreas entre curvas, volúmenes de revolución, centros de masa y trabajo mecánico de vaciado de tanques."
+            concepto_clave_latex: "V = \\pi \\int_a^b \\left([R(x)]^2 - [r(x)]^2\\right)dx \\quad ; \\quad W_{\\text{bombeo}} = \\rho g \\int_a^b A(y)(H - y)\\,dy"
+            ejemplo: "Cálculo de la energía mínima requerida para bombear la totalidad del agua desde un reservorio subterráneo hacia una torre."
+            bloque_estudio: "Pomodoro 50/10 • Sólidos de revolución y trabajo hidrostático"
+          - numero: 5
+            titulo: "Integrales Impropias, Sucesiones y Series de Taylor"
+            objetivo: "Analizar convergencia de integrales con límites infinitos y aproximar funciones mediante desarrollos en serie de potencias."
+            concepto_clave_latex: "\\int_a^\\infty f(x)\\,dx = \\lim_{b \\to \\infty}\\int_a^b f(x)\\,dx \\quad ; \\quad f(x) = \\sum_{n=0}^{\\infty}\\frac{f^{(n)}(a)}{n!}(x-a)^n"
+            ejemplo: "Evaluación de energía total disipada en horizonte infinito y linealización por serie de Taylor de radiación térmica."
+            bloque_estudio: "Práctica 45 min • Criterios de convergencia y polinomios de Taylor"
       - codigo: "02021811"
         nombre: "Calor y Ondas"
         creditos: 4
@@ -212,11 +410,29 @@ malla_curricular:
         color: "#30D158"
         temas:
           - numero: 1
-            titulo: "Calorimetría, Dilatación Térmica y Movimiento Ondulatorio"
-            objetivo: "Analizar el intercambio de calor sensible/latente y la propagación de ondas mecánicas y electromagnéticas."
-            concepto_clave_latex: "Q = m c \\Delta T + m L_f \\quad ; \\quad \\frac{\\partial^2 y}{\\partial x^2} = \\frac{1}{v^2}\\frac{\\partial^2 y}{\\partial t^2}"
-            ejemplo: "Cálculo del equilibrio térmico en un tanque de almacenamiento de agua caliente y longitud de onda del espectro solar."
-            bloque_estudio: "Pomodoro 50/10 • Balances calorimétricos"
+            titulo: "Elasticidad y Mecánica de Fluidos Ideal (Arquímedes y Bernoulli)"
+            objetivo: "Estudiar deformación elástica en sólidos, hidrostática, flotación y conservación de energía en líneas de corriente."
+            concepto_clave_latex: "P = P_0 + \\rho g h \\quad ; \\quad A_1 v_1 = A_2 v_2 \\quad ; \\quad P + \\frac{1}{2}\\rho v^2 + \\rho g y = \\text{cte}"
+            ejemplo: "Cálculo del empuje hidrostático sobre estructuras flotantes para paneles solares (floating PV) y caudal en tuberías Venturi."
+            bloque_estudio: "Pomodoro 50/10 • Manometría, Arquímedes y tubo de Venturi"
+          - numero: 2
+            titulo: "Termometría, Dilatación Térmica, Calorimetría y Conducción"
+            objetivo: "Cuantificar expansiones térmicas, intercambios de calor sensible/latente y mecanismos básicos de transferencia térmica."
+            concepto_clave_latex: "\\Delta L = \\alpha L_0 \\Delta T \\quad ; \\quad Q = m c \\Delta T + m L_f \\quad ; \\quad \\dot{Q} = -k A \\frac{\\Delta T}{\\Delta x}"
+            ejemplo: "Cálculo del equilibrio térmico en un tanque de almacenamiento solar con material de cambio de fase (PCM)."
+            bloque_estudio: "Pomodoro 50/10 • Balances calorimétricos con cambio de fase"
+          - numero: 3
+            titulo: "Teoría Cinética de los Gases y Primera Ley en Procesos Ideales"
+            objetivo: "Conectar variables microscópicas moleculares con presión, temperatura interna y trabajo en procesos termodinámicos."
+            concepto_clave_latex: "v_{\\text{rms}} = \\sqrt{\\frac{3 R T}{M}} \\quad ; \\quad \\Delta E_{\\text{int}} = Q - W \\quad ; \\quad P V^\\gamma = \\text{cte}"
+            ejemplo: "Determinación del calor, trabajo y cambio de energía interna en expansiones isotérmicas y adiabáticas de un gas ideal."
+            bloque_estudio: "Práctica 45 min • Diagramas P-V y procesos politrópicos"
+          - numero: 4
+            titulo: "Movimiento Armónico Simple (MAS), Ondas Mecánicas y Acústica"
+            objetivo: "Modelar osciladores armónicos, ecuación de onda viajera, ondas estacionarias, resonancia y niveles sonoros en decibeles."
+            concepto_clave_latex: "\\frac{\\partial^2 y}{\\partial x^2} = \\frac{1}{v^2}\\frac{\\partial^2 y}{\\partial t^2} \\quad ; \\quad \\omega_0 = \\sqrt{\\frac{k}{m}} \\quad ; \\quad \\beta = 10\\log_{10}\\left(\\frac{I}{I_0}\\right)"
+            ejemplo: "Evaluación de frecuencias naturales de vibración en góndolas eólicas y atenuación acústica ambiental en decibeles."
+            bloque_estudio: "Pomodoro 50/10 • Ecuación de onda, efecto Doppler y decibeles"
       - codigo: "03041820"
         nombre: "Fundamentos de Electricidad II"
         creditos: 2
@@ -225,11 +441,29 @@ malla_curricular:
         color: "#FF9F0A"
         temas:
           - numero: 1
-            titulo: "Circuitos en Corriente Alterna (AC), Fasores y Potencia Compleja"
-            objetivo: "Analizar redes en estado estacionario sinusoidal, triángulo de potencias y corrección del factor de potencia."
-            concepto_clave_latex: "\\mathbf{S} = P + jQ = \\mathbf{V}_{\\text{rms}} \\mathbf{I}_{\\text{rms}}^* \\quad ; \\quad \\text{FP} = \\cos(\\theta_v - \\theta_i)"
-            ejemplo: "Dimensionamiento de un banco de capacitores para elevar el factor de potencia de 0.82 a 0.96 inductivo."
-            bloque_estudio: "Práctica Activa 45 min • Triángulo de potencias y fasores"
+            titulo: "Régimen Sinusoidal, Fasores e Impedancia Compleja"
+            objetivo: "Resolver circuitos RLC en corriente alterna estacionaria utilizando álgebra fasorial, impedancia y admitancia."
+            concepto_clave_latex: "\\mathbf{Z} = R + j\\left(\\omega L - \\frac{1}{\\omega C}\\right) \\quad ; \\quad \\mathbf{V}_{\\text{rms}} = \\mathbf{Z}\\cdot\\mathbf{I}_{\\text{rms}}"
+            ejemplo: "Determinación de magnitud y ángulo de fase de la corriente absorbida por un motor monofásico inductivo a 60 Hz."
+            bloque_estudio: "Pomodoro 45/10 • Conversión dominio temporal a fasorial y mallas AC"
+          - numero: 2
+            titulo: "Potencia Compleja, Triángulo de Potencias y Factor de Potencia"
+            objetivo: "Calcular potencia activa, reactiva y aparente, y dimensionar bancos de capacitores para compensación reactiva."
+            concepto_clave_latex: "\\mathbf{S} = P + jQ = \\mathbf{V}_{\\text{rms}} \\mathbf{I}_{\\text{rms}}^* \\quad ; \\quad \\text{FP} = \\cos(\\theta_v - \\theta_i) \\quad ; \\quad Q_C = P(\\tan\\theta_1 - \\tan\\theta_2)"
+            ejemplo: "Dimensionamiento de un banco de capacitores para elevar el factor de potencia industrial de 0.82 a 0.96 inductivo evitando penalización."
+            bloque_estudio: "Práctica Activa 45 min • Triángulo de potencias y compensación kVAr"
+          - numero: 3
+            titulo: "Sistemas Trifásicos Equilibrados (Estrella Y y Triángulo Delta)"
+            objetivo: "Analizar relaciones entre magnitudes de línea y de fase en generadores y cargas conectadas en estrella y delta."
+            concepto_clave_latex: "V_L = \\sqrt{3}\\,V_f \\quad ; \\quad I_L = \\sqrt{3}\\,I_f \\quad ; \\quad P_{3\\phi} = \\sqrt{3}\\,V_L I_L \\cos\\theta"
+            ejemplo: "Cálculo de corrientes de línea y potencia entregada por un inversor solar trifásico de 100 kW a una barra de 440 V."
+            bloque_estudio: "Pomodoro 50/10 • Equivalente monofásico y cargas Y-Delta"
+          - numero: 4
+            titulo: "Resonancia Eléctrica, Filtros Pasivos y Circuitos Acoplados"
+            objetivo: "Analizar la respuesta en frecuencia, resonancia serie/paralelo e inductancia mutua en transformadores ideales y lineales."
+            concepto_clave_latex: "\\omega_0 = \\frac{1}{\\sqrt{LC}} \\quad ; \\quad \\frac{V_2}{V_1} = \\frac{N_2}{N_1} \\quad ; \\quad Z_{\\text{in}} = \\left(\\frac{N_1}{N_2}\\right)^2 Z_L"
+            ejemplo: "Diseño de un filtro LC sintonizado y reflexión de impedancia a través de un transformador elevador de acoplamiento."
+            bloque_estudio: "Práctica 40 min • Regla de los puntos y resonancia RLC"
       - codigo: "03021815"
         nombre: "Fundamentos de Hidráulica y Neumática"
         creditos: 3
@@ -238,11 +472,29 @@ malla_curricular:
         color: "#FF9F0A"
         temas:
           - numero: 1
-            titulo: "Principio de Pascal, Actuadores y Potencia Fluida"
-            objetivo: "Calcular presiones, caudales y fuerzas en circuitos óleo-hidráulicos y neumáticos."
-            concepto_clave_latex: "P = \\frac{F}{A} \\quad ; \\quad N_{\\text{hid}} = \\Delta P \\cdot Q"
-            ejemplo: "Cálculo de la fuerza ejercida por el cilindro hidráulico del sistema de pitch en un aerogenerador."
-            bloque_estudio: "Pomodoro 50/10 • Diseño de circuitos hidráulicos"
+            titulo: "Propiedades de Fluidos de Potencia y Principio de Pascal"
+            objetivo: "Evaluar viscosidad, compresibilidad y multiplicación hidrostática de fuerzas en circuitos óleo-hidráulicos y neumáticos."
+            concepto_clave_latex: "P = \\frac{F_1}{A_1} = \\frac{F_2}{A_2} \\quad ; \\quad \\nu = \\frac{\\mu}{\\rho}"
+            ejemplo: "Cálculo de la presión manométrica y ventaja mecánica en una prensa hidráulica de mantenimiento electromecánico."
+            bloque_estudio: "Pomodoro 45/10 • Unidades de presión (bar, MPa, psi) y viscosidad ISO"
+          - numero: 2
+            titulo: "Bombas Oleohidráulicas, Compresores y Unidad FRL"
+            objetivo: "Dimensionar bombas de desplazamiento positivo y compresores de aire cuantificando potencia fluida y eficiencias."
+            concepto_clave_latex: "Q_{\\text{real}} = V_d \\cdot n \\cdot \\eta_v \\quad ; \\quad N_{\\text{hid}} = \\Delta P \\cdot Q \\quad ; \\quad N_{\\text{eje}} = \\frac{\\Delta P \\cdot Q}{\\eta_{\\text{tot}}}"
+            ejemplo: "Cálculo de la potencia eléctrica requerida por la central hidráulica de frenos y orientación (yaw) de un aerogenerador."
+            bloque_estudio: "Pomodoro 50/10 • Curvas de bombas, cavitación y preparación de aire FRL"
+          - numero: 3
+            titulo: "Actuadores Lineales (Cilindros) y Motores Hidráulicos/Neumáticos"
+            objetivo: "Determinar fuerzas efectivas de extensión y retracción, caudales requeridos y par torsional en actuadores."
+            concepto_clave_latex: "F_{\\text{av}} = P \\frac{\\pi D^2}{4}\\eta_m \\quad ; \\quad F_{\\text{ret}} = P \\frac{\\pi(D^2 - d^2)}{4}\\eta_m \\quad ; \\quad \\tau = \\frac{\\Delta P \\cdot V_d}{2\\pi}"
+            ejemplo: "Dimensionamiento del diámetro de émbolo del cilindro hidráulico para el sistema de pitch de palas eólicas."
+            bloque_estudio: "Práctica 45 min • Selección comercial de cilindros y verificación de pandeo"
+          - numero: 4
+            titulo: "Válvulas de Control (ISO 1219) y Circuitos Electro-Hidráulicos"
+            objetivo: "Diseñar esquemas con válvulas direccionales, limitadoras de presión, antirretorno y reguladoras de caudal."
+            concepto_clave_latex: "Q = C_d A_o \\sqrt{\\frac{2\\,\\Delta P}{\\rho}}"
+            ejemplo: "Diseño del circuito electro-hidráulico con válvula de contrabalance para seguidores solares (solar trackers) de gran escala."
+            bloque_estudio: "Pomodoro 50/10 • Simbología ISO 1219 y secuencias A+ B+ A- B-"
       - codigo: "01021804"
         nombre: "General English III"
         creditos: 2
@@ -251,11 +503,29 @@ malla_curricular:
         color: "#8E8E93"
         temas:
           - numero: 1
-            titulo: "Passive Voice in Technical Manuals & Reports"
-            objetivo: "Redactar procedimientos de laboratorio y protocolos de mantenimiento usando voz pasiva en inglés."
-            concepto_clave_latex: "\\text{Efficiency}(\\%) = \\left(\\frac{P_{\\text{out}}}{P_{\\text{in}}}\\right) \\times 100"
-            ejemplo: "Interpretación de manuales de operación de inversores solares en inglés."
-            bloque_estudio: "Bloque 25 min • Traducción de protocolos de prueba"
+            titulo: "Engineering Progress & Achievements (Present Perfect)"
+            objetivo: "Reportar avances de implementación, resultados acumulados y experiencias técnicas empleando el Present Perfect (MCER B1.1)."
+            concepto_clave_latex: "\\text{Completion}(\\%) = \\frac{\\text{Installed kW}}{\\text{Planned kW}} \\times 100\\%"
+            ejemplo: "Informe de progreso de obra (The engineering team has commissioned twelve string inverters since Monday)."
+            bloque_estudio: "Bloque 25 min • Contraste Present Perfect vs. Past Simple"
+          - numero: 2
+            titulo: "Passive Voice in Technical Manuals & Commissioning Protocols"
+            objetivo: "Redactar procedimientos de laboratorio y manuales de mantenimiento enfatizando el proceso mediante la voz pasiva."
+            concepto_clave_latex: "\\text{Efficiency}(\\%) = \\left(\\frac{P_{\\text{out}}}{P_{\\text{in}}}\\right) \\times 100\\%"
+            ejemplo: "Interpretación y redacción de protocolos de puesta en marcha de inversores solares en inglés técnico."
+            bloque_estudio: "Bloque 25 min • Transformación activa-pasiva en manuales O&M"
+          - numero: 3
+            titulo: "System Contingencies & Cause-Effect (Conditionals 0, 1 & 2)"
+            objetivo: "Formular leyes físicas, lógicas de protección y escenarios hipotéticos de operación usando oraciones condicionales."
+            concepto_clave_latex: "f < 59.5\\text{ Hz} \\implies \\text{Under-Frequency Relay Trips}"
+            ejemplo: "Descripción de protecciones eléctricas (If grid voltage exceeds the upper threshold, the inverter disconnects automatically)."
+            bloque_estudio: "Bloque 30 min • Condicionales aplicados a diagnósticos de planta"
+          - numero: 4
+            titulo: "Component Specifications & Definitions (Relative Clauses)"
+            objetivo: "Definir instrumentos, sensores y arquitecturas energéticas con precisión formal mediante cláusulas relativas."
+            concepto_clave_latex: "G_{\\text{POA}} = G_b \\cos\\theta_i + G_d\\left(\\frac{1+\\cos\\beta}{2}\\right) + \\rho G_h\\left(\\frac{1-\\cos\\beta}{2}\\right)"
+            ejemplo: "Definición técnica formal (A pyranometer is a sensor which measures broadband solar irradiance on a planar surface)."
+            bloque_estudio: "Bloque 25 min • Redacción de glosarios de instrumentación en inglés"
 
   - cuatrimestre: 4
     creditos_totales: 15
@@ -268,11 +538,29 @@ malla_curricular:
         color: "#5E5CE6"
         temas:
           - numero: 1
-            titulo: "Sistemas Matriciales, Transformaciones y Valores Propios"
-            objetivo: "Resolver sistemas de ecuaciones lineales de gran escala y calcular autovalores de estabilidad."
-            concepto_clave_latex: "A\\vec{x} = \\vec{b} \\quad ; \\quad \\det(A - \\lambda I) = 0"
-            ejemplo: "Formulación de la matriz de admitancia nodal en una red eléctrica de 4 nodos."
-            bloque_estudio: "Pomodoro 50/10 • Eliminación Gaussiana y autovalores"
+            titulo: "Sistemas de Ecuaciones Lineales, Matrices y Gauss-Jordan"
+            objetivo: "Resolver sistemas lineales de múltiples variables mediante reducción escalonada, álgebra matricial y matriz inversa."
+            concepto_clave_latex: "A\\vec{x} = \\vec{b} \\quad ; \\quad A A^{-1} = I \\quad ; \\quad \\mathbf{Y}_{\\text{bus}}\\mathbf{V} = \\mathbf{I}"
+            ejemplo: "Formulación y solución del sistema matricial de tensiones nodales en una red eléctrica de distribución de 4 barras."
+            bloque_estudio: "Pomodoro 50/10 • Eliminación Gauss-Jordan y factorización LU"
+          - numero: 2
+            titulo: "Determinantes, Propiedades e Invertibilidad de Sistemas"
+            objetivo: "Calcular determinantes por cofactores y operaciones de fila para analizar unicidad de soluciones y matrices Jacobianas."
+            concepto_clave_latex: "\\det(A) = \\sum_{j=1}^{n}(-1)^{1+j} a_{1j} M_{1j} \\quad ; \\quad \\det(A) \\neq 0 \\iff A \\text{ es invertible}"
+            ejemplo: "Verificación de invertibilidad de la matriz Jacobiana durante una iteración de flujo de potencia."
+            bloque_estudio: "Práctica 40 min • Cofactores, regla de Cramer y matriz adjunta"
+          - numero: 3
+            titulo: "Espacios Vectoriales, Bases, Ortogonalidad y Mínimos Cuadrados"
+            objetivo: "Determinar independencia lineal, dimensión, bases ortonormales (Gram-Schmidt) y proyecciones por mínimos cuadrados."
+            concepto_clave_latex: "\\vec{u}\\cdot\\vec{v} = \\|\\vec{u}\\|\\|\\vec{v}\\|\\cos\\theta \\quad ; \\quad \\hat{x} = (A^T A)^{-1}A^T\\vec{b}"
+            ejemplo: "Estimación matricial por mínimos cuadrados de los coeficientes de pérdida térmica de una edificación a partir de mediciones."
+            bloque_estudio: "Pomodoro 50/10 • Independencia lineal y ajuste por mínimos cuadrados"
+          - numero: 4
+            titulo: "Transformaciones Lineales, Valores Propios y Diagonalización"
+            objetivo: "Calcular autovalores y autovectores del polinomio característico para desacoplar sistemas dinámicos y analizar estabilidad."
+            concepto_clave_latex: "A\\vec{v} = \\lambda\\vec{v} \\quad ; \\quad \\det(A - \\lambda I) = 0 \\quad ; \\quad A = P D P^{-1}"
+            ejemplo: "Evaluación de modos oscilatorios y estabilidad dinámica de un sistema energético linealizado mediante el espectro de autovalores."
+            bloque_estudio: "Pomodoro 50/10 • Polinomio característico, autovectores y diagonalización"
       - codigo: "06011837"
         nombre: "Conversión de Energía"
         creditos: 3
@@ -281,11 +569,29 @@ malla_curricular:
         color: "#FF9F0A"
         temas:
           - numero: 1
-            titulo: "Principios Electromecánicos y Termoeléctricos de Conversión"
-            objetivo: "Modelar el acoplamiento entre energía térmica, mecánica, química y eléctrica."
-            concepto_clave_latex: "dW_{\\text{mec}} = dW_{\\text{campo}} + dW_{\\text{eléc}} \\quad ; \\quad \\tau = \\frac{\\partial W'(\\theta, i)}{\\partial \\theta}"
-            ejemplo: "Cálculo del par electromagnético desarrollado en un transductor rotativo."
-            bloque_estudio: "Pomodoro 50/10 • Balance de coenergía magnética"
+            titulo: "Rutas de Transformación Energética y Rendimiento Exergético"
+            objetivo: "Evaluar cadenas de conversión termo-mecánica, electromecánica y electroquímica bajo primera y segunda ley."
+            concepto_clave_latex: "\\eta_I = \\frac{\\dot{E}_{\\text{útil}}}{\\dot{E}_{\\text{entrada}}} \\quad ; \\quad \\eta_{II} = 1 - \\frac{\\dot{E}_{\\text{destruida}}}{\\dot{\\Psi}_{\\text{entrada}}}"
+            ejemplo: "Comparación de eficiencia de primera y segunda ley entre un motor de combustión, una turbina y una celda de combustible."
+            bloque_estudio: "Pomodoro 45/10 • Matriz de acoplamiento entre dominios energéticos"
+          - numero: 2
+            titulo: "Circuitos Magnéticos, Curva B-H y Pérdidas en Núcleos Ferromagnéticos"
+            objetivo: "Resolver circuitos magnéticos con entrehierro mediante reluctancias y cuantificar pérdidas por histéresis y Foucault."
+            concepto_clave_latex: "\\mathcal{F} = N I = \\Phi \\mathcal{R} \\quad ; \\quad \\mathcal{R} = \\frac{l}{\\mu_r \\mu_0 A} \\quad ; \\quad P_{\\text{Fe}} = k_h f B_{\\max}^n + k_e f^2 B_{\\max}^2"
+            ejemplo: "Cálculo de los amperios-vuelta requeridos para producir un flujo magnético de diseño en el entrehierro de un inductor de potencia."
+            bloque_estudio: "Pomodoro 50/10 • Ley de Hopkinson y núcleos con entrehierro"
+          - numero: 3
+            titulo: "Principios de Conversión Electromecánica: Energía y Coenergía"
+            objetivo: "Modelar fuerzas traslacionales y pares electromagnéticos en transductores y máquinas a partir de la coenergía magnética."
+            concepto_clave_latex: "dW_{\\text{eléc}} = dW_{\\text{campo}} + dW_{\\text{mec}} \\quad ; \\quad \\tau_e = \\frac{\\partial W'(\\theta, i)}{\\partial \\theta}"
+            ejemplo: "Cálculo del par electromagnético desarrollado en función del ángulo rotor en un actuador de reluctancia variable."
+            bloque_estudio: "Pomodoro 50/10 • Balance diferencial de energía y coenergía magnética"
+          - numero: 4
+            titulo: "Conversión Directa: Termoeléctrica (Seebeck), Fotovoltaica y Química"
+            objetivo: "Analizar mecanismos de conversión directa sin partes móviles basados en efectos termoeléctricos, fotoeléctricos y Gibbs."
+            concepto_clave_latex: "V_{\\text{oc}} = \\alpha_{AB}(T_H - T_C) \\quad ; \\quad ZT = \\frac{\\alpha^2 \\sigma}{\\kappa}T \\quad ; \\quad W_{\\text{eléc,máx}} = -\\Delta G"
+            ejemplo: "Estimación de la potencia recuperada con módulos termoeléctricos (TEG) instalados sobre un ducto de gases de escape."
+            bloque_estudio: "Práctica 45 min • Efecto Seebeck-Peltier y límite de energía libre de Gibbs"
       - codigo: "03041821"
         nombre: "Electricidad y Magnetismo"
         creditos: 4
@@ -294,11 +600,35 @@ malla_curricular:
         color: "#30D158"
         temas:
           - numero: 1
-            titulo: "Ecuaciones de Maxwell, Ley de Gauss y Ley de Faraday"
-            objetivo: "Analizar campos electrostáticos, magnetostáticos y la inducción electromagnética."
-            concepto_clave_latex: "\\oint_S \\vec{E} \\cdot d\\vec{A} = \\frac{q_{\\text{enc}}}{\\varepsilon_0} \\quad ; \\quad \\mathcal{E} = -N\\frac{d\\Phi_B}{dt}"
-            ejemplo: "Cálculo de la fuerza electromotriz inducida en una espira que rota dentro de un campo magnético uniforme."
-            bloque_estudio: "Pomodoro 50/10 • Integrales de flujo eléctrico y magnético"
+            titulo: "Carga Eléctrica, Campo Electrostático, Coulomb y Ley de Gauss"
+            objetivo: "Determinar campos eléctricos producidos por distribuciones discretas y continuas de carga empleando integración y simetría."
+            concepto_clave_latex: "\\vec{E} = \\frac{1}{4\\pi\\varepsilon_0}\\int \\frac{dq}{r^2}\\hat{r} \\quad ; \\quad \\oint_S \\vec{E} \\cdot d\\vec{A} = \\frac{q_{\\text{enc}}}{\\varepsilon_0}"
+            ejemplo: "Cálculo del gradiente de campo eléctrico en la superficie de un conductor cilíndrico de transmisión para prevenir efecto corona."
+            bloque_estudio: "Pomodoro 50/10 • Superficies gaussianas esféricas, cilíndricas y planas"
+          - numero: 2
+            titulo: "Potencial Eléctrico, Capacitancia, Dieléctricos y Energía Electrostática"
+            objetivo: "Calcular diferencias de potencial, capacitancia equivalente y densidad de energía almacenada en medios dieléctricos."
+            concepto_clave_latex: "V_B - V_A = -\\int_A^B \\vec{E}\\cdot d\\vec{l} \\quad ; \\quad C = \\kappa\\varepsilon_0\\frac{A}{d} \\quad ; \\quad u_E = \\frac{1}{2}\\varepsilon E^2"
+            ejemplo: "Dimensionamiento dieléctrico y energía almacenada en bancos de supercapacitores para soporte transitorio de tensión."
+            bloque_estudio: "Pomodoro 50/10 • Potencial continuo y condensadores con dieléctrico"
+          - numero: 3
+            titulo: "Densidad de Corriente, Ley de Ohm Microscópica y Efecto Térmico"
+            objetivo: "Relacionar campo eléctrico, velocidad de deriva, conductividad y dependencia térmica de la resistividad en conductores."
+            concepto_clave_latex: "\\vec{J} = \\sigma\\vec{E} \\quad ; \\quad R = \\rho\\frac{L}{A} \\quad ; \\quad \\rho(T) = \\rho_0[1 + \\alpha(T - T_0)]"
+            ejemplo: "Cálculo del aumento de resistencia óhmica en un conductor de aluminio ACSR operando a 75 °C bajo alta radiación solar."
+            bloque_estudio: "Práctica 40 min • Conducción microscópica y variación térmica de R"
+          - numero: 4
+            titulo: "Campo Magnético, Fuerza de Lorentz, Biot-Savart y Ley de Ampère"
+            objetivo: "Analizar fuerzas magnéticas sobre cargas y conductores, y calcular campos generados por corrientes estacionarias."
+            concepto_clave_latex: "\\vec{F}_B = q\\vec{v}\\times\\vec{B} + I\\vec{L}\\times\\vec{B} \\quad ; \\quad \\oint_C \\vec{B}\\cdot d\\vec{l} = \\mu_0 I_{\\text{enc}}"
+            ejemplo: "Cálculo de esfuerzos electrodinámicos entre barras colectoras paralelas de una subestación ante corrientes de falla."
+            bloque_estudio: "Pomodoro 50/10 • Biot-Savart en espiras y Ley de Ampère en solenoides"
+          - numero: 5
+            titulo: "Inducción de Faraday-Lenz, Inductancia y Ecuaciones de Maxwell"
+            objetivo: "Cuantificar fuerzas electromotrices inducidas, autoinductancia, energía magnética y la corriente de desplazamiento de Maxwell."
+            concepto_clave_latex: "\\mathcal{E} = -N\\frac{d\\Phi_B}{dt} \\quad ; \\quad u_B = \\frac{B^2}{2\\mu_0} \\quad ; \\quad \\oint_C \\vec{B}\\cdot d\\vec{l} = \\mu_0 I + \\mu_0\\varepsilon_0\\frac{d\\Phi_E}{dt}"
+            ejemplo: "Deducción de la fem sinusoidal inducida en el estator de un generador síncrono a partir de un campo magnético rotatorio."
+            bloque_estudio: "Pomodoro 50/10 • Ley de Faraday-Lenz y síntesis de Maxwell"
       - codigo: "01021805"
         nombre: "General English IV"
         creditos: 2
@@ -307,11 +637,29 @@ malla_curricular:
         color: "#8E8E93"
         temas:
           - numero: 1
-            titulo: "Academic Presentations & Abstract Writing"
-            objetivo: "Exponer resultados de proyectos de ingeniería mediante vocabulario académico formal."
-            concepto_clave_latex: "\\text{ROI} = \\frac{\\text{Net Benefit}}{\\text{Total Cost}} \\times 100"
-            ejemplo: "Presentación oral de 5 minutos sobre viabilidad de una micro-red solar."
-            bloque_estudio: "Bloque 30 min • Práctica de pronunciación y estructura de pitch"
+            titulo: "Synthesizing Energy Literature (Reported Speech & Citations)"
+            objetivo: "Parafrasear hallazgos científicos, normativas e informes internacionales empleando Reported Speech (MCER B1.2)."
+            concepto_clave_latex: "\\text{CF}(\\%) = \\frac{E_{\\text{annual}}}{P_{\\text{rated}} \\cdot 8760\\text{ h}} \\times 100\\%"
+            ejemplo: "Síntesis bibliográfica en inglés de reportes anuales de IRENA e IEA sobre factores de planta renovables."
+            bloque_estudio: "Bloque 25 min • Parafraseo académico y verbos de reporte"
+          - numero: 2
+            titulo: "Writing Structured Abstracts for Engineering Papers"
+            objetivo: "Redactar resúmenes científicos (Background, Methods, Results, Conclusions) con cohesión y estilo académico formal."
+            concepto_clave_latex: "e_{\\text{rel}}(\\%) = \\left|\\frac{y_{\\text{sim}} - y_{\\text{exp}}}{y_{\\text{exp}}}\\right| \\times 100\\%"
+            ejemplo: "Escritura de un Abstract de 180 palabras para presentar un estudio de micro-redes solares en un congreso estudiantil."
+            bloque_estudio: "Bloque 30 min • Redacción de Abstract de 5 movimientos retóricos"
+          - numero: 3
+            titulo: "Interpreting Load Curves, Sensitivity Graphs & ROI Metrics"
+            objetivo: "Exponer tendencias cuantitativas, curvas de demanda y métricas de viabilidad técnica-económica en inglés."
+            concepto_clave_latex: "\\text{ROI} = \\frac{\\text{Net Benefit}}{\\text{Total Cost}} \\times 100\\%"
+            ejemplo: "Descripción oral y escrita de curvas de carga horaria (duck curve) y análisis de retorno de inversión."
+            bloque_estudio: "Bloque 25 min • Vocabulario de tendencias y lectura de gráficas"
+          - numero: 4
+            titulo: "Academic Presentations, Technical Pitch & Q&A Defense"
+            objetivo: "Sustentar proyectos de ingeniería en inglés con fluidez argumentativa y manejo solvente de preguntas técnicas."
+            concepto_clave_latex: "\\text{Payback} = \\frac{\\text{CAPEX}}{\\text{Annual Net Savings}}"
+            ejemplo: "Presentación oral de 5 minutos defendiendo la factibilidad de una micro-red híbrida solar-almacenamiento."
+            bloque_estudio: "Bloque 30 min • Práctica de pronunciación, estructura de pitch y Q&A"
       - codigo: "03021817"
         nombre: "Termodinámica"
         creditos: 3
@@ -320,11 +668,35 @@ malla_curricular:
         color: "#FF9F0A"
         temas:
           - numero: 1
-            titulo: "Primera y Segunda Ley de la Termodinámica y Ciclos de Potencia"
-            objetivo: "Evaluar balances de energía y entropía en volúmenes de control (turbinas, compresores, ciclos Rankine y Brayton)."
-            concepto_clave_latex: "\\dot{Q}_{vc} - \\dot{W}_{vc} = \\sum \\dot{m}_s\\left(h_s + \\frac{v_s^2}{2} + gz_s\\right) - \\sum \\dot{m}_e\\left(h_e + \\frac{v_e^2}{2} + gz_e\\right) \\quad ; \\quad \\eta_{\\text{Carnot}} = 1 - \\frac{T_L}{T_H}"
-            ejemplo: "Determinación de la potencia neta y eficiencia térmica de un ciclo Rankine con sobrecalentamiento."
-            bloque_estudio: "Pomodoro 50/10 • Tablas de vapor y diagramas T-s"
+            titulo: "Conceptos Básicos y Propiedades de las Sustancias Puras"
+            objetivo: "Identificar estados de equilibrio, fases líquido-vapor, título de calidad y propiedades en tablas termodinámicas y gases."
+            concepto_clave_latex: "h = h_f + x\\,h_{fg} \\quad ; \\quad v = v_f + x(v_g - v_f) \\quad ; \\quad P v = Z R T"
+            ejemplo: "Interpolación en tablas de vapor sobrecalentado y mezcla saturada para caracterizar el fluido de trabajo en una caldera."
+            bloque_estudio: "Pomodoro 50/10 • Manejo de tablas de agua/R134a y diagramas P-v / T-v"
+          - numero: 2
+            titulo: "Primera Ley de la Termodinámica en Sistemas Cerrados"
+            objetivo: "Evaluar trabajo de frontera móvil, transferencia de calor y variaciones de energía interna y entalpía en masa fija."
+            concepto_clave_latex: "Q - W = \\Delta U + \\Delta E_c + \\Delta E_p \\quad ; \\quad W_b = \\int_1^2 P\\,dV \\quad ; \\quad \\Delta u = c_v \\Delta T"
+            ejemplo: "Cálculo del trabajo de compresión politrópica y transferencia de calor en un conjunto cilindro-émbolo."
+            bloque_estudio: "Pomodoro 50/10 • Balances de energía en sistemas cerrados y calores específicos"
+          - numero: 3
+            titulo: "Primera Ley en Volúmenes de Control (Flujo Estacionario)"
+            objetivo: "Aplicar conservación de masa y energía en turbinas, compresores, bombas, toberas e intercambiadores de calor."
+            concepto_clave_latex: "\\dot{Q}_{vc} - \\dot{W}_{vc} = \\sum \\dot{m}_s\\left(h_s + \\frac{v_s^2}{2} + gz_s\\right) - \\sum \\dot{m}_e\\left(h_e + \\frac{v_e^2}{2} + gz_e\\right)"
+            ejemplo: "Determinación de la potencia generada por una turbina de vapor adiabática y caudal de agua de enfriamiento en el condensador."
+            bloque_estudio: "Pomodoro 50/10 • Dispositivos de flujo estacionario (turbinas y compresores)"
+          - numero: 4
+            titulo: "Segunda Ley de la Termodinámica, Entropía y Eficiencia Isentrópica"
+            objetivo: "Analizar máquinas térmicas, límite de Carnot, balance de generación de entropía y eficiencias isentrópicas reales."
+            concepto_clave_latex: "\\eta_{\\text{Carnot}} = 1 - \\frac{T_L}{T_H} \\quad ; \\quad \\dot{S}_{\\text{gen}} = \\sum \\dot{m}_s s_s - \\sum \\dot{m}_e s_e - \\sum \\frac{\\dot{Q}_k}{T_k} \\ge 0 \\quad ; \\quad \\eta_{s,T} = \\frac{h_1 - h_{2a}}{h_1 - h_{2s}}"
+            ejemplo: "Cálculo de la eficiencia isentrópica e irreversibilidades en una turbina de gas y en una bomba de alimentación."
+            bloque_estudio: "Práctica Activa 50 min • Diagramas T-s, relaciones Tds y eficiencias isentrópicas"
+          - numero: 5
+            titulo: "Ciclos de Potencia (Rankine, Brayton, Otto/Diesel) y Refrigeración"
+            objetivo: "Modelar y optimizar ciclos termodinámicos de generación eléctrica a vapor y gas, así como sistemas de refrigeración."
+            concepto_clave_latex: "\\eta_{\\text{Rankine}} = \\frac{w_{\\text{turb}} - w_{\\text{bomba}}}{q_{\\text{entrada}}} \\quad ; \\quad \\eta_{\\text{Brayton}} = 1 - \\frac{1}{r_p^{(k-1)/k}} \\quad ; \\quad \\text{COP}_R = \\frac{q_L}{w_{\\text{comp}}}"
+            ejemplo: "Determinación de la potencia neta y eficiencia térmica de un ciclo Rankine con sobrecalentamiento y recalentamiento."
+            bloque_estudio: "Pomodoro 50/10 • Análisis completo de ciclo Rankine real y ciclo Brayton"
 
   - cuatrimestre: 5
     creditos_totales: 15
@@ -839,53 +1211,128 @@ malla_curricular:
 
 ### 1. Cálculo Diferencial (`02011807`)
 * **Categoría:** `MATEMATICAS` • **Créditos:** `4` • **Color UI:** `#5E5CE6`
-* **Tema 1: Límites y Continuidad de Funciones Reales**
-  * **Objetivo:** Analizar el comportamiento asintótico y la continuidad de funciones aplicadas a modelos físicos.
+* **Tema 1: Funciones Reales, Dominio, Composición e Inversas**
+  * **Objetivo:** Modelar relaciones entre variables físicas mediante funciones algebraicas, exponenciales, logarítmicas y trigonométricas.
+  * **Concepto Clave:**
+    $$(f \circ g)(x) = f(g(x)) \quad ; \quad f^{-1}(f(x)) = x \quad ; \quad P(T) = P_0 e^{\beta(T - T_{\text{STC}})}$$
+  * **Ejemplo:** Modelado de la variación de potencia de un módulo solar en función de la temperatura de celda.
+* **Tema 2: Límites Laterales, Indeterminaciones y Asíntotas**
+  * **Objetivo:** Analizar el comportamiento local y asintótico de funciones reales mediante definición formal y álgebra de límites.
   * **Concepto Clave:**
     $$\lim_{x \to a} f(x) = L \iff \forall \varepsilon > 0, \exists \delta > 0 : 0 < |x - a| < \delta \implies |f(x) - L| < \varepsilon$$
-  * **Ejemplo:** Determinación de la continuidad en la curva de potencia de arranque de un generador.
-* **Tema 2: Derivada, Regla de la Cadena y Optimización**
-  * **Objetivo:** Determinar razones de cambio instantáneas y puntos críticos de máxima eficiencia.
+  * **Ejemplo:** Determinación del régimen estacionario asintótico de enfriamiento de un transformador cuando el tiempo tiende a infinito.
+* **Tema 3: Continuidad Puntual y Teorema del Valor Intermedio**
+  * **Objetivo:** Evaluar la continuidad en puntos e intervalos cerrados para garantizar existencia de raíces en modelos físicos.
   * **Concepto Clave:**
-    $$\frac{d}{dx}[f(g(x))] = f'(g(x)) \cdot g'(x) \quad ; \quad f'(x_c) = 0$$
-  * **Ejemplo:** Cálculo del ángulo de inclinación óptimo para maximizar la radiación captada por un colector solar.
+    $$\lim_{x \to c^-} f(x) = \lim_{x \to c^+} f(x) = f(c) \quad ; \quad f(a) < N < f(b) \implies \exists c \in (a,b) : f(c) = N$$
+  * **Ejemplo:** Análisis de continuidad por tramos en la curva de potencia de un aerogenerador entre velocidad de arranque y nominal.
+* **Tema 4: La Derivada, Regla de la Cadena y Derivación Implícita**
+  * **Objetivo:** Calcular tasas de cambio instantáneas aplicando reglas de derivación, regla de la cadena y derivadas de orden superior.
+  * **Concepto Clave:**
+    $$f'(x) = \lim_{h \to 0}\frac{f(x+h)-f(x)}{h} \quad ; \quad \frac{d}{dx}[f(g(x))] = f'(g(x)) \cdot g'(x)$$
+  * **Ejemplo:** Obtención de la potencia instantánea P(t) = dE/dt entregada por un sistema de almacenamiento a partir de su energía acumulada.
+* **Tema 5: Razones de Cambio, Regla de L'Hôpital y Optimización**
+  * **Objetivo:** Aplicar criterios de primera y segunda derivada para determinar extremos absolutos y optimizar diseños de ingeniería.
+  * **Concepto Clave:**
+    $$f'(x_c) = 0 \; \land \; f''(x_c) < 0 \implies x_c \text{ es máximo} \quad ; \quad \lim_{x \to a}\frac{f(x)}{g(x)} = \lim_{x \to a}\frac{f'(x)}{g'(x)}$$
+  * **Ejemplo:** Cálculo del ángulo de inclinación óptimo para maximizar la irradiancia solar anual captada por un colector.
 
 ### 2. Fundamentos de Programación e IA (`03011813`)
 * **Categoría:** `PROGRAMACION_IA` • **Créditos:** `4` • **Color UI:** `#0A84FF`
-* **Tema 1: Algoritmia, Complejidad y Estructuras de Control**
-  * **Objetivo:** Diseñar algoritmos eficientes para el procesamiento de datos energéticos y series temporales.
+* **Tema 1: Pensamiento Computacional, Algoritmos y Tipos de Datos**
+  * **Objetivo:** Representar soluciones estructuradas mediante pseudocódigo, diagramas de flujo, variables y expresiones lógicas.
+  * **Concepto Clave:**
+    $$y = (A \land B) \lor (\neg C) \quad ; \quad E_{\text{kWh}} = \frac{P_{\text{W}} \cdot \Delta t_{\text{h}}}{1000}$$
+  * **Ejemplo:** Algoritmo secuencial en Python para convertir lecturas crudas de potencia y tiempo a consumo facturable en kWh.
+* **Tema 2: Estructuras de Control Condicionales, Ciclos y Complejidad**
+  * **Objetivo:** Diseñar bloques selectivos e iterativos eficientes evaluando su complejidad temporal asintótica.
   * **Concepto Clave:**
     $$T(n) = \mathcal{O}(n \log n) \quad ; \quad \bar{x} = \frac{1}{N}\sum_{i=1}^{N} x_i$$
-  * **Ejemplo:** Script en Python para limpiar y promediar lecturas horarias de irradiancia solar.
-* **Tema 2: Introducción a Regresión y Modelos Predictivos**
-  * **Objetivo:** Ajustar modelos lineales básicos para estimar demanda energética.
+  * **Ejemplo:** Script iterativo en Python para filtrar registros nocturnos nulos y promediar series horarias de irradiancia solar.
+* **Tema 3: Modularidad, Funciones, Vectores y Matrices Numéricas**
+  * **Objetivo:** Construir subprogramas reutilizables y procesar arreglos unidimensionales y bidimensionales de mediciones.
+  * **Concepto Clave:**
+    $$E_{\text{total}} = \sum_{i=1}^{m}\sum_{j=1}^{n} P_{ij}\,\Delta t \quad ; \quad P_k = V_k \cdot I_k$$
+  * **Ejemplo:** Procesamiento matricial con NumPy del despacho horario de 5 plantas solares durante los 30 días del mes.
+* **Tema 4: Preprocesamiento y Análisis Exploratorio de Datos Energéticos**
+  * **Objetivo:** Limpiar series de tiempo, tratar valores atípicos y escalar variables para algoritmos de inteligencia artificial.
+  * **Concepto Clave:**
+    $$x_{\text{norm}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}} \quad ; \quad z = \frac{x - \mu}{\sigma}$$
+  * **Ejemplo:** Normalización Min-Max y estandarización Z-score de temperatura, humedad y velocidad de viento de una estación meteorológica.
+* **Tema 5: Introducción a Machine Learning y Regresión Lineal**
+  * **Objetivo:** Entrenar y evaluar modelos supervisados básicos de regresión para pronosticar demanda energética.
   * **Concepto Clave:**
     $$\hat{y} = w_1 x + w_0 \quad ; \quad \text{MSE} = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2$$
-  * **Ejemplo:** Predicción del consumo eléctrico diario en función de la temperatura ambiente.
+  * **Ejemplo:** Predicción del consumo eléctrico diario de un campus universitario en función de la temperatura ambiente.
 
 ### 3. General English I (`01021802`)
 * **Categoría:** `FORMACION_GENERAL` • **Créditos:** `2` • **Color UI:** `#8E8E93`
-* **Tema 1: Technical Vocabulary & Present Structures**
-  * **Objetivo:** Comprender fichas técnicas de equipos energéticos y magnitudes del Sistema Internacional en inglés.
+* **Tema 1: Academic Profiles & Introductions (Verb To Be & Pronouns)**
+  * **Objetivo:** Presentar información personal, institucional y perfiles de ingeniería empleando el verbo to be y posesivos (MCER A1).
   * **Concepto Clave:**
-    $$P_{\text{rated}} = V_{\text{nom}} \cdot I_{\text{nom}}$$
-  * **Ejemplo:** Lectura e interpretación de un datasheet de módulos fotovoltaicos en inglés técnico.
+    $$\text{Subject} + \text{am / is / are} + \text{Complement}$$
+  * **Ejemplo:** Presentación oral y escrita como estudiante de Energy Engineering en un encuentro internacional de semilleros.
+* **Tema 2: Technical Vocabulary, SI Units & Datasheets**
+  * **Objetivo:** Comprender fichas técnicas de equipos energéticos, cifras y magnitudes del Sistema Internacional en inglés.
+  * **Concepto Clave:**
+    $$P_{\text{rated}} = V_{\text{nom}} \cdot I_{\text{nom}} \quad ; \quad 1\text{ MW} = 10^6\text{ W}$$
+  * **Ejemplo:** Lectura e interpretación de parámetros nominales (Rated Power, Open-Circuit Voltage) en un datasheet fotovoltaico.
+* **Tema 3: Engineering Routines & Facts (Present Simple)**
+  * **Objetivo:** Describir rutinas de operación, horarios de mantenimiento y leyes físicas permanentes con el Present Simple.
+  * **Concepto Clave:**
+    $$f_{\text{grid}} = 60\text{ Hz} \quad ; \quad T_{\text{cycle}} = \frac{1}{f_{\text{grid}}}$$
+  * **Ejemplo:** Redacción en inglés de la rutina diaria de inspección técnica de un cuarto de inversores solares.
+* **Tema 4: Live Plant Monitoring (Present Continuous & Prepositions)**
+  * **Objetivo:** Reportar acciones en progreso, ubicación de instrumentos y variaciones en tiempo real dentro del laboratorio.
+  * **Concepto Clave:**
+    $$\Delta P(t) = P_{\text{gen}}(t) - P_{\text{load}}(t)$$
+  * **Ejemplo:** Descripción en vivo del flujo de potencia en sala de control (The solar array is charging the battery bank now).
 
 ### 4. Introducción a la Ingeniería Energética (`04011822`)
 * **Categoría:** `INGENIERIA_ENERGIA` • **Créditos:** `2` • **Color UI:** `#FF9F0A`
-* **Tema 1: Matriz Energética, Unidades y Rendimiento Global**
-  * **Objetivo:** Comprender las cadenas de conversión de energía primaria a energía útil y su eficiencia.
+* **Tema 1: Formas de Energía, Sistemas de Unidades y Perfil Profesional**
+  * **Objetivo:** Diferenciar energía primaria, secundaria, final y útil dominando las equivalencias energéticas internacionales.
+  * **Concepto Clave:**
+    $$1\text{ kWh} = 3.6\text{ MJ} \quad ; \quad 1\text{ TEP} = 41.868\text{ GJ} = 11\,630\text{ kWh}$$
+  * **Ejemplo:** Conversión del consumo anual de combustible de una industria desde BTU y galones de diésel hacia MWh y TEP.
+* **Tema 2: Matriz Energética Mundial, Nacional (UPME) y del Caribe**
+  * **Objetivo:** Analizar la composición de la oferta y demanda energética colombiana y el potencial renovable de la región Caribe.
+  * **Concepto Clave:**
+    $$\text{Participación}_i(\%) = \frac{E_{\text{fuente},i}}{\sum_{k=1}^{n} E_{\text{fuente},k}} \times 100\%$$
+  * **Ejemplo:** Interpretación del Plan Energético Nacional (UPME) comparando generación hidráulica, térmica y solar en Colombia.
+* **Tema 3: Cadenas de Conversión, Diagramas de Sankey y Eficiencia Global**
+  * **Objetivo:** Cuantificar pérdidas por etapas en sistemas de transformación energética desde la fuente hasta el uso final.
   * **Concepto Clave:**
     $$\eta_{\text{global}} = \frac{E_{\text{útil}}}{E_{\text{primaria}}} = \prod_{i=1}^{n} \eta_i$$
-  * **Ejemplo:** Cálculo de la eficiencia combinada de una central térmica considerando caldera, turbina y generador.
+  * **Ejemplo:** Cálculo de la eficiencia combinada de una central termoeléctrica integrando caldera (88%), turbina (42%) y generador (97%).
+* **Tema 4: Sostenibilidad, ODS 7, Ley 1715 y Transición Energética**
+  * **Objetivo:** Comprender los retos ambientales, regulatorios y éticos de la descarbonización y el acceso universal a energía limpia.
+  * **Concepto Clave:**
+    $$E_{\text{CO}_2} = E_{\text{eléc}} \cdot \text{FE}_{\text{SIN}}$$
+  * **Ejemplo:** Estimación de emisiones de CO₂ evitadas anualmente al integrar autogeneración solar fotovoltaica en el campus universitario.
 
 ### 5. Procesos Lectores, Escriturales y Orales (`01011801`)
 * **Categoría:** `FORMACION_GENERAL` • **Créditos:** `2` • **Color UI:** `#8E8E93`
-* **Tema 1: Estructura de Informes Técnicos y Artículos Científicos**
-  * **Objetivo:** Redactar documentos de ingeniería con precisión argumentativa, citación IEEE y síntesis.
+* **Tema 1: Lectura Crítica, Inferencia y Superestructura Textual**
+  * **Objetivo:** Desarrollar comprensión literal, inferencial y crítica identificando tesis, argumentos y contraargumentos en textos académicos.
+  * **Concepto Clave:**
+    $$\text{Lectura Crítica} = \text{Literal} + \text{Inferencial} + \text{Valorativa}$$
+  * **Ejemplo:** Desglose argumentativo de un artículo científico sobre comunidades energéticas sostenibles en el Caribe colombiano.
+* **Tema 2: Escritura Académica: Coherencia, Cohesión y Precisión Léxica**
+  * **Objetivo:** Producir textos expositivos y argumentativos claros mediante planeación textual, conectores lógicos y revisión estilística.
   * **Concepto Clave:**
     $$\text{Índice de Legibilidad} = 206.835 - 1.015\left(\frac{\text{Palabras}}{\text{Oraciones}}\right)$$
-  * **Ejemplo:** Estructuración del resumen ejecutivo (Abstract) de un proyecto de transición energética.
+  * **Ejemplo:** Redacción y depuración de un ensayo argumentativo sobre eficiencia energética y sostenibilidad urbana.
+* **Tema 3: Informes Técnicos de Ingeniería y Normas de Citación (IEEE / APA)**
+  * **Objetivo:** Estructurar artículos e informes de laboratorio bajo el formato IMRyD aplicando referenciación bibliográfica rigurosa.
+  * **Concepto Clave:**
+    $$\text{IMRyD} : \text{Introducción} \longrightarrow \text{Métodos} \longrightarrow \text{Resultados} \longrightarrow \text{Discusión}$$
+  * **Ejemplo:** Estructuración del resumen ejecutivo (Abstract) y bibliografía IEEE para un proyecto de transición energética.
+* **Tema 4: Oralidad Académica, Argumentación y Defensa de Proyectos**
+  * **Objetivo:** Sustentar ideas técnicas en escenarios universitarios articulando expresión verbal, lenguaje corporal y síntesis visual.
+  * **Concepto Clave:**
+    $$t_{\text{pitch}} = t_{\text{problema}} + t_{\text{solución}} + t_{\text{evidencia}} + t_{\text{cierre}}$$
+  * **Ejemplo:** Sustentación oral estructurada de 5 minutos sobre una propuesta de ahorro energético institucional.
 
 ---
 
@@ -893,53 +1340,123 @@ malla_curricular:
 
 ### 6. Física Mecánica (`02021810`)
 * **Categoría:** `FISICA_QUIMICA` • **Créditos:** `4` • **Color UI:** `#30D158`
-* **Tema 1: Leyes de Newton y Dinámica con Rozamiento**
-  * **Objetivo:** Entender la segunda ley de Newton y su relación con las fuerzas de fricción estática y cinética.
+* **Tema 1: Análisis Dimensional, Vectores y Cinemática en 1D/2D**
+  * **Objetivo:** Describir vectorial y analíticamente el movimiento rectilíneo, parabólico y circular de partículas mediante cálculo.
   * **Concepto Clave:**
-    $$\sum \vec{F} = m \cdot \vec{a} \quad ; \quad f_k = \mu_k \cdot N$$
-  * **Ejemplo:** Un bloque sobre un plano inclinado experimenta una fuerza de rozamiento opuesta al deslizamiento proporcional a la normal.
-* **Tema 2: Trabajo, Energía Mecánica y Potencia**
-  * **Objetivo:** Aplicar el teorema del trabajo y la conservación de la energía en sistemas mecánicos.
+    $$\vec{v}(t) = \frac{d\vec{r}}{dt} \quad ; \quad \vec{a}(t) = \frac{d\vec{v}}{dt} \quad ; \quad a_c = \frac{v^2}{R} = \omega^2 R$$
+  * **Ejemplo:** Cálculo de la velocidad lineal y aceleración centrípeta en el extremo de una pala eólica de 50 m de radio.
+* **Tema 2: Leyes de Newton y Dinámica con Rozamiento**
+  * **Objetivo:** Aplicar las leyes del movimiento de Newton y diagramas de cuerpo libre con fuerzas de fricción estática y cinética.
   * **Concepto Clave:**
-    $$W = \int_{r_1}^{r_2} \vec{F} \cdot d\vec{r} = \Delta K \quad ; \quad P = \vec{F} \cdot \vec{v}$$
-  * **Ejemplo:** Cálculo de la potencia mecánica entregada por un eje rotatorio bajo par constante.
+    $$\sum \vec{F} = m \cdot \vec{a} \quad ; \quad f_s \le \mu_s N \quad ; \quad f_k = \mu_k N$$
+  * **Ejemplo:** Determinación de la aceleración y tensión de izaje de un bloque sobre un plano inclinado con rozamiento cinético.
+* **Tema 3: Trabajo, Energía Mecánica y Potencia**
+  * **Objetivo:** Aplicar el teorema del trabajo y la energía cinética, fuerzas conservativas y conservación de la energía mecánica.
+  * **Concepto Clave:**
+    $$W = \int_{r_1}^{r_2} \vec{F} \cdot d\vec{r} = \Delta K \quad ; \quad E_m = K + U_g + U_e \quad ; \quad P = \vec{F} \cdot \vec{v}$$
+  * **Ejemplo:** Cálculo de la conversión de energía potencial gravitacional a cinética en la descarga de una central hidroeléctrica.
+* **Tema 4: Sistemas de Partículas, Impulso, Momentum Lineal y Colisiones**
+  * **Objetivo:** Evaluar centro de masa, impulso mecánico y conservación del momentum lineal en choques elásticos e inelásticos.
+  * **Concepto Clave:**
+    $$\vec{p} = m\vec{v} \quad ; \quad \vec{J} = \int_{t_1}^{t_2} \vec{F}(t)\,dt = \Delta\vec{p} \quad ; \quad \sum \vec{p}_i = \sum \vec{p}_f$$
+  * **Ejemplo:** Determinación de la fuerza impulsiva transferida por un chorro de agua de alta velocidad sobre un álabe Pelton.
+* **Tema 5: Dinámica Rotacional, Momento de Inercia y Equilibrio Estático**
+  * **Objetivo:** Modelar el torque, momento de inercia (Steiner), energía cinética rotacional y equilibrio de cuerpos rígidos.
+  * **Concepto Clave:**
+    $$\sum \tau = I\alpha \quad ; \quad K_{\text{rot}} = \frac{1}{2}I\omega^2 \quad ; \quad \sum \vec{F} = \vec{0},\; \sum \vec{\tau} = \vec{0}$$
+  * **Ejemplo:** Cálculo de la energía almacenada en un volante de inercia (flywheel) y reacciones estáticas en estructuras soporte solares.
 
 ### 7. Fundamentos de la Electricidad I (`03041819`)
 * **Categoría:** `INGENIERIA_ENERGIA` • **Créditos:** `2` • **Color UI:** `#FF9F0A`
-* **Tema 1: Leyes de Ohm, Kirchhoff y Análisis de Nodos/Mallas**
-  * **Objetivo:** Resolver circuitos resistivos en corriente continua mediante conservación de carga y energía.
+* **Tema 1: Variables Eléctricas, Ley de Ohm, Asociaciones y Potencia DC**
+  * **Objetivo:** Cuantificar carga, corriente, tensión, resistencias serie/paralelo, divisores y balance de potencia en DC.
   * **Concepto Clave:**
-    $$V = I \cdot R \quad ; \quad \sum_{k=1}^{n} I_k = 0 \quad ; \quad \sum_{m=1}^{p} V_m = 0$$
-  * **Ejemplo:** Determinación de corrientes de rama y potencia disipada en resistencias de carga.
-* **Tema 2: Teoremas de Thévenin, Norton y Máxima Potencia**
-  * **Objetivo:** Simplificar redes lineales activas entre dos terminales a un circuito equivalente.
+    $$i(t) = \frac{dq}{dt} \quad ; \quad V = I \cdot R \quad ; \quad P = V \cdot I = I^2 R = \frac{V^2}{R}$$
+  * **Ejemplo:** Cálculo de caída de tensión, pérdidas Joule y eficiencia en el cableado DC entre un string fotovoltaico y su inversor.
+* **Tema 2: Leyes de Kirchhoff y Análisis Sistemático de Nodos y Mallas**
+  * **Objetivo:** Resolver circuitos resistivos lineales con fuentes independientes y dependientes mediante LCK y LVK.
+  * **Concepto Clave:**
+    $$\sum_{k=1}^{n} I_k = 0 \quad ; \quad \sum_{m=1}^{p} V_m = 0 \quad ; \quad \mathbf{G}\mathbf{v}_n = \mathbf{i}_s$$
+  * **Ejemplo:** Determinación de tensiones de nodo y flujos de corriente en una micro-red DC con generación solar, batería y carga.
+* **Tema 3: Linealidad, Superposición, Thévenin, Norton y Máxima Potencia**
+  * **Objetivo:** Simplificar redes activas entre dos terminales a circuitos equivalentes para optimizar la transferencia de potencia.
   * **Concepto Clave:**
     $$V_{th} = V_{oc} \quad ; \quad R_{th} = \frac{V_{oc}}{I_{sc}} \quad ; \quad P_{\max} = \frac{V_{th}^2}{4 R_{th}}$$
-  * **Ejemplo:** Acoplamiento de impedancia resistiva para extraer la máxima potencia de una celda solar.
+  * **Ejemplo:** Acoplamiento óptimo de carga resistiva para extraer la máxima potencia disponible de una fuente DC equivalente.
+* **Tema 4: Capacitores, Inductores y Transitorios de Primer Orden (RC y RL)**
+  * **Objetivo:** Analizar el almacenamiento de energía en campos eléctricos/magnéticos y la respuesta natural y forzada de circuitos RC y RL.
+  * **Concepto Clave:**
+    $$v_C(t) = V_\infty + [v_C(0) - V_\infty]e^{-t/\tau} \quad ; \quad \tau_{RC} = R_{th}C \quad ; \quad \tau_{RL} = \frac{L}{R_{th}}$$
+  * **Ejemplo:** Dimensionamiento de la resistencia de precarga del bus DC capacitivo de un convertidor para limitar picos de corriente.
 
 ### 8. General English II (`01021803`)
 * **Categoría:** `FORMACION_GENERAL` • **Créditos:** `2` • **Color UI:** `#8E8E93`
-* **Tema 1: Comparative Analysis & Process Descriptions**
-  * **Objetivo:** Describir procesos secuenciales y comparar tecnologías energéticas en inglés.
+* **Tema 1: Energy Milestones & Incident Logs (Past Simple & Continuous)**
+  * **Objetivo:** Narrar hitos científicos y redactar bitácoras de eventos operativos pasados combinando Past Simple y Past Continuous (MCER A2).
+  * **Concepto Clave:**
+    $$\Delta t_{\text{outage}} = t_{\text{restored}} - t_{\text{fault}}$$
+  * **Ejemplo:** Reporte breve de falla eléctrica (While the turbine was operating at full load, the grid sensor detected a voltage sag).
+* **Tema 2: Comparative Analysis of Power Technologies**
+  * **Objetivo:** Comparar rendimientos, costos y vida útil entre tecnologías energéticas mediante estructuras comparativas y superlativas.
   * **Concepto Clave:**
     $$\Delta \eta = \eta_{\text{new}} - \eta_{\text{baseline}}$$
-  * **Ejemplo:** Comparación escrita entre eficiencia de turbinas Pelton y Francis.
+  * **Ejemplo:** Comparación escrita en inglés entre turbinas hidráulicas Pelton, Francis y Kaplan según salto y eficiencia.
+* **Tema 3: Laboratory Safety & Engineering Quantities (Modals & Quantifiers)**
+  * **Objetivo:** Expresar obligaciones y recomendaciones de seguridad eléctrica usando verbos modales (must, should, have to).
+  * **Concepto Clave:**
+    $$V_{\text{safety}} \le 50\text{ V}_{\text{AC}}$$
+  * **Ejemplo:** Redacción de normas de seguridad PPE antes de energizar un banco de pruebas en el laboratorio.
+* **Tema 4: Energy Forecasts & Project Schedules (Future Forms)**
+  * **Objetivo:** Describir planes de ingeniería, cronogramas de montaje y proyecciones energéticas con going to y will.
+  * **Concepto Clave:**
+    $$E_{\text{proj}} = E_0 (1 + g)^n$$
+  * **Ejemplo:** Presentación corta en inglés sobre la proyección de expansión solar y eólica para la próxima década.
 
 ### 9. Probabilidad y Estadística (`03031818`)
 * **Categoría:** `MATEMATICAS` • **Créditos:** `3` • **Color UI:** `#5E5CE6`
-* **Tema 1: Distribuciones de Probabilidad (Weibull y Normal)**
-  * **Objetivo:** Modelar la variabilidad estocástica de recursos renovables como la velocidad del viento.
+* **Tema 1: Estadística Descriptiva, Tendencia Central y Dispersión**
+  * **Objetivo:** Resumir series experimentales mediante media, mediana, varianza muestral, cuantiles y coeficiente de variación.
   * **Concepto Clave:**
-    $$f(v) = \frac{k}{c}\left(\frac{v}{c}\right)^{k-1} \exp\left[-\left(\frac{v}{c}\right)^k\right]$$
-  * **Ejemplo:** Ajuste de la distribución de Weibull para estimar la frecuencia de vientos útiles en la región Caribe.
+    $$\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i \quad ; \quad s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2 \quad ; \quad \text{CV} = \frac{s}{\bar{x}}$$
+  * **Ejemplo:** Caracterización estadística de la variabilidad horaria y estacional de radiación solar global en Santa Marta.
+* **Tema 2: Axiomas de Probabilidad, Confiabilidad y Teorema de Bayes**
+  * **Objetivo:** Calcular probabilidades condicionales, confiabilidad de sistemas serie/paralelo y actualización bayesiana de riesgos.
+  * **Concepto Clave:**
+    $$P(A \mid B) = \frac{P(B \mid A)P(A)}{\sum_{j=1}^{k} P(B \mid A_j)P(A_j)} \quad ; \quad R_{\text{par}} = 1 - \prod_{i=1}^{n}(1 - R_i)$$
+  * **Ejemplo:** Evaluación de la disponibilidad probabilística de una planta con inversores redundantes en paralelo.
+* **Tema 3: Variables Aleatorias Discretas (Esperanza, Binomial y Poisson)**
+  * **Objetivo:** Modelar conteos de fallas y eventos discretos en ventanas de tiempo mediante distribuciones Binomial y de Poisson.
+  * **Concepto Clave:**
+    $$E[X] = \sum_{x} x\,p(x) \quad ; \quad P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}$$
+  * **Ejemplo:** Estimación de la probabilidad mensual de desconexiones por sobretensión atmosférica en un circuito de distribución.
+* **Tema 4: Distribuciones Continuas (Normal, Exponencial y Weibull) e Inferencia**
+  * **Objetivo:** Modelar recursos renovables continuos y tiempos de vida útil construyendo intervalos de confianza estadísticos.
+  * **Concepto Clave:**
+    $$f(v) = \frac{k}{c}\left(\frac{v}{c}\right)^{k-1} \exp\left[-\left(\frac{v}{c}\right)^k\right] \quad ; \quad \bar{x} \pm z_{\alpha/2}\frac{\sigma}{\sqrt{n}}$$
+  * **Ejemplo:** Ajuste de la distribución de Weibull para estimar el potencial energético del viento en la costa Caribe.
 
 ### 10. Química Aplicada (`02031812`)
 * **Categoría:** `FISICA_QUIMICA` • **Créditos:** `3` • **Color UI:** `#30D158`
-* **Tema 1: Termoquímica, Combustión y Electroquímica**
-  * **Objetivo:** Calcular entalpías de reacción, poder calorífico y potenciales de celda.
+* **Tema 1: Estructura Atómica, Enlace Químico y Materiales para Energía**
+  * **Objetivo:** Relacionar la configuración electrónica y los enlaces iónico, covalente y metálico con semiconductores y conductores.
+  * **Concepto Clave:**
+    $$E_{\text{fotón}} = h\nu = \frac{hc}{\lambda} \ge E_g$$
+  * **Ejemplo:** Análisis del enlace covalente en redes de silicio dopado (tipo n y p) y su banda prohibida de 1.12 eV en celdas solares.
+* **Tema 2: Estequiometría, Reactivo Límite y Balances de Combustión**
+  * **Objetivo:** Formular balances másicos y molares en reacciones químicas y procesos de combustión con aire teórico y en exceso.
+  * **Concepto Clave:**
+    $$\text{CH}_4 + 2(\text{O}_2 + 3.76\text{N}_2) \longrightarrow \text{CO}_2 + 2\text{H}_2\text{O} + 7.52\text{N}_2$$
+  * **Ejemplo:** Cálculo de la relación aire-combustible y masa de CO₂ emitida por cada metro cúbico de gas natural quemado.
+* **Tema 3: Gases Ideales y Reales, Disoluciones y Equilibrio Químico**
+  * **Objetivo:** Aplicar ecuaciones de estado de gases, mezclas de Dalton, concentración molar y principio de Le Chatelier.
+  * **Concepto Clave:**
+    $$P V = n R T \quad ; \quad P_i = y_i P_{\text{tot}} \quad ; \quad K_c = \frac{[\text{C}]^c[\text{D}]^d}{[\text{A}]^a[\text{B}]^b}$$
+  * **Ejemplo:** Determinación de la masa de hidrógeno comprimido almacenada en cilindros de alta presión y preparación de electrolitos KOH.
+* **Tema 4: Termoquímica (Ley de Hess), Poder Calorífico y Electroquímica**
+  * **Objetivo:** Calcular entalpías de reacción, poder calorífico superior/inferior y potenciales de celda mediante la ecuación de Nernst.
   * **Concepto Clave:**
     $$\Delta H^\circ_{\text{rxn}} = \sum \nu_p \Delta H^\circ_{f,p} - \sum \nu_r \Delta H^\circ_{f,r} \quad ; \quad E_{\text{celda}} = E^\circ - \frac{RT}{nF}\ln Q$$
-  * **Ejemplo:** Cálculo del poder calorífico inferior (PCI) del metano y potencial en una celda galvánica.
+  * **Ejemplo:** Cálculo del poder calorífico inferior (PCI) de mezclas biogás-metano y tensión reversible en baterías y celdas galvánicas.
 
 ---
 
@@ -947,43 +1464,123 @@ malla_curricular:
 
 ### 11. Cálculo Integral (`02011808`)
 * **Categoría:** `MATEMATICAS` • **Créditos:** `4` • **Color UI:** `#5E5CE6`
-* **Tema 1: Técnicas de Integración e Integral Definida**
-  * **Objetivo:** Resolver integrales por partes, sustitución trigonométrica y fracciones parciales para acumular magnitudes.
+* **Tema 1: Antiderivadas, Integral Indefinida y Método de Sustitución**
+  * **Objetivo:** Reconstruir funciones primitivas a partir de sus tasas de variación mediante reglas directas y cambio de variable.
   * **Concepto Clave:**
-    $$\int u \, dv = u \cdot v - \int v \, du \quad ; \quad E = \int_{t_1}^{t_2} P(t) \, dt$$
-  * **Ejemplo:** Integración de la curva de demanda de potencia diaria para obtener la energía consumida en $\text{MWh}$.
+    $$\int f(g(x))\,g'(x)\,dx = \int f(u)\,du = F(g(x)) + C$$
+  * **Ejemplo:** Determinación de la función de carga eléctrica q(t) a partir de una corriente transitoria exponencial i(t).
+* **Tema 2: Técnicas de Integración: Por Partes, Trigonométricas y Fracciones Parciales**
+  * **Objetivo:** Resolver integrales analíticas de productos trascendentes, radicales cuadráticos y funciones racionales.
+  * **Concepto Clave:**
+    $$\int u \, dv = u \cdot v - \int v \, du \quad ; \quad \frac{P(x)}{(x-a)(x-b)} = \frac{A}{x-a} + \frac{B}{x-b}$$
+  * **Ejemplo:** Integración analítica de una señal de potencia amortiguada P(t) = P₀·t·e^(-αt) durante una maniobra eléctrica.
+* **Tema 3: Integral Definida, Teorema Fundamental e Integración Numérica**
+  * **Objetivo:** Acumular magnitudes físicas aplicando el Teorema Fundamental del Cálculo y reglas numéricas de Trapecio y Simpson.
+  * **Concepto Clave:**
+    $$E = \int_{t_1}^{t_2} P(t) \, dt = F(t_2) - F(t_1) \quad ; \quad P_{\text{prom}} = \frac{1}{T}\int_0^T P(t)\,dt$$
+  * **Ejemplo:** Integración de la curva diaria de demanda eléctrica (y regla de Simpson sobre lecturas horarias) para obtener MWh consumidos.
+* **Tema 4: Aplicaciones Geométricas y Físicas: Áreas, Volúmenes y Trabajo de Bombeo**
+  * **Objetivo:** Calcular áreas entre curvas, volúmenes de revolución, centros de masa y trabajo mecánico de vaciado de tanques.
+  * **Concepto Clave:**
+    $$V = \pi \int_a^b \left([R(x)]^2 - [r(x)]^2\right)dx \quad ; \quad W_{\text{bombeo}} = \rho g \int_a^b A(y)(H - y)\,dy$$
+  * **Ejemplo:** Cálculo de la energía mínima requerida para bombear la totalidad del agua desde un reservorio subterráneo hacia una torre.
+* **Tema 5: Integrales Impropias, Sucesiones y Series de Taylor**
+  * **Objetivo:** Analizar convergencia de integrales con límites infinitos y aproximar funciones mediante desarrollos en serie de potencias.
+  * **Concepto Clave:**
+    $$\int_a^\infty f(x)\,dx = \lim_{b \to \infty}\int_a^b f(x)\,dx \quad ; \quad f(x) = \sum_{n=0}^{\infty}\frac{f^{(n)}(a)}{n!}(x-a)^n$$
+  * **Ejemplo:** Evaluación de energía total disipada en horizonte infinito y linealización por serie de Taylor de radiación térmica.
 
 ### 12. Calor y Ondas (`02021811`)
 * **Categoría:** `FISICA_QUIMICA` • **Créditos:** `4` • **Color UI:** `#30D158`
-* **Tema 1: Calorimetría, Dilatación Térmica y Movimiento Ondulatorio**
-  * **Objetivo:** Analizar el intercambio de calor sensible/latente y la propagación de ondas mecánicas y electromagnéticas.
+* **Tema 1: Elasticidad y Mecánica de Fluidos Ideal (Arquímedes y Bernoulli)**
+  * **Objetivo:** Estudiar deformación elástica en sólidos, hidrostática, flotación y conservación de energía en líneas de corriente.
   * **Concepto Clave:**
-    $$Q = m c \Delta T + m L_f \quad ; \quad \frac{\partial^2 y}{\partial x^2} = \frac{1}{v^2}\frac{\partial^2 y}{\partial t^2}$$
-  * **Ejemplo:** Cálculo del equilibrio térmico en un tanque de almacenamiento térmico y longitud de onda del espectro solar.
+    $$P = P_0 + \rho g h \quad ; \quad A_1 v_1 = A_2 v_2 \quad ; \quad P + \frac{1}{2}\rho v^2 + \rho g y = \text{cte}$$
+  * **Ejemplo:** Cálculo del empuje hidrostático sobre estructuras flotantes para paneles solares (floating PV) y caudal en tuberías Venturi.
+* **Tema 2: Termometría, Dilatación Térmica, Calorimetría y Conducción**
+  * **Objetivo:** Cuantificar expansiones térmicas, intercambios de calor sensible/latente y mecanismos básicos de transferencia térmica.
+  * **Concepto Clave:**
+    $$\Delta L = \alpha L_0 \Delta T \quad ; \quad Q = m c \Delta T + m L_f \quad ; \quad \dot{Q} = -k A \frac{\Delta T}{\Delta x}$$
+  * **Ejemplo:** Cálculo del equilibrio térmico en un tanque de almacenamiento solar con material de cambio de fase (PCM).
+* **Tema 3: Teoría Cinética de los Gases y Primera Ley en Procesos Ideales**
+  * **Objetivo:** Conectar variables microscópicas moleculares con presión, temperatura interna y trabajo en procesos termodinámicos.
+  * **Concepto Clave:**
+    $$v_{\text{rms}} = \sqrt{\frac{3 R T}{M}} \quad ; \quad \Delta E_{\text{int}} = Q - W \quad ; \quad P V^\gamma = \text{cte}$$
+  * **Ejemplo:** Determinación del calor, trabajo y cambio de energía interna en expansiones isotérmicas y adiabáticas de un gas ideal.
+* **Tema 4: Movimiento Armónico Simple (MAS), Ondas Mecánicas y Acústica**
+  * **Objetivo:** Modelar osciladores armónicos, ecuación de onda viajera, ondas estacionarias, resonancia y niveles sonoros en decibeles.
+  * **Concepto Clave:**
+    $$\frac{\partial^2 y}{\partial x^2} = \frac{1}{v^2}\frac{\partial^2 y}{\partial t^2} \quad ; \quad \omega_0 = \sqrt{\frac{k}{m}} \quad ; \quad \beta = 10\log_{10}\left(\frac{I}{I_0}\right)$$
+  * **Ejemplo:** Evaluación de frecuencias naturales de vibración en góndolas eólicas y atenuación acústica ambiental en decibeles.
 
 ### 13. Fundamentos de Electricidad II (`03041820`)
 * **Categoría:** `INGENIERIA_ENERGIA` • **Créditos:** `2` • **Color UI:** `#FF9F0A`
-* **Tema 1: Circuitos en Corriente Alterna (AC), Fasores y Potencia Compleja**
-  * **Objetivo:** Analizar redes en estado estacionario sinusoidal, triángulo de potencias y corrección del factor de potencia.
+* **Tema 1: Régimen Sinusoidal, Fasores e Impedancia Compleja**
+  * **Objetivo:** Resolver circuitos RLC en corriente alterna estacionaria utilizando álgebra fasorial, impedancia y admitancia.
   * **Concepto Clave:**
-    $$\mathbf{S} = P + jQ = \mathbf{V}_{\text{rms}} \mathbf{I}_{\text{rms}}^* \quad ; \quad \text{FP} = \cos(\theta_v - \theta_i)$$
-  * **Ejemplo:** Dimensionamiento de un banco de capacitores para elevar el factor de potencia de $0.82$ a $0.96$ inductivo.
+    $$\mathbf{Z} = R + j\left(\omega L - \frac{1}{\omega C}\right) \quad ; \quad \mathbf{V}_{\text{rms}} = \mathbf{Z}\cdot\mathbf{I}_{\text{rms}}$$
+  * **Ejemplo:** Determinación de magnitud y ángulo de fase de la corriente absorbida por un motor monofásico inductivo a 60 Hz.
+* **Tema 2: Potencia Compleja, Triángulo de Potencias y Factor de Potencia**
+  * **Objetivo:** Calcular potencia activa, reactiva y aparente, y dimensionar bancos de capacitores para compensación reactiva.
+  * **Concepto Clave:**
+    $$\mathbf{S} = P + jQ = \mathbf{V}_{\text{rms}} \mathbf{I}_{\text{rms}}^* \quad ; \quad \text{FP} = \cos(\theta_v - \theta_i) \quad ; \quad Q_C = P(\tan\theta_1 - \tan\theta_2)$$
+  * **Ejemplo:** Dimensionamiento de un banco de capacitores para elevar el factor de potencia industrial de 0.82 a 0.96 inductivo evitando penalización.
+* **Tema 3: Sistemas Trifásicos Equilibrados (Estrella Y y Triángulo Delta)**
+  * **Objetivo:** Analizar relaciones entre magnitudes de línea y de fase en generadores y cargas conectadas en estrella y delta.
+  * **Concepto Clave:**
+    $$V_L = \sqrt{3}\,V_f \quad ; \quad I_L = \sqrt{3}\,I_f \quad ; \quad P_{3\phi} = \sqrt{3}\,V_L I_L \cos\theta$$
+  * **Ejemplo:** Cálculo de corrientes de línea y potencia entregada por un inversor solar trifásico de 100 kW a una barra de 440 V.
+* **Tema 4: Resonancia Eléctrica, Filtros Pasivos y Circuitos Acoplados**
+  * **Objetivo:** Analizar la respuesta en frecuencia, resonancia serie/paralelo e inductancia mutua en transformadores ideales y lineales.
+  * **Concepto Clave:**
+    $$\omega_0 = \frac{1}{\sqrt{LC}} \quad ; \quad \frac{V_2}{V_1} = \frac{N_2}{N_1} \quad ; \quad Z_{\text{in}} = \left(\frac{N_1}{N_2}\right)^2 Z_L$$
+  * **Ejemplo:** Diseño de un filtro LC sintonizado y reflexión de impedancia a través de un transformador elevador de acoplamiento.
 
 ### 14. Fundamentos de Hidráulica y Neumática (`03021815`)
 * **Categoría:** `INGENIERIA_ENERGIA` • **Créditos:** `3` • **Color UI:** `#FF9F0A`
-* **Tema 1: Principio de Pascal, Actuadores y Potencia Fluida**
-  * **Objetivo:** Calcular presiones, caudales y fuerzas en circuitos óleo-hidráulicos y neumáticos.
+* **Tema 1: Propiedades de Fluidos de Potencia y Principio de Pascal**
+  * **Objetivo:** Evaluar viscosidad, compresibilidad y multiplicación hidrostática de fuerzas en circuitos óleo-hidráulicos y neumáticos.
   * **Concepto Clave:**
-    $$P = \frac{F}{A} \quad ; \quad N_{\text{hid}} = \Delta P \cdot Q$$
-  * **Ejemplo:** Cálculo de la fuerza ejercida por el cilindro hidráulico del sistema de *pitch* en un aerogenerador.
+    $$P = \frac{F_1}{A_1} = \frac{F_2}{A_2} \quad ; \quad \nu = \frac{\mu}{\rho}$$
+  * **Ejemplo:** Cálculo de la presión manométrica y ventaja mecánica en una prensa hidráulica de mantenimiento electromecánico.
+* **Tema 2: Bombas Oleohidráulicas, Compresores y Unidad FRL**
+  * **Objetivo:** Dimensionar bombas de desplazamiento positivo y compresores de aire cuantificando potencia fluida y eficiencias.
+  * **Concepto Clave:**
+    $$Q_{\text{real}} = V_d \cdot n \cdot \eta_v \quad ; \quad N_{\text{hid}} = \Delta P \cdot Q \quad ; \quad N_{\text{eje}} = \frac{\Delta P \cdot Q}{\eta_{\text{tot}}}$$
+  * **Ejemplo:** Cálculo de la potencia eléctrica requerida por la central hidráulica de frenos y orientación (yaw) de un aerogenerador.
+* **Tema 3: Actuadores Lineales (Cilindros) y Motores Hidráulicos/Neumáticos**
+  * **Objetivo:** Determinar fuerzas efectivas de extensión y retracción, caudales requeridos y par torsional en actuadores.
+  * **Concepto Clave:**
+    $$F_{\text{av}} = P \frac{\pi D^2}{4}\eta_m \quad ; \quad F_{\text{ret}} = P \frac{\pi(D^2 - d^2)}{4}\eta_m \quad ; \quad \tau = \frac{\Delta P \cdot V_d}{2\pi}$$
+  * **Ejemplo:** Dimensionamiento del diámetro de émbolo del cilindro hidráulico para el sistema de pitch de palas eólicas.
+* **Tema 4: Válvulas de Control (ISO 1219) y Circuitos Electro-Hidráulicos**
+  * **Objetivo:** Diseñar esquemas con válvulas direccionales, limitadoras de presión, antirretorno y reguladoras de caudal.
+  * **Concepto Clave:**
+    $$Q = C_d A_o \sqrt{\frac{2\,\Delta P}{\rho}}$$
+  * **Ejemplo:** Diseño del circuito electro-hidráulico con válvula de contrabalance para seguidores solares (solar trackers) de gran escala.
 
 ### 15. General English III (`01021804`)
 * **Categoría:** `FORMACION_GENERAL` • **Créditos:** `2` • **Color UI:** `#8E8E93`
-* **Tema 1: Passive Voice in Technical Manuals & Reports**
-  * **Objetivo:** Redactar procedimientos de laboratorio y protocolos de mantenimiento usando voz pasiva en inglés.
+* **Tema 1: Engineering Progress & Achievements (Present Perfect)**
+  * **Objetivo:** Reportar avances de implementación, resultados acumulados y experiencias técnicas empleando el Present Perfect (MCER B1.1).
   * **Concepto Clave:**
-    $$\text{Efficiency}(\%) = \left(\frac{P_{\text{out}}}{P_{\text{in}}}\right) \times 100$$
-  * **Ejemplo:** Interpretación de manuales de operación de inversores solares en inglés.
+    $$\text{Completion}(\%) = \frac{\text{Installed kW}}{\text{Planned kW}} \times 100\%$$
+  * **Ejemplo:** Informe de progreso de obra (The engineering team has commissioned twelve string inverters since Monday).
+* **Tema 2: Passive Voice in Technical Manuals & Commissioning Protocols**
+  * **Objetivo:** Redactar procedimientos de laboratorio y manuales de mantenimiento enfatizando el proceso mediante la voz pasiva.
+  * **Concepto Clave:**
+    $$\text{Efficiency}(\%) = \left(\frac{P_{\text{out}}}{P_{\text{in}}}\right) \times 100\%$$
+  * **Ejemplo:** Interpretación y redacción de protocolos de puesta en marcha de inversores solares en inglés técnico.
+* **Tema 3: System Contingencies & Cause-Effect (Conditionals 0, 1 & 2)**
+  * **Objetivo:** Formular leyes físicas, lógicas de protección y escenarios hipotéticos de operación usando oraciones condicionales.
+  * **Concepto Clave:**
+    $$f < 59.5\text{ Hz} \implies \text{Under-Frequency Relay Trips}$$
+  * **Ejemplo:** Descripción de protecciones eléctricas (If grid voltage exceeds the upper threshold, the inverter disconnects automatically).
+* **Tema 4: Component Specifications & Definitions (Relative Clauses)**
+  * **Objetivo:** Definir instrumentos, sensores y arquitecturas energéticas con precisión formal mediante cláusulas relativas.
+  * **Concepto Clave:**
+    $$G_{\text{POA}} = G_b \cos\theta_i + G_d\left(\frac{1+\cos\beta}{2}\right) + \rho G_h\left(\frac{1-\cos\beta}{2}\right)$$
+  * **Ejemplo:** Definición técnica formal (A pyranometer is a sensor which measures broadband solar irradiance on a planar surface).
 
 ---
 
@@ -991,46 +1588,130 @@ malla_curricular:
 
 ### 16. Álgebra Lineal (`02011809`)
 * **Categoría:** `MATEMATICAS` • **Créditos:** `3` • **Color UI:** `#5E5CE6`
-* **Tema 1: Sistemas Matriciales, Transformaciones y Valores Propios**
-  * **Objetivo:** Resolver sistemas de ecuaciones lineales de gran escala y calcular autovalores de estabilidad.
+* **Tema 1: Sistemas de Ecuaciones Lineales, Matrices y Gauss-Jordan**
+  * **Objetivo:** Resolver sistemas lineales de múltiples variables mediante reducción escalonada, álgebra matricial y matriz inversa.
   * **Concepto Clave:**
-    $$A\vec{x} = \vec{b} \quad ; \quad \det(A - \lambda I) = 0$$
-  * **Ejemplo:** Formulación de la matriz de admitancia nodal en una red eléctrica de $4$ nodos.
+    $$A\vec{x} = \vec{b} \quad ; \quad A A^{-1} = I \quad ; \quad \mathbf{Y}_{\text{bus}}\mathbf{V} = \mathbf{I}$$
+  * **Ejemplo:** Formulación y solución del sistema matricial de tensiones nodales en una red eléctrica de distribución de 4 barras.
+* **Tema 2: Determinantes, Propiedades e Invertibilidad de Sistemas**
+  * **Objetivo:** Calcular determinantes por cofactores y operaciones de fila para analizar unicidad de soluciones y matrices Jacobianas.
+  * **Concepto Clave:**
+    $$\det(A) = \sum_{j=1}^{n}(-1)^{1+j} a_{1j} M_{1j} \quad ; \quad \det(A) \neq 0 \iff A \text{ es invertible}$$
+  * **Ejemplo:** Verificación de invertibilidad de la matriz Jacobiana durante una iteración de flujo de potencia.
+* **Tema 3: Espacios Vectoriales, Bases, Ortogonalidad y Mínimos Cuadrados**
+  * **Objetivo:** Determinar independencia lineal, dimensión, bases ortonormales (Gram-Schmidt) y proyecciones por mínimos cuadrados.
+  * **Concepto Clave:**
+    $$\vec{u}\cdot\vec{v} = \|\vec{u}\|\|\vec{v}\|\cos\theta \quad ; \quad \hat{x} = (A^T A)^{-1}A^T\vec{b}$$
+  * **Ejemplo:** Estimación matricial por mínimos cuadrados de los coeficientes de pérdida térmica de una edificación a partir de mediciones.
+* **Tema 4: Transformaciones Lineales, Valores Propios y Diagonalización**
+  * **Objetivo:** Calcular autovalores y autovectores del polinomio característico para desacoplar sistemas dinámicos y analizar estabilidad.
+  * **Concepto Clave:**
+    $$A\vec{v} = \lambda\vec{v} \quad ; \quad \det(A - \lambda I) = 0 \quad ; \quad A = P D P^{-1}$$
+  * **Ejemplo:** Evaluación de modos oscilatorios y estabilidad dinámica de un sistema energético linealizado mediante el espectro de autovalores.
 
 ### 17. Conversión de Energía (`06011837`)
 * **Categoría:** `INGENIERIA_ENERGIA` • **Créditos:** `3` • **Color UI:** `#FF9F0A`
-* **Tema 1: Principios Electromecánicos y Termoeléctricos de Conversión**
-  * **Objetivo:** Modelar el acoplamiento entre energía térmica, mecánica, química y eléctrica.
+* **Tema 1: Rutas de Transformación Energética y Rendimiento Exergético**
+  * **Objetivo:** Evaluar cadenas de conversión termo-mecánica, electromecánica y electroquímica bajo primera y segunda ley.
   * **Concepto Clave:**
-    $$dW_{\text{mec}} = dW_{\text{campo}} + dW_{\text{eléc}} \quad ; \quad \tau = \frac{\partial W'(\theta, i)}{\partial \theta}$$
-  * **Ejemplo:** Cálculo del par electromagnético desarrollado en un transductor rotativo.
+    $$\eta_I = \frac{\dot{E}_{\text{útil}}}{\dot{E}_{\text{entrada}}} \quad ; \quad \eta_{II} = 1 - \frac{\dot{E}_{\text{destruida}}}{\dot{\Psi}_{\text{entrada}}}$$
+  * **Ejemplo:** Comparación de eficiencia de primera y segunda ley entre un motor de combustión, una turbina y una celda de combustible.
+* **Tema 2: Circuitos Magnéticos, Curva B-H y Pérdidas en Núcleos Ferromagnéticos**
+  * **Objetivo:** Resolver circuitos magnéticos con entrehierro mediante reluctancias y cuantificar pérdidas por histéresis y Foucault.
+  * **Concepto Clave:**
+    $$\mathcal{F} = N I = \Phi \mathcal{R} \quad ; \quad \mathcal{R} = \frac{l}{\mu_r \mu_0 A} \quad ; \quad P_{\text{Fe}} = k_h f B_{\max}^n + k_e f^2 B_{\max}^2$$
+  * **Ejemplo:** Cálculo de los amperios-vuelta requeridos para producir un flujo magnético de diseño en el entrehierro de un inductor de potencia.
+* **Tema 3: Principios de Conversión Electromecánica: Energía y Coenergía**
+  * **Objetivo:** Modelar fuerzas traslacionales y pares electromagnéticos en transductores y máquinas a partir de la coenergía magnética.
+  * **Concepto Clave:**
+    $$dW_{\text{eléc}} = dW_{\text{campo}} + dW_{\text{mec}} \quad ; \quad \tau_e = \frac{\partial W'(\theta, i)}{\partial \theta}$$
+  * **Ejemplo:** Cálculo del par electromagnético desarrollado en función del ángulo rotor en un actuador de reluctancia variable.
+* **Tema 4: Conversión Directa: Termoeléctrica (Seebeck), Fotovoltaica y Química**
+  * **Objetivo:** Analizar mecanismos de conversión directa sin partes móviles basados en efectos termoeléctricos, fotoeléctricos y Gibbs.
+  * **Concepto Clave:**
+    $$V_{\text{oc}} = \alpha_{AB}(T_H - T_C) \quad ; \quad ZT = \frac{\alpha^2 \sigma}{\kappa}T \quad ; \quad W_{\text{eléc,máx}} = -\Delta G$$
+  * **Ejemplo:** Estimación de la potencia recuperada con módulos termoeléctricos (TEG) instalados sobre un ducto de gases de escape.
 
 ### 18. Electricidad y Magnetismo (`03041821`)
 * **Categoría:** `FISICA_QUIMICA` • **Créditos:** `4` • **Color UI:** `#30D158`
-* **Tema 1: Ecuaciones de Maxwell, Ley de Gauss y Ley de Faraday**
-  * **Objetivo:** Analizar campos electrostáticos, magnetostáticos y la inducción electromagnética.
+* **Tema 1: Carga Eléctrica, Campo Electrostático, Coulomb y Ley de Gauss**
+  * **Objetivo:** Determinar campos eléctricos producidos por distribuciones discretas y continuas de carga empleando integración y simetría.
   * **Concepto Clave:**
-    $$\oint_S \vec{E} \cdot d\vec{A} = \frac{q_{\text{enc}}}{\varepsilon_0} \quad ; \quad \mathcal{E} = -N\frac{d\Phi_B}{dt}$$
-  * **Ejemplo:** Cálculo de la fuerza electromotriz inducida en una espira que rota dentro de un campo magnético uniforme.
+    $$\vec{E} = \frac{1}{4\pi\varepsilon_0}\int \frac{dq}{r^2}\hat{r} \quad ; \quad \oint_S \vec{E} \cdot d\vec{A} = \frac{q_{\text{enc}}}{\varepsilon_0}$$
+  * **Ejemplo:** Cálculo del gradiente de campo eléctrico en la superficie de un conductor cilíndrico de transmisión para prevenir efecto corona.
+* **Tema 2: Potencial Eléctrico, Capacitancia, Dieléctricos y Energía Electrostática**
+  * **Objetivo:** Calcular diferencias de potencial, capacitancia equivalente y densidad de energía almacenada en medios dieléctricos.
+  * **Concepto Clave:**
+    $$V_B - V_A = -\int_A^B \vec{E}\cdot d\vec{l} \quad ; \quad C = \kappa\varepsilon_0\frac{A}{d} \quad ; \quad u_E = \frac{1}{2}\varepsilon E^2$$
+  * **Ejemplo:** Dimensionamiento dieléctrico y energía almacenada en bancos de supercapacitores para soporte transitorio de tensión.
+* **Tema 3: Densidad de Corriente, Ley de Ohm Microscópica y Efecto Térmico**
+  * **Objetivo:** Relacionar campo eléctrico, velocidad de deriva, conductividad y dependencia térmica de la resistividad en conductores.
+  * **Concepto Clave:**
+    $$\vec{J} = \sigma\vec{E} \quad ; \quad R = \rho\frac{L}{A} \quad ; \quad \rho(T) = \rho_0[1 + \alpha(T - T_0)]$$
+  * **Ejemplo:** Cálculo del aumento de resistencia óhmica en un conductor de aluminio ACSR operando a 75 °C bajo alta radiación solar.
+* **Tema 4: Campo Magnético, Fuerza de Lorentz, Biot-Savart y Ley de Ampère**
+  * **Objetivo:** Analizar fuerzas magnéticas sobre cargas y conductores, y calcular campos generados por corrientes estacionarias.
+  * **Concepto Clave:**
+    $$\vec{F}_B = q\vec{v}\times\vec{B} + I\vec{L}\times\vec{B} \quad ; \quad \oint_C \vec{B}\cdot d\vec{l} = \mu_0 I_{\text{enc}}$$
+  * **Ejemplo:** Cálculo de esfuerzos electrodinámicos entre barras colectoras paralelas de una subestación ante corrientes de falla.
+* **Tema 5: Inducción de Faraday-Lenz, Inductancia y Ecuaciones de Maxwell**
+  * **Objetivo:** Cuantificar fuerzas electromotrices inducidas, autoinductancia, energía magnética y la corriente de desplazamiento de Maxwell.
+  * **Concepto Clave:**
+    $$\mathcal{E} = -N\frac{d\Phi_B}{dt} \quad ; \quad u_B = \frac{B^2}{2\mu_0} \quad ; \quad \oint_C \vec{B}\cdot d\vec{l} = \mu_0 I + \mu_0\varepsilon_0\frac{d\Phi_E}{dt}$$
+  * **Ejemplo:** Deducción de la fem sinusoidal inducida en el estator de un generador síncrono a partir de un campo magnético rotatorio.
 
 ### 19. General English IV (`01021805`)
 * **Categoría:** `FORMACION_GENERAL` • **Créditos:** `2` • **Color UI:** `#8E8E93`
-* **Tema 1: Academic Presentations & Abstract Writing**
-  * **Objetivo:** Exponer resultados de proyectos de ingeniería mediante vocabulario académico formal.
+* **Tema 1: Synthesizing Energy Literature (Reported Speech & Citations)**
+  * **Objetivo:** Parafrasear hallazgos científicos, normativas e informes internacionales empleando Reported Speech (MCER B1.2).
   * **Concepto Clave:**
-    $$\text{ROI} = \frac{\text{Net Benefit}}{\text{Total Cost}} \times 100$$
-  * **Ejemplo:** Presentación oral de 5 minutos sobre viabilidad de una micro-red solar.
+    $$\text{CF}(\%) = \frac{E_{\text{annual}}}{P_{\text{rated}} \cdot 8760\text{ h}} \times 100\%$$
+  * **Ejemplo:** Síntesis bibliográfica en inglés de reportes anuales de IRENA e IEA sobre factores de planta renovables.
+* **Tema 2: Writing Structured Abstracts for Engineering Papers**
+  * **Objetivo:** Redactar resúmenes científicos (Background, Methods, Results, Conclusions) con cohesión y estilo académico formal.
+  * **Concepto Clave:**
+    $$e_{\text{rel}}(\%) = \left|\frac{y_{\text{sim}} - y_{\text{exp}}}{y_{\text{exp}}}\right| \times 100\%$$
+  * **Ejemplo:** Escritura de un Abstract de 180 palabras para presentar un estudio de micro-redes solares en un congreso estudiantil.
+* **Tema 3: Interpreting Load Curves, Sensitivity Graphs & ROI Metrics**
+  * **Objetivo:** Exponer tendencias cuantitativas, curvas de demanda y métricas de viabilidad técnica-económica en inglés.
+  * **Concepto Clave:**
+    $$\text{ROI} = \frac{\text{Net Benefit}}{\text{Total Cost}} \times 100\%$$
+  * **Ejemplo:** Descripción oral y escrita de curvas de carga horaria (duck curve) y análisis de retorno de inversión.
+* **Tema 4: Academic Presentations, Technical Pitch & Q&A Defense**
+  * **Objetivo:** Sustentar proyectos de ingeniería en inglés con fluidez argumentativa y manejo solvente de preguntas técnicas.
+  * **Concepto Clave:**
+    $$\text{Payback} = \frac{\text{CAPEX}}{\text{Annual Net Savings}}$$
+  * **Ejemplo:** Presentación oral de 5 minutos defendiendo la factibilidad de una micro-red híbrida solar-almacenamiento.
 
 ### 20. Termodinámica (`03021817`)
 * **Categoría:** `INGENIERIA_ENERGIA` • **Créditos:** `3` • **Color UI:** `#FF9F0A`
-* **Tema 1: Primera y Segunda Ley de la Termodinámica y Ciclos de Potencia**
-  * **Objetivo:** Evaluar balances de energía y entropía en volúmenes de control (turbinas, compresores, ciclos Rankine y Brayton).
+* **Tema 1: Conceptos Básicos y Propiedades de las Sustancias Puras**
+  * **Objetivo:** Identificar estados de equilibrio, fases líquido-vapor, título de calidad y propiedades en tablas termodinámicas y gases.
   * **Concepto Clave:**
-    $$\dot{Q}_{vc} - \dot{W}_{vc} = \sum \dot{m}_s\left(h_s + \frac{v_s^2}{2} + gz_s\right) - \sum \dot{m}_e\left(h_e + \frac{v_e^2}{2} + gz_e\right) \quad ; \quad \eta_{\text{Carnot}} = 1 - \frac{T_L}{T_H}$$
-  * **Ejemplo:** Determinación de la potencia neta y eficiencia térmica de un ciclo Rankine con sobrecalentamiento.
+    $$h = h_f + x\,h_{fg} \quad ; \quad v = v_f + x(v_g - v_f) \quad ; \quad P v = Z R T$$
+  * **Ejemplo:** Interpolación en tablas de vapor sobrecalentado y mezcla saturada para caracterizar el fluido de trabajo en una caldera.
+* **Tema 2: Primera Ley de la Termodinámica en Sistemas Cerrados**
+  * **Objetivo:** Evaluar trabajo de frontera móvil, transferencia de calor y variaciones de energía interna y entalpía en masa fija.
+  * **Concepto Clave:**
+    $$Q - W = \Delta U + \Delta E_c + \Delta E_p \quad ; \quad W_b = \int_1^2 P\,dV \quad ; \quad \Delta u = c_v \Delta T$$
+  * **Ejemplo:** Cálculo del trabajo de compresión politrópica y transferencia de calor en un conjunto cilindro-émbolo.
+* **Tema 3: Primera Ley en Volúmenes de Control (Flujo Estacionario)**
+  * **Objetivo:** Aplicar conservación de masa y energía en turbinas, compresores, bombas, toberas e intercambiadores de calor.
+  * **Concepto Clave:**
+    $$\dot{Q}_{vc} - \dot{W}_{vc} = \sum \dot{m}_s\left(h_s + \frac{v_s^2}{2} + gz_s\right) - \sum \dot{m}_e\left(h_e + \frac{v_e^2}{2} + gz_e\right)$$
+  * **Ejemplo:** Determinación de la potencia generada por una turbina de vapor adiabática y caudal de agua de enfriamiento en el condensador.
+* **Tema 4: Segunda Ley de la Termodinámica, Entropía y Eficiencia Isentrópica**
+  * **Objetivo:** Analizar máquinas térmicas, límite de Carnot, balance de generación de entropía y eficiencias isentrópicas reales.
+  * **Concepto Clave:**
+    $$\eta_{\text{Carnot}} = 1 - \frac{T_L}{T_H} \quad ; \quad \dot{S}_{\text{gen}} = \sum \dot{m}_s s_s - \sum \dot{m}_e s_e - \sum \frac{\dot{Q}_k}{T_k} \ge 0 \quad ; \quad \eta_{s,T} = \frac{h_1 - h_{2a}}{h_1 - h_{2s}}$$
+  * **Ejemplo:** Cálculo de la eficiencia isentrópica e irreversibilidades en una turbina de gas y en una bomba de alimentación.
+* **Tema 5: Ciclos de Potencia (Rankine, Brayton, Otto/Diesel) y Refrigeración**
+  * **Objetivo:** Modelar y optimizar ciclos termodinámicos de generación eléctrica a vapor y gas, así como sistemas de refrigeración.
+  * **Concepto Clave:**
+    $$\eta_{\text{Rankine}} = \frac{w_{\text{turb}} - w_{\text{bomba}}}{q_{\text{entrada}}} \quad ; \quad \eta_{\text{Brayton}} = 1 - \frac{1}{r_p^{(k-1)/k}} \quad ; \quad \text{COP}_R = \frac{q_L}{w_{\text{comp}}}$$
+  * **Ejemplo:** Determinación de la potencia neta y eficiencia térmica de un ciclo Rankine con sobrecalentamiento y recalentamiento.
 
 ---
-
 ## Cuatrimestre 5 (15 Créditos)
 
 ### 21. Energía Hidráulica (`06021845`)

@@ -94,6 +94,14 @@ void main() {
 
         for (final asig in db.allAsignaturas) {
           expect(asig.temas, isNotEmpty, reason: 'Sin temas en ${asig.nombre}');
+          if (asig.cuatrimestre <= 4) {
+            expect(
+              asig.temas.length,
+              greaterThanOrEqualTo(4),
+              reason:
+                  'La asignatura ${asig.nombre} (C${asig.cuatrimestre}) debe tener su temario completo (>= 4 unidades).',
+            );
+          }
           for (final tema in asig.temas) {
             totalFormulas++;
             final clean = InstitutionalValidator.sanitizeLatex(
@@ -108,7 +116,7 @@ void main() {
           }
         }
 
-        expect(totalFormulas, greaterThanOrEqualTo(56));
+        expect(totalFormulas, greaterThanOrEqualTo(120));
         expect(
           failedFormulas,
           isEmpty,

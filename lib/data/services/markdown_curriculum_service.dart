@@ -108,13 +108,13 @@ abstract final class CurriculumMarkdownParser {
 ///
 /// 1. Carga instantáneamente `assets/data/ingenieria_energetica.md` al iniciar.
 /// 2. Intenta actualizar en segundo plano desde `raw.githubusercontent.com`
-///    (`db/ingenieria_energetica.md`) para reflejar cambios en temarios o fórmulas
+///    (`db/ingenieria_energetica.md`) para reflejar nuevos temarios o fórmulas
 ///    KaTeX sin reinstalar la aplicación.
 class MarkdownCurriculumService extends ChangeNotifier {
   MarkdownCurriculumService({http.Client? httpClient})
       : _http = httpClient ?? http.Client();
 
-  static const String _cachedMdKey = 'um_studio_cached_curriculum_md_v2';
+  static const String _cachedMdKey = 'um_studio_cached_curriculum_md_v3';
 
   final http.Client _http;
 
@@ -134,6 +134,15 @@ class MarkdownCurriculumService extends ChangeNotifier {
 
   ProgramaInfoModel get programa =>
       _database?.programa ?? ProgramaInfoModel.fallback;
+
+  static int _countTopics(CurriculumDatabaseModel? db) {
+    if (db == null) return 0;
+    var count = 0;
+    for (final a in db.allAsignaturas) {
+      count += a.temas.length;
+    }
+    return count;
+  }
 
   /// Carga inmediata desde el bundle local (o caché remoto previo) y lanza
   /// refresco silencioso desde GitHub.
@@ -155,7 +164,8 @@ class MarkdownCurriculumService extends ChangeNotifier {
       if (cachedRemote != null && cachedRemote.isNotEmpty) {
         final parsedCached = CurriculumMarkdownParser.parse(cachedRemote);
         if (parsedCached.allAsignaturas.length >=
-            (_database?.allAsignaturas.length ?? 0)) {
+                (_database?.allAsignaturas.length ?? 0) &&
+            _countTopics(parsedCached) >= _countTopics(_database)) {
           _database = parsedCached;
           _loaded = true;
           notifyListeners();
@@ -178,7 +188,8 @@ class MarkdownCurriculumService extends ChangeNotifier {
 
       if (response.statusCode == 200 && response.body.trim().isNotEmpty) {
         final parsed = CurriculumMarkdownParser.parse(response.body);
-        if (parsed.allAsignaturas.isNotEmpty) {
+        if (parsed.allAsignaturas.isNotEmpty &&
+            _countTopics(parsed) >= _countTopics(_database)) {
           _database = parsed;
           _loaded = true;
           _syncedFromGitHub = true;
