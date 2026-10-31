@@ -15,12 +15,13 @@
     "02011807": 10
   },
   "ultimos_temas_revisados": {
-    "02011807": 2
+    "02011807": 2,
+    "03011813": 3
   },
   "ultimo_revisado": {
-    "codigo_materia": "02011807",
-    "numero_tema": 2,
-    "actualizado_en": "2026-10-30T22:57:27.050"
+    "codigo_materia": "03011813",
+    "numero_tema": 3,
+    "actualizado_en": "2026-10-30T23:12:28.320"
   },
   "recordatorios_calendario": [],
   "apuntes_personales": {}
