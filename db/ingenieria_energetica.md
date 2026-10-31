@@ -929,7 +929,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Transición Energética, Descarbonización y ODS 7"
             objetivo: "Articular los pilares de seguridad, equidad y sostenibilidad (Trilema Energético)."
-            concepto_clave_latex: "\\Delta E_{\\text{ahorro}} = E_{\\text{base}} - E_{\\text{eficiente}} \\quad ; \\quad \\text{ODS 7: Acceso + Renovable + Eficiencia}"
+            concepto_clave_latex: "\\Delta E_{\\text{ahorro}} = E_{\\text{base}} - E_{\\text{eficiente}} \\quad ; \\quad \\eta_{\\text{ODS7}} \\ge \\eta_{\\text{ref}}"
             ejemplo: "Evaluación de soluciones solares autónomas para Zonas No Interconectadas (ZNI)."
             bloque_sugerido: "Estudio de Caso 45 min • ZNI Caribe"
           - numero_tema: 7
@@ -984,7 +984,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Búsqueda Bibliográfica y Citación Académica (APA / IEEE)"
             objetivo: "Gestionar fuentes arbitradas y aplicar normas éticas de citación evitando el plagio."
-            concepto_clave_latex: "\\text{Cita Directa } (<40\\text{ pal.}) \\neq \\text{Paráfrasis Estructural} + \\text{Referencia } [k]"
+            concepto_clave_latex: "\\text{Similitud}_{\\text{Turnitin}} \\le 15\\% \\quad ; \\quad [k] \\in \\text{IEEE}"
             ejemplo: "Formateo correcto de 5 referencias reales sobre energías renovables en estilo IEEE."
             bloque_sugerido: "Laboratorio 45 min • Gestores y citas"
           - numero_tema: 5
@@ -992,7 +992,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Planeación y Escritura del Ensayo Argumentativo"
             objetivo: "Redactar ensayos universitarios con tesis clara, párrafos deductivos y contrargumentación."
-            concepto_clave_latex: "E_{\\text{ensayo}} = \\text{Introducción (Tesis)} + \\sum \\text{Argumentos} + \\text{Síntesis}"
+            concepto_clave_latex: "T_{\\text{ensayo}} = T_{\\text{tesis}} + \\sum_{i=1}^n A_i + C_{\\text{síntesis}}"
             ejemplo: "Redacción de un ensayo breve sobre retos socioambientales de parques eólicos."
             bloque_sugerido: "Escritura 50 min • Borrador y rúbrica"
           - numero_tema: 6
@@ -2312,7 +2312,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Válvulas Direccionales, de Presión y Reguladoras de Caudal"
             objetivo: "Diseñar circuitos de control de dirección, alivio y regulación de velocidad."
-            concepto_clave_latex: "Q_v = C_d A_o \\sqrt{\\frac{2\\Delta P}{\\rho}} \\quad ; \\quad \\text{ Simbología ISO 1219 (4/3, 5/2, alivio)}"
+            concepto_clave_latex: "Q_v = C_d A_o \\sqrt{\\frac{2\\Delta P}{\\rho}} \\quad ; \\quad \\Delta P_{\\text{valv}} = \\xi \\frac{\\rho v^2}{2}"
             ejemplo: "Ajuste de válvula limitadora de presión y regulación meter-out en cargas colgantes."
             bloque_sugerido: "Laboratorio 45 min • Esquemas ISO 1219"
           - numero_tema: 7
@@ -4052,7 +4052,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Turbinas de Reacción: Francis, Kaplan y Bulbo"
             objetivo: "Analizar grado de reacción, tubo de aspiración (draft tube) y curvas colina."
-            concepto_clave_latex: "\\eta_h = \\frac{u_1 c_{u1} - u_2 c_{u2}}{gH_n} \\quad ; \\quad \\text{Recuperación difusor: }\\frac{v_2^2 - v_3^2}{2g}"
+            concepto_clave_latex: "\\eta_h = \\frac{u_1 c_{u1} - u_2 c_{u2}}{gH_n} \\quad ; \\quad \\Delta h_{\\text{dif}} = \\frac{v_2^2 - v_3^2}{2g}"
             ejemplo: "Operación de turbina Kaplan de doble regulación ante variaciones estacionales de caudal."
             bloque_sugerido: "Pomodoro 45/10 • Francis y Kaplan"
           - numero_tema: 7
@@ -4202,7 +4202,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Comunicaciones Industriales, Modbus, IEC 61850 e IoT"
             objetivo: "Integrar medidores inteligentes y RTUs mediante protocolos industriales y telemetría."
-            concepto_clave_latex: "T_{\\text{trama}} = \\frac{N_{\\text{bits}}}{R_{\\text{baud}}} \\quad ; \\quad \\text{Modbus RTU/TCP, MQTT, IEC 61850}"
+            concepto_clave_latex: "T_{\\text{trama}} = \\frac{N_{\\text{bits}}}{R_{\\text{baud}}} \\quad ; \\quad T_{\\text{latencia}} \\le 4\\text{ ms}"
             ejemplo: "Lectura de registros Modbus TCP de un inversor solar hacia dashboard SCADA."
             bloque_sugerido: "Laboratorio 50 min • Tramas Modbus/MQTT"
           - numero_tema: 8
@@ -4296,7 +4296,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Arquitectura de Sistemas Energéticos Integrados y Multi-Vector"
             objetivo: "Analizar acoplamiento entre redes eléctricas, térmicas, de gas y transporte."
-            concepto_clave_latex: "\\vec{L} = C_{\\text{hub}}\\vec{P}_{\\text{in}} \\quad (\\text{Matriz de acoplamiento Energy Hub})"
+            concepto_clave_latex: "\\vec{L} = \\mathbf{C}_{\\text{hub}}\\vec{P}_{\\text{in}} \\quad ; \\quad \\sum_{j} c_{ij} \\le 1"
             ejemplo: "Modelado tipo Energy Hub de un campus universitario con PV, red, gas y chillers."
             bloque_sugerido: "Pomodoro 45/10 • Concepto Energy Hub"
           - numero_tema: 2
@@ -4328,7 +4328,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Integración de Procesos e Introducción a Tecnología Pinch"
             objetivo: "Minimizar requerimientos externos de calentamiento y enfriamiento mediante curvas compuestas."
-            concepto_clave_latex: "\\Delta T_{\\min} \\implies \\dot{Q}_{H,\\min},\\; \\dot{Q}_{C,\\min} \\quad (\\text{Reglas de oro Pinch})"
+            concepto_clave_latex: "\\Delta T \\ge \\Delta T_{\\min} \\quad ; \\quad \\dot{Q}_{\\text{pinch}} = 0"
             ejemplo: "Recuperación cruzada de calor entre efluentes calientes y agua de alimentación."
             bloque_sugerido: "Pomodoro 50/10 • Análisis Pinch"
           - numero_tema: 6
@@ -4352,7 +4352,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Análisis de Ciclo de Vida (ACV) y Retorno Energético (EROI)"
             objetivo: "Evaluar impactos cuna-a-tumba ISO 14040 y tasa de retorno energético."
-            concepto_clave_latex: "\\text{EROI} = \\frac{E_{\\text{entregada vida útil}}}{E_{\\text{invertida fabricación+O\\&M}}} \\quad ; \\quad \\text{EPBT} = \\frac{E_{\\text{primaria embebida}}}{E_{\\text{anual evitada}}}"
+            concepto_clave_latex: "\\text{EROI} = \\frac{E_{\\text{out,net}}}{E_{\\text{in,inv}}} \\quad ; \\quad \\text{EPBT} = \\frac{E_{\\text{emb}}}{E_{\\text{evitada}}}"
             ejemplo: "Tiempo de retorno energético (EPBT ~ 1.1 años) de un parque solar moderno."
             bloque_sugerido: "Taller 45 min • ACV y EROI"
   - cuatrimestre: 6
@@ -5032,7 +5032,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Geometría Descriptiva, Vistas Ortogonales y Normas ISO/ASME"
             objetivo: "Representar componentes mecánicos y energéticos mediante proyecciones normalizadas."
-            concepto_clave_latex: "\\text{Escala } E = \\frac{D_{\\text{dibujo}}}{D_{\\text{real}}} \\quad ; \\quad \\text{ISO-E (1° diedro) vs. ISO-A (3° diedro)}"
+            concepto_clave_latex: "E = \\frac{D_{\\text{dibujo}}}{D_{\\text{real}}} \\quad ; \\quad \\theta_{\\text{diedro}} = 90^\\circ"
             ejemplo: "Lectura e interpretación de planos constructivos de una carcasa de turbina."
             bloque_sugerido: "Laboratorio CAD 45 min • Vistas y cortes"
           - numero_tema: 2
@@ -5040,7 +5040,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Modelado Paramétrico 3D de Sólidos y Superficies Complejas"
             objetivo: "Construir piezas paramétricas restringidas y perfiles aerodinámicos 3D en CAD."
-            concepto_clave_latex: "\\vec{C}(u) = \\sum_{i=0}^{n} N_{i,p}(u)\\vec{P}_i \\quad (\\text{Curvas NURBS de perfiles NACA})"
+            concepto_clave_latex: "\\vec{C}(u) = \\sum_{i=0}^{n} N_{i,p}(u)\\vec{P}_i \\quad ; \\quad u \\in [0, 1]"
             ejemplo: "Modelado 3D de un álabe eólico con torsión variable a lo largo de la envergadura."
             bloque_sugerido: "Laboratorio CAD 50 min • Sólidos y lofting"
           - numero_tema: 3
@@ -5056,7 +5056,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Tolerancias Dimensionales, Ajustes ISO y GD&T"
             objetivo: "Especificar ajustes eje-agujero y tolerancias geométricas para manufacturabilidad."
-            concepto_clave_latex: "T = D_{\\max} - D_{\\min} \\quad ; \\quad \\text{Ajuste H7/g6 (juego) vs. H7/p6 (apriete)}"
+            concepto_clave_latex: "T = D_{\\max} - D_{\\min} \\quad ; \\quad J = D_{\\text{agujero}} - d_{\\text{eje}}"
             ejemplo: "Tolerancia de concentricidad y ajuste de rodamiento en el eje de un generador."
             bloque_sugerido: "Práctica 45 min • Ajustes ISO y GD&T"
           - numero_tema: 5
@@ -5088,7 +5088,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Documentación Ejecutiva, Lista de Materiales (BOM) y Prototipado"
             objetivo: "Generar planos de taller, vistas explosionadas, BOM y archivos STL/STEP para impresión 3D."
-            concepto_clave_latex: "V_{\\text{pieza}}\\cdot\\rho_{\\text{mat}} = m_{\\text{BOM}} \\quad ; \\quad \\text{Exportación STEP AP214 / STL}"
+            concepto_clave_latex: "m_{\\text{BOM}} = \\sum_{k=1}^N \\rho_k V_k \\quad ; \\quad \\Delta m \\le 0.01\\,m"
             ejemplo: "Paquete técnico completo y prototipo impreso en 3D de un rodete microhidráulico."
             bloque_sugerido: "Taller 45 min • Planos, BOM y manufactura"
       - codigo: "04031827"
@@ -5103,7 +5103,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Constitución, Servicios Públicos y Leyes 142 y 143 de 1994"
             objetivo: "Comprender el régimen jurídico colombiano de servicios públicos domiciliarios y electricidad."
-            concepto_clave_latex: "\\text{Principios Ley 143/1994: Eficiencia + Calidad + Continuidad + Adaptabilidad}"
+            concepto_clave_latex: "\\text{SAIDI} = \\frac{\\sum U_i N_i}{N_{\\text{tot}}} \\quad ; \\quad \\text{SAIFI} = \\frac{\\sum \\lambda_i N_i}{N_{\\text{tot}}}"
             ejemplo: "Separación legal e integración vertical/horizontal entre G, T, D y C en Colombia."
             bloque_sugerido: "Lectura Jurídica 45 min • Leyes 142 y 143"
           - numero_tema: 2
@@ -5119,7 +5119,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Marco de Energías Renovables: Ley 1715 de 2014 y Ley 2099 de 2021"
             objetivo: "Aplicar incentivos tributarios para FNCER, eficiencia energética e hidrógeno verde/azul."
-            concepto_clave_latex: "\\text{Deducción Renta } 50\\%\\text{ CAPEX (15 años)} + \\text{Exención IVA} + \\text{Arancel } 0\\% + \\text{Depreciación Acelerada}"
+            concepto_clave_latex: "\\text{Beneficio}_{\\text{Ley1715}} = 0.50 \\cdot \\text{CAPEX} \\quad ; \\quad \\text{Arancel} = 0\\%"
             ejemplo: "Estructuración de beneficios tributarios UPME para un proyecto solar de 5 MW."
             bloque_sugerido: "Taller 50 min • Certificación UPME Ley 1715"
           - numero_tema: 4
@@ -5143,7 +5143,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Licenciamiento Ambiental (ANLA / Corpamag) y Consulta Previa"
             objetivo: "Integrar Diagnóstico Ambiental de Alternativas (DAA), EIA y debida diligencia social."
-            concepto_clave_latex: "\\text{EIA: Línea Base} \\to \\text{Matriz Impactos} \\to \\text{PMA (Prevención, Mitigación, Compensación)}"
+            concepto_clave_latex: "I_{\\text{ambiental}} = \\sum_{k=1}^m w_k \\cdot C_k \\quad ; \\quad \\text{PMA} \\ge 0"
             ejemplo: "Requisitos de licencia ambiental y consulta previa OIT 169 en líneas y parques eólicos."
             bloque_sugerido: "Estudio de Caso 45 min • Licenciamiento"
           - numero_tema: 7
@@ -5159,7 +5159,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Comunidades Energéticas (Decreto 2236/2023) y Mercados de Carbono"
             objetivo: "Estructurar esquemas asociativos energéticos, bonos de carbono e impuesto al carbono."
-            concepto_clave_latex: "I_{\\text{carbono}} = m_{\\text{CO}_2\\text{e}} \\cdot P_{\\text{tCO}_2} \\quad (\\text{No causación / Certificados RENARE})"
+            concepto_clave_latex: "I_{\\text{carbono}} = m_{\\text{CO}_2\\text{e}} \\cdot P_{\\text{tCO}_2} \\quad ; \\quad \\Delta\\text{CO}_2 = 0"
             ejemplo: "Constitución jurídica y sostenibilidad tarifaria de una comunidad energética rural."
             bloque_sugerido: "Taller 45 min • Comunidades y carbono"
       - codigo: "06011840"
@@ -5253,7 +5253,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Levantamiento de Requerimientos y Especificaciones Técnicas (QFD)"
             objetivo: "Traducir necesidades de usuarios en métricas de ingeniería verificables."
-            concepto_clave_latex: "S_j = \\sum_{i=1}^{m} w_i R_{ij} \\quad (\\text{Casa de la Calidad QFD})"
+            concepto_clave_latex: "S_j = \\sum_{i=1}^{m} w_i R_{ij} \\quad ; \\quad \\sum_{i=1}^m w_i = 1"
             ejemplo: "Definición de potencia pico, autonomía, peso máximo y presupuesto de un prototipo."
             bloque_sugerido: "Práctica 45 min • Matriz de requerimientos"
           - numero_tema: 3
@@ -5285,7 +5285,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Integración de Hardware/Software y Seguridad en Prototipado"
             objetivo: "Construir el prototipo funcional aplicando estándares de cableado, fusibles y seguridad."
-            concepto_clave_latex: "I_{\\text{prot}} \\le I_{\\text{adm,cable}} \\quad ; \\quad \\text{Verificación de aislamiento y polaridad}"
+            concepto_clave_latex: "I_{\\text{prot}} \\le I_{\\text{adm}} \\quad ; \\quad R_{\\text{aisl}} \\ge 100\\text{ M}\\Omega"
             ejemplo: "Ensamble físico en banco de pruebas con adquisición de datos por microcontrolador."
             bloque_sugerido: "Laboratorio 50 min • Montaje seguro"
           - numero_tema: 7
@@ -5301,7 +5301,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Documentación Técnica IEEE y Defensa Ejecutiva del Proyecto"
             objetivo: "Comunicar resultados mediante artículo corto formato IEEE, póster y demostración en vivo."
-            concepto_clave_latex: "\\text{TRL } 3 \\to \\text{TRL } 4\\text{ (Validación funcional en entorno de laboratorio)}"
+            concepto_clave_latex: "\\text{TRL}_{\\text{final}} \\ge 4 \\quad ; \\quad \\varepsilon_{\\text{funcional}} \\le 5\\%"
             ejemplo: "Sustentación pública del prototipo CDIO I ante jurado de la Facultad de Ingeniería."
             bloque_sugerido: "Simulacro 45 min • Sustentación CDIO I"
   - cuatrimestre: 7
@@ -5588,7 +5588,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Ambiente Marino, Biofouling, Cables Submarinos e Impacto Ambiental"
             objetivo: "Diseñar protección anticorrosiva, anclajes e interconexión eléctrica submarina."
-            concepto_clave_latex: "E_{\\text{ánodo sacrificio}} \\implies \\text{Protección catódica} + \\text{Recubrimientos anti-fouling}"
+            concepto_clave_latex: "E_{\\text{ánodo}} < E_{\\text{cátodo}} \\quad ; \\quad i_{\\text{prot}} \\ge 100\\text{ mA/m}^2"
             ejemplo: "Evaluación ambiental marina, mamíferos acuáticos y logística O&M costa afuera."
             bloque_sugerido: "Taller 45 min • Ingeniería oceánica"
       - codigo: "03021816"
@@ -5701,7 +5701,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Simulación de Plantas Térmicas y Procesos en Estado Estacionario"
             objetivo: "Cerrar balances de masa, energía y exergía con recirculaciones y pinch en diagramas de flujo."
-            concepto_clave_latex: "\\vec{R}(\\vec{z}) = \\vec{z} - \\vec{G}(\\vec{z}) = \\vec{0} \\quad (\\text{Convergencia de corrientes de corte})"
+            concepto_clave_latex: "\\vec{R}(\\vec{z}) = \\vec{z} - \\vec{G}(\\vec{z}) = \\vec{0} \\quad ; \\quad \\|\\vec{R}\\| < 10^{-6}"
             ejemplo: "Simulación paramétrica de un ciclo combinado con recuperación HRSG."
             bloque_sugerido: "Práctica 50 min • Flowsheet térmico"
           - numero_tema: 5
@@ -5890,7 +5890,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Epistemología de la Ingeniería y Paradigmas de Investigación"
             objetivo: "Diferenciar investigación básica, aplicada y desarrollo tecnológico (escala TRL 1–9)."
-            concepto_clave_latex: "\\text{TRL } 1\\text{ (Principios)} \\to \\text{TRL } 5\\text{ (Entorno relevante)} \\to \\text{TRL } 9\\text{ (Operación real)}"
+            concepto_clave_latex: "1 \\le \\text{TRL} \\le 9 \\quad ; \\quad \\text{TRL}_{k+1} > \\text{TRL}_k"
             ejemplo: "Clasificación del nivel de madurez tecnológica TRL de proyectos de hidrógeno y almacenamiento."
             bloque_sugerido: "Lectura 40 min • Escala NASA/ Minciencias TRL"
           - numero_tema: 2
@@ -5898,7 +5898,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Planteamiento del Problema, Pregunta Científica e Hipótesis"
             objetivo: "Formular preguntas de investigación acotadas, variables dependientes/independientes e hipótesis."
-            concepto_clave_latex: "H_1: Y = f(X_1, X_2) \\quad \\text{vs.} \\quad H_0:\\text{ Ausencia de efecto significativo}"
+            concepto_clave_latex: "H_0: \\beta_i = 0 \\quad \\text{vs.} \\quad H_1: \\beta_i \\neq 0 \\quad ; \\quad p < 0.05"
             ejemplo: "Delimitación espacial, temporal y conceptual de una tesis en Ingeniería Energética."
             bloque_sugerido: "Taller 45 min • Pregunta y objetivos"
           - numero_tema: 3
@@ -5914,7 +5914,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Marco Teórico, Conceptual y Operacionalización de Variables"
             objetivo: "Conectar leyes físicas fundamentales con indicadores medibles e instrumentos."
-            concepto_clave_latex: "\\text{Constructo} \\to \\text{Dimensión} \\to \\text{Indicador Cuantitativo} \\to \\text{Unidad SI}"
+            concepto_clave_latex: "Y = \\alpha + \\sum_{i=1}^p \\beta_i X_i + \\varepsilon \\quad ; \\quad \\varepsilon \\sim \\mathcal{N}(0, \\sigma^2)"
             ejemplo: "Matriz de operacionalización de variables para evaluar desempeño de colectores híbridos."
             bloque_sugerido: "Práctica 40 min • Matriz de variables"
           - numero_tema: 5
@@ -5938,7 +5938,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Ética de la Investigación, Propiedad Intelectual y Patentes"
             objetivo: "Cumplir integridad científica, reproducibilidad de datos abiertos y criterios de patentabilidad."
-            concepto_clave_latex: "\\text{Patente} \\iff \\text{Novedad Universal} \\land \\text{Nivel Inventivo} \\land \\text{Aplicación Industrial}"
+            concepto_clave_latex: "\\text{IPC} \\in \\text{OMPI} \\quad ; \\quad \\text{Reivindicación } 1 \\to N"
             ejemplo: "Búsqueda de antecedentes de patentes en Espacenet/USPTO antes de divulgar un prototipo."
             bloque_sugerido: "Taller 40 min • Propiedad industrial"
           - numero_tema: 8
@@ -5946,7 +5946,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Estructura del Anteproyecto de Grado y Escritura Científica"
             objetivo: "Redactar un anteproyecto completo con cronograma, presupuesto, impactos y bibliografía IEEE."
-            concepto_clave_latex: "\\text{Anteproyecto: Problema + Estado Arte + Metodología + Cronograma + Impactos}"
+            concepto_clave_latex: "\\text{Rigor} = \\text{Validez} \\times \\text{Fiabilidad} \\quad ; \\quad \\text{Cronograma} \\le T_{\\text{sem}}"
             ejemplo: "Sustentación ejecutiva de propuesta de investigación ante comité curricular."
             bloque_sugerido: "Simulacro 45 min • Defensa de anteproyecto"
       - codigo: "03011814"
@@ -6035,7 +6035,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Concepto, Tipologías y Gobernanza de Comunidades Energéticas"
             objetivo: "Comprender modelos cooperativos ciudadanos, prosumidores colectivos y Decreto 2236 de 2023."
-            concepto_clave_latex: "\\text{Autoconsumo Colectivo: } E_{\\text{local}} = \\sum_{i\\in\\mathcal{C}}\\min(G_i, D_i) + E_{\\text{compartida}}"
+            concepto_clave_latex: "E_{\\text{local}} = \\sum_{i \\in \\mathcal{C}}\\min(G_i, D_i) + E_{\\text{comp}}"
             ejemplo: "Diseño organizacional y estatutos de gobernanza para una comunidad energética en Magdalena."
             bloque_sugerido: "Taller 45 min • Modelos de gobernanza"
           - numero_tema: 2
@@ -6043,7 +6043,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Diagnóstico Participativo, Pobreza Energética y Necesidades Locales"
             objetivo: "Medir índices multidimensionales de pobreza energética y mapear actores comunitarios."
-            concepto_clave_latex: "I_{\\text{gasto}} = \\frac{\\text{Gasto Energético Hogar}}{\\text{Ingreso Hogar}} > 10\\%"
+            concepto_clave_latex: "I_{\\text{gasto}} = \\frac{C_{\\text{energía}}}{I_{\\text{hogar}}} \\times 100\\% > 10\\%"
             ejemplo: "Censo energético participativo de refrigeración, cocción limpia e iluminación en veredas."
             bloque_sugerido: "Trabajo Campo 45 min • Diagnóstico social"
           - numero_tema: 3
@@ -6051,7 +6051,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Cocción Limpia, Bombeo Solar Comunitario y Cadena de Frío"
             objetivo: "Dimensionar usos productivos de la energía (agroindustria, pesca artesanal y agua potable)."
-            concepto_clave_latex: "P_{\\text{bomba}} = \\frac{\\rho g Q H_{\\text{TDH}}}{\\eta_b \\eta_m} \\quad (\\text{Acueducto veredal solar})"
+            concepto_clave_latex: "P_{\\text{bomba}} = \\frac{\\rho g Q H_{\\text{TDH}}}{\\eta_b \\eta_m} \\quad ; \\quad E_{\\text{diaria}} = P_{\\text{bomba}} \\cdot t_{\\text{op}}"
             ejemplo: "Planta solar de hielo y cuartos fríos comunitarios para pescadores artesanales."
             bloque_sugerido: "Pomodoro 50/10 • Usos productivos"
           - numero_tema: 4
@@ -6067,7 +6067,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Modelos de Sostenibilidad Financiera y Fondos Rotatorios O&M"
             objetivo: "Garantizar la operación y reposición de baterías/inversores mediante tarifas solidarias."
-            concepto_clave_latex: "T_{\\text{sost}} = \\frac{C_{\\text{O\\&M anual}} + \\text{Fondo Reposición BESS}}{E_{\\text{consumida anual}}}"
+            concepto_clave_latex: "T_{\\text{sost}} = \\frac{C_{\\text{O\\&M}} + F_{\\text{reposición}}}{E_{\\text{consumida}}} \\quad [\\$/\\text{kWh}]"
             ejemplo: "Prevención del abandono tecnológico mediante fondo comunitario de reserva para baterías."
             bloque_sugerido: "Taller 45 min • Fondo de reposición"
           - numero_tema: 6
@@ -6091,7 +6091,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Indicadores de Impacto Socioambiental, Género y Escalabilidad"
             objetivo: "Evaluar cobeneficios en salud, equidad de género, ingresos locales y carbono evitado."
-            concepto_clave_latex: "\\text{SROI} = \\frac{\\text{Valor Presente Impactos Sociales y Ambientales}}{\\text{Inversión Total}}"
+            concepto_clave_latex: "\\text{SROI} = \\frac{\\text{VP}_{\\text{social}} + \\text{VP}_{\\text{ambiental}}}{\\text{CAPEX}_{\\text{tot}}}"
             ejemplo: "Evaluación de Retorno Social de la Inversión (SROI) alineada con ODS 5, 7, 8 y 13."
             bloque_sugerido: "Estudio de Caso 45 min • Métricas SROI"
       - codigo: "04031826"
@@ -6106,7 +6106,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Sistema de Gestión de la Energía (SGEn) bajo Norma ISO 50001"
             objetivo: "Implementar el ciclo PHVA de mejora continua del desempeño energético organizacional."
-            concepto_clave_latex: "\\text{PHVA ISO 50001: Política} \\to \\text{Revisión Energética} \\to \\text{LBEn/IDEn} \\to \\text{Auditoría}"
+            concepto_clave_latex: "\\text{IDEn} = \\frac{E_{\\text{real}}}{E_{\\text{LBEn}}} \\le 1.0"
             ejemplo: "Identificación de Usos Significativos de la Energía (USEs) mediante diagrama de Pareto 80/20."
             bloque_sugerido: "Pomodoro 45/10 • Revisión ISO 50001"
           - numero_tema: 2
@@ -6154,7 +6154,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Protocolo Internacional de Medida y Verificación (IPMVP)"
             objetivo: "Seleccionar Opciones A, B, C o D de IPMVP para certificar ahorros contractuales."
-            concepto_clave_latex: "\\text{Ahorro Verificado} = (E_{\\text{LBEn ajustada}} - E_{\\text{post}}) \\pm \\text{Ajustes No Rutinarios}"
+            concepto_clave_latex: "\\Delta E_{\\text{ahorro}} = (E_{\\text{LBEn,adj}} - E_{\\text{post}}) \\pm \\Delta E_{\\text{no-rut}}"
             ejemplo: "Diseño de plan M&V Opción B para proyecto de modernización de central de frío."
             bloque_sugerido: "Práctica 45 min • Opciones IPMVP"
           - numero_tema: 8
@@ -6162,7 +6162,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Modelos ESCO, Contratos por Desempeño (EPC) y Financiación Verde"
             objetivo: "Estructurar contratos de ahorro compartido o garantizado con empresas de servicios energéticos."
-            concepto_clave_latex: "\\text{Pago ESCO}_t = \\alpha\\cdot\\text{Ahorro Monetario Verificado}_t \\quad (\\alpha \\in [0.6, 0.85])"
+            concepto_clave_latex: "\\text{Pago}_{\\text{ESCO}} = \\alpha \\cdot \\Delta \\$_{\\text{ahorro}} \\quad ; \\quad \\alpha \\in [0.6, 0.85]"
             ejemplo: "Viabilidad de contrato EPC sin inversión inicial CAPEX para el cliente industrial."
             bloque_sugerido: "Taller 45 min • Modelo de negocio ESCO"
       - codigo: "06011842"
@@ -6201,7 +6201,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Integración de Generación Renovable en BT y MT (Sección 690 / 705)"
             objetivo: "Diseñar acoplamiento en lado carga y lado fuente verificando la regla del 120% en barrajes."
-            concepto_clave_latex: "I_{\\text{alim}} + I_{\\text{inv}} \\le 1.20\\,I_{\\text{nominal barraje}} \\quad (\\text{NTC 2050 Art. 705.12})"
+            concepto_clave_latex: "I_{\\text{alim}} + I_{\\text{inv}} \\le 1.20 \\, I_{\\text{barra}} \\quad ; \\quad I_{\\text{inv}} = \\frac{S_{\\text{inv}}}{\\sqrt{3}V_L}"
             ejemplo: "Interconexión segura de 250 kW solares en el tablero general de una industria."
             bloque_sugerido: "Práctica 50 min • Regla del 120%"
           - numero_tema: 5
@@ -6280,7 +6280,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Integración de Electrónica de Potencia, Sensórica y Telemetría IoT"
             objetivo: "Construir tableros limpios con compatibilidad electromagnética (EMC) y monitoreo remoto."
-            concepto_clave_latex: "\\text{SNR} = 20\\log_{10}\\left(\\frac{V_{\\text{señal}}}{V_{\\text{ruido}}}\\right) \\implies \\text{Apantallamiento + Tierras}"
+            concepto_clave_latex: "\\text{SNR} = 20\\log_{10}\\left(\\frac{V_{\\text{señal}}}{V_{\\text{ruido}}}\\right) \\ge 40\\text{ dB}"
             ejemplo: "Dashboard web en tiempo real registrando tensión, corriente, temperatura y eficiencia."
             bloque_sugerido: "Laboratorio 50 min • Telemetría IoT"
           - numero_tema: 6
@@ -6304,7 +6304,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Transferencia Tecnológica, Manual de Operación y Defensa CDIO II"
             objetivo: "Entregar planos as-built, repositorio de código documentado, manual O&M y sustentación."
-            concepto_clave_latex: "\\text{TRL } 4 \\to \\text{TRL } 5/6\\text{ (Prototipo integrado validado en entorno relevante)}"
+            concepto_clave_latex: "\\text{TRL}_{\\text{CDIO II}} \\ge 5 \\quad ; \\quad \\text{MTBF} \\ge 1000\\text{ h}"
             ejemplo: "Feria de ingeniería con demostración operativa en vivo ante evaluadores externos."
             bloque_sugerido: "Simulacro 45 min • Defensa CDIO II"
       - codigo: "06011841"
@@ -6351,7 +6351,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Convección Forzada Externa: Capa Límite Térmica y Correlaciones"
             objetivo: "Calcular coeficientes convectivos sobre placas planas, cilindros y bancos de tubos."
-            concepto_clave_latex: "\\overline{\\text{Nu}}_L = \\frac{\\bar{h}L}{k_f} = 0.037\\,\\text{Re}_L^{4/5}\\text{Pr}^{1/3}\\quad (\\text{Turbulento placa plana})"
+            concepto_clave_latex: "\\overline{\\text{Nu}}_L = \\frac{\\bar{h}L}{k_f} = 0.037\\,\\text{Re}_L^{4/5}\\text{Pr}^{1/3}"
             ejemplo: "Enfriamiento convectivo por viento sobre paneles solares y bancos de tubos de calderas."
             bloque_sugerido: "Pomodoro 50/10 • Correlaciones Nu-Re-Pr"
           - numero_tema: 6
@@ -6441,7 +6441,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Integración a Red (PCS Grid-Forming), Seguridad Térmica y Reciclaje"
             objetivo: "Analizar inversores formadores de red (inercia virtual), prevención de thermal runaway y 2ª vida."
-            concepto_clave_latex: "J_v\\frac{d\\omega}{dt} = P_{\\text{ref}} - P_e - D_v(\\omega - \\omega_0) \\quad (\\text{Máquina Síncrona Virtual})"
+            concepto_clave_latex: "J_v\\frac{d\\omega}{dt} = P_{\\text{ref}} - P_e - D_v(\\omega - \\omega_0)"
             ejemplo: "Soporte de frecuencia sintética con BESS Grid-Forming y normativa NFPA 855."
             bloque_sugerido: "Pomodoro 45/10 • PCS Grid-Forming"
           - numero_tema: 8
@@ -6496,7 +6496,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Control de Emisiones Atmosféricas (NOx, SOx, Material Particulado)"
             objetivo: "Dimensionar precipitadores electrostáticos, desulfuración FGD y reducción catalítica SCR."
-            concepto_clave_latex: "\\eta_{\\text{ESP}} = 1 - \\exp\\left(-\\frac{w_e A_{\\text{col}}}{Q_{\\text{gas}}}\\right) \\quad (\\text{Ecuación de Deutsch-Anderson})"
+            concepto_clave_latex: "\\eta_{\\text{ESP}} = 1 - \\exp\\left(-\\frac{w_e A_{\\text{col}}}{Q_{\\text{gas}}}\\right)"
             ejemplo: "Abatimiento superior al 99% de cenizas volantes y reducción SCR de NOx con amoníaco."
             bloque_sugerido: "Pomodoro 45/10 • Control ambiental"
           - numero_tema: 6
@@ -6512,7 +6512,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Fundamentos de Energía Nuclear de Fisión y Reactores SMR"
             objetivo: "Comprender defecto de masa, sección eficaz, moderación neutrónica y reactores modulares SMR."
-            concepto_clave_latex: "\\Delta E = \\Delta m \\cdot c^2 \\;\\;(\\approx 200\\text{ MeV por fisión de }^{235}\\text{U}) \\quad ; \\quad k_{\\text{ef}} = 1\\;\\;(\\text{Crítico})"
+            concepto_clave_latex: "\\Delta E = \\Delta m \\cdot c^2 \\quad ; \\quad k_{\\text{ef}} = \\frac{N_{t+1}}{N_t} = 1"
             ejemplo: "Seguridad pasiva y densidad energética extrema de reactores modulares pequeños (SMR)."
             bloque_sugerido: "Pomodoro 45/10 • Física nuclear y SMR"
           - numero_tema: 8
@@ -6535,7 +6535,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Estándares PMBOK / Ágil Híbrido en Proyectos de Infraestructura"
             objetivo: "Integrar alcance (EDT/WBS), interesados y gobernanza en proyectos EPC energéticos."
-            concepto_clave_latex: "\\text{WBS } 100\\%\\text{ Rule}: \\sum \\text{Entregables Paquetes Trabajo} = \\text{Alcance Total}"
+            concepto_clave_latex: "\\sum_{k=1}^m \\text{WP}_k = 100\\% \\quad ; \\quad \\text{SPI} = \\frac{\\text{EV}}{\\text{PV}}"
             ejemplo: "Desglose EDT completo para ingeniería, procura, construcción y puesta en marcha (EPC)."
             bloque_sugerido: "Taller 45 min • Estructura EDT/WBS"
           - numero_tema: 2
@@ -6575,7 +6575,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Gestión HSE, Seguridad Eléctrica (NFPA 70E) y Calidad ISO 9001"
             objetivo: "Prevenir accidentes laborales mediante bloqueo LOTO, análisis de arco eléctrico y QA/QC."
-            concepto_clave_latex: "E_{\\text{incidente arco}}\\,[\\text{cal/cm}^2] \\implies \\text{Categoría EPP + Frontera de Arco}"
+            concepto_clave_latex: "E_{\\text{arco}} = 4.184 \\cdot C_f \\cdot E_n \\left(\\frac{t}{0.2}\\right)\\left(\\frac{610}{D}\\right)^x"
             ejemplo: "Implementación de procedimiento LOTO (Lockout/Tagout) en maniobras de media tensión."
             bloque_sugerido: "Taller 45 min • Seguridad LOTO/HSE"
           - numero_tema: 7
@@ -6685,7 +6685,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Ética Profesional, Responsabilidad Legal COPNIA y Confidencialidad"
             objetivo: "Aplicar la Ley 842 de 2003 (Código de Ética Profesional de Ingeniería) y acuerdos NDA."
-            concepto_clave_latex: "\\text{Ley 842/2003: Diligencia Técnica} + \\text{Seguridad Pública} + \\text{Reserva Industrial}"
+            concepto_clave_latex: "\\text{CPI} = \\frac{\\text{EV}}{\\text{AC}} \\ge 1.0 \\quad ; \\quad \\text{SPI} = \\frac{\\text{EV}}{\\text{PV}} \\ge 1.0"
             ejemplo: "Análisis de dilemas éticos reales en interventoría, licitaciones y reportes regulatorios."
             bloque_sugerido: "Lectura 40 min • Código ético COPNIA"
           - numero_tema: 3
@@ -6693,7 +6693,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Seguridad y Salud en el Trabajo (SG-SST) y Riesgo Eléctrico/Térmico"
             objetivo: "Cumplir protocolos de trabajo en alturas, espacios confinados y riesgo eléctrico en campo."
-            concepto_clave_latex: "R = P_{\\text{ocurrencia}} \\times C_{\\text{severidad}} \\implies \\text{Jerarquía de Controles ISO 45001}"
+            concepto_clave_latex: "R = P_{\\text{ocurrencia}} \\times C_{\\text{severidad}} \\quad ; \\quad R \\le R_{\\text{adm}}"
             ejemplo: "Elaboración de ATS (Análisis de Trabajo Seguro) previo a inspección de planta solar o caldera."
             bloque_sugerido: "Práctica 40 min • Matriz ATS campo"
           - numero_tema: 4
@@ -6709,7 +6709,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Ejecución de Ingeniería Aplicada y Solución de Problemas Reales"
             objetivo: "Desarrollar propuestas de optimización, diseño o automatización validadas con estándares."
-            concepto_clave_latex: "\\text{Beneficio Neto Anual} = \\Delta E_{\\text{ahorrado/ganado}}\\cdot P_E - \\Delta C_{\\text{O\\&M}}"
+            concepto_clave_latex: "B_{\\text{neto}} = \\Delta E \\cdot P_e - \\Delta C_{\\text{O\\&M}} \\quad ; \\quad \\text{TIR} > \\text{WACC}"
             ejemplo: "Implementación de herramienta automatizada o mejora operativa durante la práctica."
             bloque_sugerido: "Práctica 50 min • Desarrollo técnico"
           - numero_tema: 6
@@ -6717,7 +6717,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Trabajo Interdisciplinario, Comunicación Ejecutiva y Liderazgo"
             objetivo: "Comunicar avances técnicos de forma asertiva ante gerencia, operaciones y contratistas."
-            concepto_clave_latex: "\\text{Reporte Ejecutivo: Hallazgo} \\to \\text{Impacto Cuantificado (\\$ / kWh)} \\to \\text{Acción Recomendada}"
+            concepto_clave_latex: "\\Delta \\$ = \\sum_{t=1}^{12} \\Delta E_t \\cdot T_t \\quad ; \\quad \\text{Payback} \\le 3\\text{ años}"
             ejemplo: "Presentación quincenal de indicadores de desempeño en comité técnico de ingeniería."
             bloque_sugerido: "Taller 40 min • Reporte gerencial"
           - numero_tema: 7
@@ -6725,7 +6725,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Documentación Técnica, Trazabilidad y Gestión del Conocimiento"
             objetivo: "Estandarizar memorias de cálculo, procedimientos SOP y repositorios entregables para la empresa."
-            concepto_clave_latex: "\\text{Trazabilidad ISO 9001: Versión + Revisión + Aprobación + Respaldo}"
+            concepto_clave_latex: "\\Delta\\sigma_{\\text{calidad}} = \\frac{|x_{\\text{audit}} - x_{\\text{nom}}|}{\\sigma} \\le 3"
             ejemplo: "Entrega de manual operativo y hojas de cálculo verificadas sin dependencia de caja negra."
             bloque_sugerido: "Práctica 40 min • Entregables QA/QC"
           - numero_tema: 8
@@ -6733,7 +6733,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Informe Final de Inmersión, Cuantificación de Impacto y Sustentación"
             objetivo: "Sintetizar aportes técnicos, económicos y aprendizajes profesionales ante universidad y empresa."
-            concepto_clave_latex: "\\text{ROI}_{\\text{mejora}} = \\frac{\\text{Ahorro / Valor Generado} - \\text{Costo Implementación}}{\\text{Costo Implementación}}\\times 100\\%"
+            concepto_clave_latex: "\\text{ROI} = \\frac{\\text{Beneficio Neto}}{\\text{Inversión}} \\times 100\\%"
             ejemplo: "Sustentación final de resultados cuantificados logrados durante el semestre de inmersión."
             bloque_sugerido: "Simulacro 45 min • Defensa de inmersión"
   - cuatrimestre: 11
@@ -6807,7 +6807,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Descarbonización Industrial Profunda y Economía Circular Energética"
             objetivo: "Construir curvas de costos marginales de abatimiento (MACC) para industrias electrointensivas."
-            concepto_clave_latex: "\\text{MAC}_k = \\frac{\\text{Costo Anual Neto Medida } k}{\\text{Emisiones Evitadas } [\\text{tCO}_2\\text{e/año}]}"
+            concepto_clave_latex: "\\text{MAC}_k = \\frac{C_{\\text{neto}, k}}{\\Delta \\text{CO}_{2, k}} \\quad [\\$/\\text{tCO}_2\\text{e}]"
             ejemplo: "Priorización de medidas con costo de abatimiento negativo (ahorro neto) e inversiones ruta Net-Zero."
             bloque_sugerido: "Taller 45 min • Curva MACC"
       - codigo: "06031853"
@@ -6838,7 +6838,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Fotovoltaica Flotante (FPV) en Embalses Hidroeléctricos"
             objetivo: "Evaluar sinergia hidro-solar, enfriamiento convectivo del panel y reducción de evaporación."
-            concepto_clave_latex: "E_{\\text{híbrida}} = E_{\\text{hidro}} + E_{\\text{FPV}} \\quad (\\text{Reuso de subestación existente})"
+            concepto_clave_latex: "E_{\\text{híbrida}} = E_{\\text{hidro}} + E_{\\text{FPV}} \\quad ; \\quad P \\le S_{\\text{subestación}}"
             ejemplo: "Planta solar flotante sobre embalse hidroeléctrico compensando estiajes de El Niño."
             bloque_sugerido: "Práctica 45 min • Hibridación FPV-Hidro"
           - numero_tema: 4
@@ -6893,7 +6893,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Concepción de Solución Capstone a Escala Pre-Comercial (TRL 6–7)"
             objetivo: "Formular un proyecto integrador de fin de ciclo con impacto regional verificable."
-            concepto_clave_latex: "\\text{Capstone CDIO III: Viabilidad Técnica} \\land \\text{Bancabilidad} \\land \\text{Sostenibilidad Social}"
+            concepto_clave_latex: "\\text{VPN} > 0 \\quad \\land \\quad \\text{TIR} > \\text{WACC} \\quad \\land \\quad \\text{TRL} \\ge 7"
             ejemplo: "Definición de alcance ejecutivo con aliado industrial, institucional o comunitario."
             bloque_sugerido: "Taller CDIO 45 min • Charter Capstone"
           - numero_tema: 2
@@ -6901,7 +6901,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Ingeniería de Detalle Multidisciplinaria y Cumplimiento Normativo"
             objetivo: "Elaborar memorias de cálculo completas, diagramas unifilares/P&ID y verificación RETIE/CREG/ISO."
-            concepto_clave_latex: "\\text{Expediente Ingeniería Detalle: Memorias + Planos + Especificaciones + Normativa}"
+            concepto_clave_latex: "\\Delta V \\le 3\\% \\quad ; \\quad I_{\\text{cable}} \\le I_{\\text{adm}} \\quad ; \\quad R_{\\text{malla}} \\le 5\\,\\Omega"
             ejemplo: "Revisión cruzada por pares de los cálculos eléctricos, térmicos, estructurales y de control."
             bloque_sugerido: "Práctica 50 min • Ingeniería de detalle"
           - numero_tema: 3
@@ -6909,7 +6909,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Gemelo Digital / Simulación Integral de 8760 Horas y Contingencias"
             objetivo: "Validar el diseño ante escenarios extremos N-1, variabilidad climática y degradación."
-            concepto_clave_latex: "\\text{Disponibilidad Anual} \\ge 99\\% \\quad ; \\quad \\text{Análisis de Contingencias } N-1"
+            concepto_clave_latex: "A = \\frac{\\text{MTBF}}{\\text{MTBF} + \\text{MTTR}} \\ge 0.99 \\quad ; \\quad N-1 \\implies \\text{Estable}"
             ejemplo: "Simulación anual completa demostrando resiliencia operativa ante fallas y días nublados."
             bloque_sugerido: "Laboratorio 50 min • Validación N-1"
           - numero_tema: 4
@@ -6917,7 +6917,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Implementación de Prototipo Avanzado / Piloto y Pruebas de Campo"
             objetivo: "Desplegar y calibrar el sistema físico o piloto demostrativo en condiciones reales."
-            concepto_clave_latex: "U_{95\\%}(\\eta_{\\text{piloto}}) = \\pm k\\,u_c(\\eta) \\quad (\\text{Validación metrológica en campo})"
+            concepto_clave_latex: "U_{95\\%}(\\eta_{\\text{piloto}}) = \\pm k \\, u_c(\\eta) \\quad ; \\quad k = 2"
             ejemplo: "Operación continua del piloto registrando curvas reales de generación, consumo y estabilidad."
             bloque_sugerido: "Laboratorio 50 min • Piloto en campo"
           - numero_tema: 5
@@ -6941,7 +6941,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Redacción de Artículo Científico IEEE y Dossier Ejecutivo"
             objetivo: "Sintetizar la innovación y resultados experimentales en formato publicable IEEE."
-            concepto_clave_latex: "\\text{Paper IEEE (6--8 págs.): Abstract, Intro, Model, Setup, Results, Conclusion}"
+            concepto_clave_latex: "R^2 \\ge 0.95 \\quad ; \\quad \\text{RMSE} \\le 3.5\\% \\quad ; \\quad p < 0.01"
             ejemplo: "Revisión estilo peer-review de gráficas vectoriales, ecuaciones KaTeX y referencias."
             bloque_sugerido: "Escritura 50 min • Artículo IEEE"
           - numero_tema: 8
@@ -6949,7 +6949,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Sustentación Pública Capstone CDIO III ante Panel Evaluador"
             objetivo: "Defender con rigor técnico y solvencia ejecutiva la solución integral desarrollada."
-            concepto_clave_latex: "\\text{Defensa Ejecutiva (15 min) + Demostración Operativa + Ronda de Jurados}"
+            concepto_clave_latex: "\\text{Puntaje}_{\\text{CDIO}} = \\sum_{k=1}^m w_k \\cdot C_k \\ge 80\\%"
             ejemplo: "Presentación final de cierre de la línea integradora CDIO de Ingeniería Energética."
             bloque_sugerido: "Simulacro 50 min • Defensa Capstone"
       - codigo: "06011844"
@@ -7012,7 +7012,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Transmisión en Corriente Directa de Alta Tensión (HVDC LCC y VSC)"
             objetivo: "Comparar enlaces HVDC frente a HVAC por distancia de equilibrio, cables submarinos y control P-Q."
-            concepto_clave_latex: "P_{\\text{HVDC}} = V_{d1}\\frac{V_{d1} - V_{d2}}{R_d} \\quad (\\text{Distancia crítica aérea } \\approx 600\\text{ km, submarina } \\approx 50\\text{ km})"
+            concepto_clave_latex: "P_{\\text{HVDC}} = V_{d1}\\frac{V_{d1} - V_{d2}}{R_d} \\quad ; \\quad L_{\\text{crit}} \\approx 600\\text{ km}"
             ejemplo: "Interconexión HVDC VSC para evacuar energía eólica desde La Guajira hacia el interior del SIN."
             bloque_sugerido: "Práctica 45 min • Enlaces HVDC VSC"
           - numero_tema: 8
@@ -7020,7 +7020,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Redes Activas de Distribución, Reconfiguración, Smart Grids y Hosting Capacity"
             objetivo: "Gestionar flujos bidireccionales, regulación Volt-VAr y automatización FLISR en SDL."
-            concepto_clave_latex: "\\Delta V \\approx \\frac{R\\cdot P + X\\cdot Q}{V_n} \\quad \\implies \\quad \\text{Control } Q(V)\\text{ en inversores inteligentes}"
+            concepto_clave_latex: "\\Delta V \\approx \\frac{RP + XQ}{V_n} \\quad ; \\quad Q(V) = \\pm f(\\Delta V)"
             ejemplo: "Aumento de capacidad de alojamiento solar en alimentadores radiales con curvas Volt-VAr."
             bloque_sugerido: "Taller 50 min • Smart Grids y Volt-VAr"
       - codigo: "04031830"
@@ -7035,7 +7035,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Dimensiones de la Justicia Energética: Distributiva, Procedimental y Reconocimiento"
             objetivo: "Analizar equidad en costos, beneficios, participación informada y derechos territoriales."
-            concepto_clave_latex: "\\text{Justicia Energética} = J_{\\text{distributiva}} \\cap J_{\\text{procedimental}} \\cap J_{\\text{reconocimiento}} \\cap J_{\\text{restaurativa}}"
+            concepto_clave_latex: "J_{\\text{total}} = \\sum_{k=1}^4 w_k \\cdot J_k \\quad ; \\quad \\sum_{k=1}^4 w_k = 1"
             ejemplo: "Evaluación de equidad en megaproyectos renovables ubicados en territorios étnicos."
             bloque_sugerido: "Lectura Crítica 45 min • Marcos de justicia"
           - numero_tema: 2
@@ -7043,7 +7043,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Geopolítica de Minerales Críticos (Litio, Cobre, Tierras Raras) y Cadenas Globales"
             objetivo: "Evaluar riesgos de suministro, huella extractiva y reciclaje urbano de minerales estratégicos."
-            concepto_clave_latex: "I_{\\text{criticidad}} = f(\\text{Importancia Económica},\\; \\text{Riesgo de Suministro HHI})"
+            concepto_clave_latex: "I_{\\text{crit}} = \\sqrt{\\text{EI}^2 + \\text{HHI}^2} \\quad ; \\quad \\text{HHI} = \\sum s_i^2"
             ejemplo: "Demanda intensiva de cobre, litio, níquel y neodimio en baterías, redes y turbinas."
             bloque_sugerido: "Pomodoro 45/10 • Minerales críticos"
           - numero_tema: 3
@@ -7051,7 +7051,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Reconversión Laboral, Regiones Carboníferas y Diversificación Productiva"
             objetivo: "Diseñar estrategias de transición laboral y económica para municipios dependientes de fósiles."
-            concepto_clave_latex: "\\Delta\\text{Empleo Neto} = E_{\\text{empleos verdes directos+ind.}} - E_{\\text{fósiles desplazados}}"
+            concepto_clave_latex: "\\Delta E_{\\text{empleo}} = E_{\\text{verde}} - E_{\\text{fósil}} \\quad ; \\quad \\Delta E > 0"
             ejemplo: "Rutas de reconversión económica y formación técnica en el corredor minero Cesar-La Guajira."
             bloque_sugerido: "Estudio de Caso 50 min • Regiones carboníferas"
           - numero_tema: 4
@@ -7059,7 +7059,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Diálogo Intercultural, Consentimiento Libre, Previo e Informado y Co-propiedad"
             objetivo: "Integrar saberes locales, consulta previa genuina y participación comunitaria en los ingresos."
-            concepto_clave_latex: "R_{\\text{territorio}} = \\text{Transferencias Ley 99} + \\text{Participación Equity / Regalías Sociales}"
+            concepto_clave_latex: "R_{\\text{territorio}} = 0.06 \\cdot \\text{Venta Bruta} \\quad [\\text{Ley 99/93}]"
             ejemplo: "Modelos de asociación y participación accionaria comunitaria en parques eólicos y solares."
             bloque_sugerido: "Taller 45 min • Gobernanza territorial"
           - numero_tema: 5
@@ -7091,7 +7091,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Diseño de Política Pública y Hoja de Ruta de Transición Energética Justa"
             objetivo: "Articular instrumentos regulatorios, fiscales, industriales y sociales en hojas de ruta viables."
-            concepto_clave_latex: "\\text{Política Integral: Metas GW} + \\text{Redes STN} + \\text{Contenido Local} + \\text{Justicia Social}"
+            concepto_clave_latex: "P_{\\text{renovable}} \\ge P_{\\text{meta}} \\quad ; \\quad \\Delta\\text{CO}_2 \\to 0"
             ejemplo: "Simulación de mesa multiactor negociando una hoja de ruta regional de transición justa."
             bloque_sugerido: "Simulacro 50 min • Política pública TEJ"
   - cuatrimestre: 12
@@ -7109,7 +7109,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Modalidades Reglamentarias de Grado en Unimagdalena y Selección Estratégica"
             objetivo: "Conocer alcances y requisitos de Trabajo de Investigación, Pasantía, Emprendimiento o Posgrado."
-            concepto_clave_latex: "\\text{Modalidad 8108} \\in \\{\\text{Tesis I+D},\\; \\text{Pasantía},\\; \\text{Creación Empresa},\\; \\text{Seminario/Posgrado}\\}"
+            concepto_clave_latex: "M_{\\text{grado}} \\in \\{ \\text{Tesis},\\; \\text{Pasantía},\\; \\text{Spin-off},\\; \\text{Posgrado} \\}"
             ejemplo: "Alineación del perfil profesional del estudiante con la modalidad óptima y director."
             bloque_sugerido: "Taller 40 min • Plan maestro de grado"
           - numero_tema: 2
@@ -7117,7 +7117,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Consolidación del Estado del Arte y Marco Metodológico Reproducible"
             objetivo: "Refinar literatura reciente (últimos 5 años) y protocolo experimental o computacional verificable."
-            concepto_clave_latex: "\\text{Rigor Metodológico} = \\text{Validez Interna} + \\text{Trazabilidad Datos} + \\text{Reproducibilidad}"
+            concepto_clave_latex: "R^2 \\ge 0.98 \\quad ; \\quad \\sigma_{\\text{rep}} \\le 2\\% \\quad ; \\quad p < 0.001"
             ejemplo: "Repositorio estructurado con scripts, parámetros de simulación y cuaderno de laboratorio."
             bloque_sugerido: "Trabajo Grado 50 min • Protocolo reproducible"
           - numero_tema: 3
@@ -7125,7 +7125,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Modelado Matemático, Simulación o Experimentación de Alta Precisión"
             objetivo: "Ejecutar el núcleo técnico del trabajo de grado verificando conservación física y convergencia."
-            concepto_clave_latex: "\\|\\vec{R}(\\vec{x})\\|_\\infty < 10^{-6} \\quad ; \\quad \\text{Balance Energía Error } < 0.5\\%"
+            concepto_clave_latex: "\\|\\vec{R}(\\vec{x})\\|_\\infty < 10^{-6} \\quad ; \\quad \\varepsilon_{\\text{balance}} < 0.5\\%"
             ejemplo: "Verificación de cierre de balances de masa, energía y potencia en los resultados centrales."
             bloque_sugerido: "Trabajo Grado 50 min • Validación numérica/exp"
           - numero_tema: 4
@@ -7141,7 +7141,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Evaluación Tecnoeconómica, Regulatoria y Socioambiental del Trabajo de Grado"
             objetivo: "Demostrar la factibilidad integral de implementación en el contexto colombiano o global."
-            concepto_clave_latex: "\\text{Factibilidad Integral} = f(\\text{VPN/LCOE},\\; \\text{Conformidad CREG/RETIE},\\; \\Delta\\text{CO}_2\\text{e})"
+            concepto_clave_latex: "\\text{VPN} > 0 \\quad ; \\quad \\text{LCOE} \\le \\text{LCOE}_{\\text{red}} \\quad ; \\quad \\Delta\\text{CO}_2 < 0"
             ejemplo: "Capítulo de impacto económico, normativo y contribución a los ODS de la propuesta."
             bloque_sugerido: "Trabajo Grado 45 min • Impacto integral"
           - numero_tema: 6
@@ -7149,7 +7149,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Escritura Científica de la Monografía / Artículo y Visualización Vectorial"
             objetivo: "Redactar documento final con tipografía matemática impecable (LaTeX/KaTeX) y figuras de calidad editorial."
-            concepto_clave_latex: "\\text{Calidad Editorial: Ecuaciones Numeradas} + \\text{Figuras Vectoriales} + \\text{Citas IEEE } [1\\text{--}N]"
+            concepto_clave_latex: "N_{\\text{citas}} \\ge 30 \\quad ; \\quad \\text{DPI} \\ge 300 \\quad ; \\quad [1\\dots N] \\in \\text{IEEE}"
             ejemplo: "Edición final libre de ambigüedades, plagio cero y cumplimiento de normas de Biblioteca."
             bloque_sugerido: "Escritura 50 min • Manuscrito final"
           - numero_tema: 7
@@ -7157,7 +7157,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Preparación de Diapositivas Ejecutivas y Discurso de Sustentación"
             objetivo: "Sintetizar 6 meses de trabajo en una presentación de alto impacto visual y claridad conceptual."
-            concepto_clave_latex: "\\text{Estructura Defensa (20 min): Problema (3')} \\to \\text{Método (5')} \\to \\text{Resultados (9')} \\to \\text{Cierre (3')}"
+            concepto_clave_latex: "T_{\\text{sustentación}} \\le 20\\text{ min} \\quad ; \\quad \\Delta T_{\\text{preguntas}} \\le 10\\text{ min}"
             ejemplo: "Diseño minimalista de diapositivas enfocado en gráficas clave, aportes y conclusiones."
             bloque_sugerido: "Práctica Oral 45 min • Ensayo cronometrado"
           - numero_tema: 8
@@ -7165,7 +7165,7 @@ malla_curricular:
             modalidad: "tecnica"
             titulo: "Defensa Pública ante Jurados Calificadores y Proyección Profesional"
             objetivo: "Responder con solvencia científica las preguntas del jurado y proyectar continuidad profesional/posgrado."
-            concepto_clave_latex: "\\text{Ingeniero(a) Energético(a) Unimagdalena • Plan 8108 • SNIES 118222}"
+            concepto_clave_latex: "\\text{Graduado}_{\\text{Plan 8108}} \\implies \\text{Ingeniero Energético}"
             ejemplo: "Simulacro completo de defensa pública y entrega final a repositorio institucional."
             bloque_sugerido: "Simulacro Final 50 min • Defensa de Grado"
 ---

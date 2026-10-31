@@ -384,7 +384,9 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
                                         asignatura: CurriculumScope.maybeOf(
                                           context,
                                         )?.database?.findAsignatura(
-                                          widget.temaId,
+                                          tema.codigoAsignatura.isNotEmpty
+                                              ? tema.codigoAsignatura
+                                              : widget.temaId,
                                         ),
                                         onSelectTopic: _selectTopicNumber,
                                       ),
@@ -765,7 +767,7 @@ class _OfficialTopicSection extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'Tema ${t.numeroTema}: ${t.titulo}',
+                          t.badgeTema,
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,

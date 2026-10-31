@@ -103,6 +103,8 @@ class TemaClaseVivaModel {
 
   String get etiquetaCorteCorta => 'Corte $corte';
 
+  String get badgeTema => 'Tema $numeroTema';
+
   factory TemaClaseVivaModel.fromMap(Map<String, dynamic> map) {
     final numero = _parseInt(map['numero_tema'] ?? map['numero'], 1);
     final rawSlides = map['slides'];
