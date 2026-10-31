@@ -3,9 +3,9 @@
   "nombre": "Jesus Sierra",
   "email": "jasierra@unimagdalena.edu.co",
   "programa": "Ingeniería Energética",
-  "cuatrimestre_actual": 12,
+  "cuatrimestre_actual": 2,
   "pin_hash": "70a60076d7ddd626362129ea1b4f836d2736af553f2104f016fc05b7a5736c00",
-  "progreso_materias": "enc:v1:stpmCcw6h8l3CHdC+rwDocSPFosWzz1HrkOau1FhBCmFOgA8iz5tXDqiPzCsvre6LyJsjGecWEiP1jJbtyk5MpMZOsOJPMzsRM5a/jkbmjunAFEikD86toYcbopvVEwPUfSaf0WdQySKM92sayOBDVrtgaq8/alhdXO1oJxb6GGXMnaoTXONAhqdveyyrpOydEEwvNOTjgft+a9m6SzsqhBhaOffuCHyRUOQeVFbeLv34O2pHVkW56UN3l9n6dXBzCYqfyDoISlWsw==",
+  "progreso_materias": "enc:v1:ID//0D4JO3jL2mC/bQZ1TylQH8FaRIMtiChlBoJiF4JWjnOiD9DKT6OpGN/hrj91CnaSv/x7w5YvtUvWD/jyAOE1Bmr2l+6bpqpzFx1El0QixdwFVImGSl3jM5dj9QfcUix1cK2so6veOC4PzwKkKGJQXB8plSgaDpj9MqtWYOHmMOlDKZQahah+FcMyn7/JyFoe4Y4XhWVWK2ZCrg0YKAEpeeI0d3NJyvFSv45134ib+vteSrrvRXdtiveAkAFUGnul+Q26DuAgcQ==",
   "ultimos_temas_revisados": {
     "02011807": 1,
     "03011813": 3,
@@ -20,6 +20,6 @@
     "numero_tema": 2,
     "actualizado_en": "2026-10-31T04:42:42.488"
   },
-  "recordatorios_calendario": "enc:v1:9ZfrbtkzTNdmZJ6BMJWLF2Il0cnR5X2BTcb+HOK72ftt0w==",
-  "apuntes_personales": "enc:v1:uw2rdnq1DEMQ9qYBulEld1SFvuLk0PwRjylsjJlbsdZ7+klsHv+Twk958A/VFq7gUMgjrPWe"
+  "recordatorios_calendario": "enc:v1:QvIUPq0KHJHwQdHcCZN4Yd8Tb708r8xPCr7UUwCUY+e7qQ==",
+  "apuntes_personales": "enc:v1:opYYr9arY9MGfxk2nkv8AUrt/ckV/b2AjDytZ8q/+66dW7qI+5ep4wr9JL9eJ5eV2NmUqYOZ"
 }
