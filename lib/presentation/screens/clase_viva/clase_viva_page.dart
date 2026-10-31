@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,7 @@ import '../../../domain/entities/nota_adjunto_entity.dart';
 import '../../../domain/entities/subject_summary.dart';
 import '../../../domain/entities/tema_estudio_entity.dart';
 import '../../../domain/repositories/i_clase_viva_repository.dart';
+import '../../../widgets/minimal_slide_viewer.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/ios_primitives.dart';
 import '../../widgets/katex_formula_card.dart';
@@ -586,6 +588,15 @@ class _OfficialTopicSection extends StatelessWidget {
     final p = context.palette;
     final session = SessionScope.maybeOf(context);
     final asig = asignatura;
+    final isIngles = asig?.esIngles ??
+        (tema.esInglesGeneral || tema.esNotacionIngenieria);
+    final activeEnglishBranch =
+        tema.esNotacionIngenieria ? 'notacion_ingenieria' : 'general';
+    final pillTemas = asig == null
+        ? const <TemaClaseVivaModel>[]
+        : (isIngles
+            ? asig.temasPorModalidad(activeEnglishBranch)
+            : asig.temas);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,12 +611,12 @@ class _OfficialTopicSection extends StatelessWidget {
                 children: [
                   Text(
                     tema.codigoAsignatura.isNotEmpty
-                        ? 'ASIGNATURA • ${tema.codigoAsignatura} • C${tema.cuatrimestre}'
+                        ? 'ASIGNATURA • ${tema.codigoAsignatura} • C${tema.cuatrimestre} • ${tema.etiquetaCorte.toUpperCase()}'
                         : 'ASIGNATURA',
                     style: mono(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      letterSpacing: 1.1,
+                      letterSpacing: 1.0,
                       color: p.textSecondary,
                     ),
                   ),
@@ -627,7 +638,7 @@ class _OfficialTopicSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: p.green,
+                        color: tema.esNotacionIngenieria ? p.indigo : p.green,
                       ),
                     ),
                   ],
@@ -639,31 +650,99 @@ class _OfficialTopicSection extends StatelessWidget {
               margin: const EdgeInsets.only(top: 14),
               padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
               decoration: BoxDecoration(
-                color: p.green.o(0.10),
+                color: (tema.esNotacionIngenieria ? p.indigo : p.green).o(0.10),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: p.green, width: 1),
+                border: Border.all(
+                  color: tema.esNotacionIngenieria ? p.indigo : p.green,
+                  width: 1,
+                ),
               ),
               child: Text(
                 tema.badgeTema,
                 style: mono(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: p.green,
+                  color: tema.esNotacionIngenieria ? p.indigo : p.green,
                 ),
               ),
             ),
           ],
         ),
 
-        // Selector horizontal de Temas si la asignatura tiene múltiples temas en el .md
-        if (asig != null && asig.temas.length > 1 && onSelectTopic != null) ...[
+        // Intercambiador Interno estilo iOS para los 5 niveles de General English
+        if (isIngles && asig != null && onSelectTopic != null) ...[
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoSlidingSegmentedControl<String>(
+              key: const Key('clase_viva_english_switcher'),
+              backgroundColor: p.card,
+              thumbColor: p.elevated,
+              groupValue: activeEnglishBranch,
+              onValueChanged: (branch) {
+                if (branch == null || branch == activeEnglishBranch) return;
+                final branchTopics = asig.temasPorModalidad(branch);
+                if (branchTopics.isNotEmpty) {
+                  onSelectTopic!(asig, branchTopics.first.numeroTema);
+                }
+              },
+              children: {
+                'general': Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 6,
+                  ),
+                  child: Text(
+                    'Inglés General (Slides)',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: activeEnglishBranch == 'general'
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: activeEnglishBranch == 'general'
+                          ? p.green
+                          : p.textSecondary,
+                    ),
+                  ),
+                ),
+                'notacion_ingenieria': Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 6,
+                  ),
+                  child: Text(
+                    'Notación de Ingeniería (KaTeX)',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: activeEnglishBranch == 'notacion_ingenieria'
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: activeEnglishBranch == 'notacion_ingenieria'
+                          ? p.indigo
+                          : p.textSecondary,
+                    ),
+                  ),
+                ),
+              },
+            ),
+          ),
+        ],
+
+        // Selector horizontal de Temas si la asignatura/rama tiene múltiples temas en el .md
+        if (asig != null && pillTemas.length > 1 && onSelectTopic != null) ...[
           const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             child: Row(
               children: [
-                for (final t in asig.temas)
+                for (final t in pillTemas)
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: TapScale(
@@ -676,12 +755,12 @@ class _OfficialTopicSection extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: t.numeroTema == tema.numeroTema
-                              ? p.green
+                              ? (t.esNotacionIngenieria ? p.indigo : p.green)
                               : p.card,
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: t.numeroTema == tema.numeroTema
-                                ? p.green
+                                ? (t.esNotacionIngenieria ? p.indigo : p.green)
                                 : p.cardBorder,
                           ),
                         ),
@@ -691,7 +770,9 @@ class _OfficialTopicSection extends StatelessWidget {
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                             color: t.numeroTema == tema.numeroTema
-                                ? Colors.black
+                                ? (t.esNotacionIngenieria
+                                    ? Colors.white
+                                    : Colors.black)
                                 : p.textSecondary,
                           ),
                         ),
@@ -712,12 +793,66 @@ class _OfficialTopicSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // D.2 Tarjeta Modular: CONCEPTO CLAVE (KaTeX Nativo)
-        KatexFormulaCard(
-          latex: tema.conceptoClaveLatex,
-          label: 'CONCEPTO CLAVE',
-        ),
-        const SizedBox(height: 12),
+        // D.2 Contenido Condicional: Visor de Slides (Inglés General) vs KaTeX + Verbalización
+        if (tema.esInglesGeneral) ...[
+          MinimalSlideViewer(
+            temaId: tema.id,
+            codigoAsignatura: tema.codigoAsignatura,
+            nombreAsignatura: tema.nombreAsignatura,
+            numeroTema: tema.numeroTema,
+            tituloTema: tema.tituloTema,
+            slides: tema.slides,
+          ),
+          const SizedBox(height: 12),
+        ] else ...[
+          KatexFormulaCard(
+            latex: tema.conceptoClaveLatex,
+            label: tema.esNotacionIngenieria
+                ? 'CONCEPTO CLAVE (KaTeX)'
+                : 'CONCEPTO CLAVE',
+          ),
+          const SizedBox(height: 12),
+          if (tema.esNotacionIngenieria &&
+              tema.verbalizacionIngles.trim().isNotEmpty) ...[
+            IosCard(
+              radius: 18,
+              padding: const EdgeInsets.all(16),
+              borderColor: p.green.o(0.42),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.record_voice_over_rounded,
+                        size: 15,
+                        color: p.green,
+                      ),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          'PRONUNCIACIÓN Y LECTURA EN INGLÉS',
+                          style: sectionMicroStyle(p),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 9),
+                  Text(
+                    tema.verbalizacionIngles,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.48,
+                      fontWeight: FontWeight.w500,
+                      color: p.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ],
 
         // D.3 Tarjeta Modular: EJEMPLO DE CÁTEDRA (radius: 18px)
         _ContentModularCard(

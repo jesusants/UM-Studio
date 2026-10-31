@@ -114,7 +114,7 @@ class MarkdownCurriculumService extends ChangeNotifier {
   MarkdownCurriculumService({http.Client? httpClient})
       : _http = httpClient ?? http.Client();
 
-  static const String _cachedMdKey = 'um_studio_cached_curriculum_md_v3';
+  static const String _cachedMdKey = 'um_studio_cached_curriculum_md_v4';
 
   final http.Client _http;
 

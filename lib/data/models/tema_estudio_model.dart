@@ -15,10 +15,32 @@ class TemaEstudioModel extends TemaEstudioEntity {
     super.cuatrimestre = 1,
     super.creditos = 3,
     super.sincronizacionPorcentaje = 96,
+    super.corte = 1,
+    super.modalidad = 'tecnica',
+    super.verbalizacionIngles = '',
+    super.slides = const [],
   });
 
   factory TemaEstudioModel.fromJson(Map<String, dynamic> json) {
     final rawNum = json['numero_tema'] ?? json['numero'] ?? 1;
+    final rawCorte = json['corte'] ?? 1;
+    final rawSlides = json['slides'];
+    final parsedSlides = <SlideDeckItem>[];
+    if (rawSlides is Iterable) {
+      var idx = 1;
+      for (final s in rawSlides) {
+        if (s is Map) {
+          parsedSlides.add(
+            SlideDeckItem.fromMap(
+              s.map((k, v) => MapEntry(k.toString(), v)),
+              fallbackNum: idx,
+            ),
+          );
+          idx++;
+        }
+      }
+    }
+
     return TemaEstudioModel(
       id: (json['id'] ?? '').toString(),
       nombreAsignatura: (json['nombre_asignatura'] ?? '').toString(),
@@ -40,6 +62,12 @@ class TemaEstudioModel extends TemaEstudioEntity {
       sincronizacionPorcentaje: (json['sincronizacion_porcentaje'] is num)
           ? (json['sincronizacion_porcentaje'] as num).toInt()
           : 96,
+      corte: rawCorte is num
+          ? rawCorte.toInt().clamp(1, 3)
+          : (int.tryParse(rawCorte.toString()) ?? 1).clamp(1, 3),
+      modalidad: (json['modalidad'] ?? 'tecnica').toString(),
+      verbalizacionIngles: (json['verbalizacion_ingles'] ?? '').toString(),
+      slides: List.unmodifiable(parsedSlides),
     );
   }
 
@@ -47,14 +75,20 @@ class TemaEstudioModel extends TemaEstudioEntity {
         'id': id,
         'nombre_asignatura': nombreAsignatura,
         'numero_tema': numeroTema,
+        'corte': corte,
+        'modalidad': modalidad,
         'titulo': tituloTema,
         'objetivo': objetivo,
         'concepto_clave_latex': conceptoClaveLatex,
+        if (verbalizacionIngles.isNotEmpty)
+          'verbalizacion_ingles': verbalizacionIngles,
         'ejemplo': ejemplo,
         'bloque_sugerido': bloqueSugerido,
         'codigo_asignatura': codigoAsignatura,
         'cuatrimestre': cuatrimestre,
         'creditos': creditos,
         'sincronizacion_porcentaje': sincronizacionPorcentaje,
+        if (slides.isNotEmpty)
+          'slides': slides.map((s) => s.toJson()).toList(growable: false),
       };
 }

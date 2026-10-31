@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../domain/entities/tema_estudio_entity.dart';
 import 'tema_estudio_model.dart';
 
 /// Información oficial del programa extraída del YAML Frontmatter.
@@ -65,25 +66,78 @@ class TemaClaseVivaModel {
     required this.conceptoClaveLatex,
     required this.ejemplo,
     required this.bloqueSugerido,
+    this.corte = 1,
+    this.modalidad = 'tecnica',
+    this.verbalizacionIngles = '',
+    this.slides = const [],
   });
 
   final int numeroTema;
+  final int corte;
+  final String modalidad;
   final String titulo;
   final String objetivo;
   final String conceptoClaveLatex;
+  final String verbalizacionIngles;
   final String ejemplo;
   final String bloqueSugerido;
+  final List<SlideDeckItem> slides;
+
+  bool get esInglesGeneral => modalidad == 'general';
+
+  bool get esNotacionIngenieria => modalidad == 'notacion_ingenieria';
+
+  bool get usaKatex =>
+      !esInglesGeneral && conceptoClaveLatex.trim().isNotEmpty;
+
+  String get etiquetaCorte {
+    switch (corte) {
+      case 1:
+        return 'Corte 1 • 30%';
+      case 2:
+        return 'Corte 2 • 30%';
+      default:
+        return 'Corte 3 • 40%';
+    }
+  }
+
+  String get etiquetaCorteCorta => 'Corte $corte';
 
   factory TemaClaseVivaModel.fromMap(Map<String, dynamic> map) {
+    final numero = _parseInt(map['numero_tema'] ?? map['numero'], 1);
+    final rawSlides = map['slides'];
+    final parsedSlides = <SlideDeckItem>[];
+    if (rawSlides is Iterable) {
+      var idx = 1;
+      for (final s in rawSlides) {
+        if (s is Map) {
+          parsedSlides.add(
+            SlideDeckItem.fromMap(
+              s.map((k, v) => MapEntry(k.toString(), v)),
+              fallbackNum: idx,
+            ),
+          );
+          idx++;
+        }
+      }
+    }
+
+    final inferredCorte = numero <= 3 ? 1 : (numero <= 6 ? 2 : 3);
+    final parsedCorte = _parseInt(map['corte'], inferredCorte).clamp(1, 3);
+
     return TemaClaseVivaModel(
-      numeroTema: _parseInt(map['numero_tema'] ?? map['numero'], 1),
+      numeroTema: numero,
+      corte: parsedCorte,
+      modalidad: (map['modalidad'] ?? 'tecnica').toString().trim(),
       titulo: (map['titulo'] ?? 'Tema de Cátedra').toString(),
       objetivo: (map['objetivo'] ?? '').toString(),
       conceptoClaveLatex: (map['concepto_clave_latex'] ?? '').toString(),
+      verbalizacionIngles: (map['verbalizacion_ingles'] ?? '').toString(),
       ejemplo: (map['ejemplo'] ?? '').toString(),
       bloqueSugerido:
           (map['bloque_sugerido'] ?? map['bloque_estudio'] ?? 'Pomodoro 50/10')
               .toString(),
+      slides: List.unmodifiable(parsedSlides),
     );
   }
 
@@ -101,15 +155,19 @@ class TemaClaseVivaModel {
       id: topicKey,
       nombreAsignatura: nombreAsignatura,
       numeroTema: numeroTema,
+      corte: corte,
+      modalidad: modalidad,
       tituloTema: titulo,
       objetivo: objetivo,
       conceptoClaveLatex: conceptoClaveLatex,
+      verbalizacionIngles: verbalizacionIngles,
       ejemplo: ejemplo,
       bloqueSugerido: bloqueSugerido,
       codigoAsignatura: codigoAsignatura,
       cuatrimestre: cuatrimestre,
       creditos: creditos,
       sincronizacionPorcentaje: 96,
+      slides: slides,
     );
   }
 }
@@ -137,6 +195,33 @@ class AsignaturaModel {
   final List<TemaClaseVivaModel> temas;
 
   Color get accentColor => parseHexColor(colorHex);
+
+  /// Identifica los 5 niveles oficiales de General English (`01021802`..`01021806`).
+  bool get esIngles =>
+      codigo.startsWith('0102180') ||
+      nombre.toLowerCase().contains('general english');
+
+  List<TemaClaseVivaModel> get temasInglesGeneral =>
+      temas.where((t) => t.esInglesGeneral).toList(growable: false);
+
+  List<TemaClaseVivaModel> get temasNotacionIngenieria =>
+      temas.where((t) => t.esNotacionIngenieria).toList(growable: false);
+
+  List<TemaClaseVivaModel> temasPorModalidad(String modalidad) {
+    if (!esIngles) return temas;
+    if (modalidad == 'notacion_ingenieria') {
+      return temasNotacionIngenieria;
+    }
+    return temasInglesGeneral;
+  }
+
+  List<TemaClaseVivaModel> temasPorCorte(int corte, {String? modalidad}) {
+    final source = modalidad != null && esIngles
+        ? temasPorModalidad(modalidad)
+        : temas;
+    if (corte <= 0) return source;
+    return source.where((t) => t.corte == corte).toList(growable: false);
+  }
 
   String get categoriaLegible {
     switch (categoria.toUpperCase()) {
@@ -195,7 +280,7 @@ class AsignaturaModel {
       categoria: (map['categoria'] ?? 'INGENIERIA_ENERGIA').toString(),
       colorHex:
           (map['color_acento'] ?? map['color'] ?? '#30D158').toString(),
-      temas: parsedTemas,
+      temas: List.unmodifiable(parsedTemas),
     );
   }
 

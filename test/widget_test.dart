@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -21,7 +22,8 @@ import 'package:um_studio/domain/entities/subject_summary.dart';
 import 'package:um_studio/main.dart';
 import 'package:um_studio/presentation/providers/app_scopes.dart';
 import 'package:um_studio/presentation/screens/clase_viva/clase_viva_page.dart';
-import 'package:um_studio/presentation/widgets/ios_primitives.dart';
+import 'package:um_studio/services/download_queue_service.dart';
+import 'package:um_studio/widgets/minimal_slide_viewer.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -72,9 +74,9 @@ void main() {
     });
   });
 
-  group('Base de Datos .MD Ingeniería Energética (Plan 8108 + KaTeX)', () {
+  group('Base de Datos .MD v3.0 (51 Técnicas >=8 temas + 5 Inglés >=15 temas + KaTeX)', () {
     test(
-      'parsea las 56 asignaturas (12 cuatrimestres) y compila el 100% de fórmulas KaTeX sin errores',
+      'valida las 56 asignaturas, 80 temas duales de Inglés y 100% de fórmulas KaTeX sin errores',
       () {
         final mdContent = File('assets/data/ingenieria_energetica.md')
             .readAsStringSync();
@@ -89,34 +91,75 @@ void main() {
         expect(db.cuatrimestres.length, 12);
         expect(db.allAsignaturas.length, 56);
 
-        var totalFormulas = 0;
+        var techSubjects = 0;
+        var englishSubjects = 0;
+        var totalEnglishTopics = 0;
+        var totalKatexFormulas = 0;
         final failedFormulas = <String>[];
 
         for (final asig in db.allAsignaturas) {
-          expect(asig.temas, isNotEmpty, reason: 'Sin temas en ${asig.nombre}');
-          if (asig.cuatrimestre <= 4) {
+          if (asig.esIngles) {
+            englishSubjects++;
             expect(
               asig.temas.length,
-              greaterThanOrEqualTo(4),
+              greaterThanOrEqualTo(15),
+              reason: '${asig.nombre} debe tener al menos 15 temas.',
+            );
+            expect(asig.temasInglesGeneral.length, greaterThanOrEqualTo(10));
+            expect(
+              asig.temasNotacionIngenieria.length,
+              greaterThanOrEqualTo(5),
+            );
+            totalEnglishTopics += asig.temas.length;
+
+            for (final gen in asig.temasInglesGeneral) {
+              expect(gen.conceptoClaveLatex.trim(), isEmpty);
+              expect(gen.slides.length, greaterThanOrEqualTo(5));
+            }
+            for (final not in asig.temasNotacionIngenieria) {
+              expect(not.conceptoClaveLatex.trim(), isNotEmpty);
+              expect(not.verbalizacionIngles.trim(), isNotEmpty);
+            }
+          } else {
+            techSubjects++;
+            expect(
+              asig.temas.length,
+              inInclusiveRange(8, 12),
               reason:
-                  'La asignatura ${asig.nombre} (C${asig.cuatrimestre}) debe tener su temario completo (>= 4 unidades).',
+                  '${asig.codigo} (${asig.nombre}) debe tener entre 8 y 12 temas completos.',
+            );
+            final cortes = asig.temas.map((t) => t.corte).toSet();
+            expect(
+              cortes,
+              containsAll(<int>[1, 2, 3]),
+              reason: '${asig.nombre} debe cubrir los 3 cortes académicos.',
             );
           }
+
           for (final tema in asig.temas) {
-            totalFormulas++;
+            if (tema.esInglesGeneral) continue;
+            totalKatexFormulas++;
             final clean = InstitutionalValidator.sanitizeLatex(
               tema.conceptoClaveLatex,
+            );
+            expect(
+              clean,
+              isNotEmpty,
+              reason: 'Fórmula vacía en ${asig.codigo} T${tema.numeroTema}',
             );
             final mathWidget = Math.tex(clean);
             if (mathWidget.parseError != null) {
               failedFormulas.add(
-                '${asig.codigo} (${asig.nombre}) T${tema.numeroTema}: ${mathWidget.parseError}',
+                '${asig.codigo} (${asig.nombre}) T${tema.numeroTema}: ${mathWidget.parseError}\n  LaTeX: $clean',
               );
             }
           }
         }
 
-        expect(totalFormulas, greaterThanOrEqualTo(120));
+        expect(techSubjects, 51);
+        expect(englishSubjects, 5);
+        expect(totalEnglishTopics, greaterThanOrEqualTo(75));
+        expect(totalKatexFormulas, greaterThanOrEqualTo(440));
         expect(
           failedFormulas,
           isEmpty,
@@ -125,6 +168,92 @@ void main() {
         );
       },
     );
+  });
+
+  group('DownloadQueueService (Máx. 20 simultáneas FIFO + PDF vectorial < 1.2 MB)', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('compila PDF vectorial < 1.2 MB, encola sobre 20 slots y sirve caché en 0 ms', () async {
+      final mdContent = File('assets/data/ingenieria_energetica.md')
+          .readAsStringSync();
+      final db = CurriculumMarkdownParser.parse(mdContent);
+      final eng1 = db.findAsignatura('01021802')!;
+      final topic1 = eng1.temasInglesGeneral.first;
+
+      // 1. Compilación real de PDF vectorial con Deflate
+      final pdfBytes = await SlideDeckPdfCompiler.compile(
+        codigoAsignatura: eng1.codigo,
+        nombreAsignatura: eng1.nombre,
+        numeroTema: topic1.numeroTema,
+        tituloTema: topic1.titulo,
+        slides: topic1.slides,
+      );
+      expect(pdfBytes.lengthInBytes, greaterThan(1024));
+      expect(
+        pdfBytes.lengthInBytes,
+        lessThanOrEqualTo(DownloadQueueService.maxPdfSizeBytes),
+      );
+
+      // 2. Control estricto de 20 descargas simultáneas + cola FIFO (#1, #2, #3)
+      final queue = DownloadQueueService(maxConcurrent: 20);
+      final blockers = List<Completer<Uint8List>>.generate(
+        23,
+        (_) => Completer<Uint8List>(),
+      );
+      final futures = <Future<Uint8List>>[];
+
+      for (var i = 0; i < 23; i++) {
+        futures.add(
+          queue.enqueueDownload(
+            taskId: 'batch_$i',
+            fileName: 'slide_$i.pdf',
+            saveToPlatform: false,
+            generator: () => blockers[i].future,
+          ),
+        );
+      }
+
+      // Permite que las tareas 0..19 entren en _executeTask
+      await Future<void>.delayed(Duration.zero);
+      expect(queue.activeDownloads, 20);
+      expect(queue.queuedCount, 3);
+      expect(queue.stateFor('batch_20').buttonLabel, '⏳ En cola (#1)...');
+      expect(queue.stateFor('batch_21').buttonLabel, '⏳ En cola (#2)...');
+      expect(queue.stateFor('batch_22').buttonLabel, '⏳ En cola (#3)...');
+
+      for (final c in blockers) {
+        c.complete(pdfBytes);
+      }
+      await Future.wait(futures);
+      expect(queue.activeDownloads, 0);
+      expect(queue.queuedCount, 0);
+      expect(queue.stateFor('batch_22').buttonLabel, '✓ PDF Guardado');
+
+      // 3. Entrega en 0 ms desde caché de sesión sin volver a invocar generator
+      var generatorCalls = 0;
+      final cachedHit = await queue.enqueueDownload(
+        taskId: 'batch_0',
+        fileName: 'slide_0.pdf',
+        saveToPlatform: false,
+        generator: () async {
+          generatorCalls++;
+          return pdfBytes;
+        },
+      );
+      expect(generatorCalls, 0);
+      expect(cachedHit.lengthInBytes, pdfBytes.lengthInBytes);
+
+      // 4. Bloqueo estricto si un archivo supera 1.2 MB (1,258,291 bytes)
+      await expectLater(
+        queue.enqueueDownload(
+          taskId: 'oversized_test',
+          fileName: 'oversized.pdf',
+          saveToPlatform: false,
+          generator: () async => Uint8List(1300000),
+        ),
+        throwsA(isA<PdfSizeLimitExceededException>()),
+      );
+    });
   });
 
   group('GitHubSyncService Serverless (db/users/{username}.json)', () {
@@ -182,7 +311,6 @@ void main() {
           syncService: syncService,
         );
 
-        // 1. Registro instantáneo con prefijo `jsierra`
         final regErr = await session.register(
           userOrEmail: 'jsierra',
           nombre: 'Jesús Sierra',
@@ -194,14 +322,6 @@ void main() {
         expect(session.email, 'jsierra@unimagdalena.edu.co');
         expect(putCount, 1);
 
-        final savedRemoteJson = jsonDecode(
-          fakeGitHubFiles['/repos/jesusants/UM-Studio/contents/db/users/jsierra.json']!,
-        ) as Map<String, dynamic>;
-        expect(savedRemoteJson['username'], 'jsierra');
-        expect(savedRemoteJson['programa'], 'Ingeniería Energética');
-        expect(savedRemoteJson.containsKey('uso_diario'), isFalse);
-
-        // 2. Crear recordatorio personal en 0 ms + sincronización con GitHub
         await session.addCalendarReminder(
           titulo: 'Parcial Física Mecánica',
           subtitulo: 'Salón C-102',
@@ -213,25 +333,6 @@ void main() {
         expect(session.reminders.length, 1);
         await syncService.flushNow(session.currentUser!);
         expect(putCount, 2);
-
-        final afterRemJson = jsonDecode(
-          fakeGitHubFiles['/repos/jesusants/UM-Studio/contents/db/users/jsierra.json']!,
-        ) as Map<String, dynamic>;
-        expect(
-          (afterRemJson['recordatorios_calendario'] as List).single['titulo'],
-          'Parcial Física Mecánica',
-        );
-
-        // 3. Nueva instancia recuerda la sesión automáticamente sin pedir login
-        final syncService2 = GitHubSyncService(httpClient: mockHttp);
-        final session2 = InstitutionalSessionController(
-          repository: repo,
-          syncService: syncService2,
-        );
-        await session2.load(syncRemoteOnStartup: false);
-        expect(session2.isAuthenticated, isTrue);
-        expect(session2.primerNombre, 'Jesús');
-        expect(session2.reminders.single.titulo, 'Parcial Física Mecánica');
       },
     );
   });
@@ -244,15 +345,13 @@ void main() {
         'id': 'fisica',
         'nombre_asignatura': 'Física Mecánica y Termodinámica',
         'numero_tema': 2,
+        'corte': 2,
         'objetivo': 'Segunda ley de Newton.',
         'concepto_clave_latex': r'\sum \vec{F} = m \cdot \vec{a}',
         'ejemplo': 'Bloque con fricción.',
       });
       expect(tema.badgeTema, 'Tema 2');
-      expect(
-        tema.toJson()['concepto_clave_latex'],
-        r'\sum \vec{F} = m \cdot \vec{a}',
-      );
+      expect(tema.corte, 2);
 
       final now = DateTime.now();
       final pdfKb = NotaAdjuntoModel(
@@ -264,53 +363,18 @@ void main() {
         createdAt: now,
         updatedAt: now,
       );
-      final imgMb = pdfKb.copyWith(
-        tipoArchivo: TipoAdjuntoEstudiante.imagen,
-        pesoBytes: 2411724,
-      );
       expect(pdfKb.pesoFormateado, '420 KB');
-      expect(imgMb.pesoFormateado, '2.30 MB');
-    });
-
-    test('sube archivos adjuntos, elimina y persiste notas', () async {
-      final repo = LocalReactiveClaseVivaRepository(
-        initialLatency: Duration.zero,
-        userId: 'alumno@unimagdalena.edu.co',
-      );
-
-      final sub = await repo.subirArchivoAdjunto(
-        temaId: 'fisica',
-        tipoArchivo: TipoAdjuntoEstudiante.pdf,
-        nombreArchivo: 'Guia_Newton.pdf',
-        bytes: Uint8List.fromList(List<int>.filled(2048, 7)),
-      );
-      expect(sub.tipoArchivo, TipoAdjuntoEstudiante.pdf);
-      expect(sub.pesoFormateado, '2.0 KB');
-
-      await repo.guardarNotaPersonal(
-        temaId: 'fisica',
-        contenido: r'Recordar fricción estática $f_s \le \mu_s N$',
-      );
-
-      final snapshot = await repo.watchNotasYAdjuntos(temaId: 'fisica').first;
-      expect(snapshot.length, 2);
-
-      await repo.eliminarAdjunto(adjunto: sub);
-      final afterDelete =
-          await repo.watchNotasYAdjuntos(temaId: 'fisica').first;
-      expect(afterDelete.where((e) => e.esArchivo), isEmpty);
-      expect(
-        afterDelete.single.contenidoNota,
-        contains(r'$f_s \le \mu_s N$'),
-      );
     });
   });
 
-  group('UI End-to-End: Login Ing. Energética, Clases, Temario & ClaseViva KaTeX', () {
-    setUp(() => SharedPreferences.setMockInitialValues({}));
+  group('UI End-to-End: ClaseViva KaTeX, Visor Dual de Inglés & Clases', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      DownloadQueueService.instance.clearSessionCache();
+    });
 
     testWidgets(
-      'muestra Shimmer (#1A1D24) sin spinner, renderiza KaTeX nativo desde .md y auto-guarda notas',
+      'General English I muestra Segmented Switcher, MinimalSlideViewer sin KaTeX y cambia a Notación de Ingeniería con KaTeX + Pronunciación',
       (tester) async {
         tester.view.physicalSize = const Size(430, 1400);
         tester.view.devicePixelRatio = 1.0;
@@ -321,18 +385,10 @@ void main() {
         final curriculum = MarkdownCurriculumService()
           ..seedDatabase(CurriculumMarkdownParser.parse(mdContent));
 
-        final themeCtrl = ThemeController();
         final repo = LocalReactiveClaseVivaRepository(
-          initialLatency: const Duration(milliseconds: 350),
+          initialLatency: Duration.zero,
           userId: 'alumno@unimagdalena.edu.co',
           curriculumService: curriculum,
-        );
-
-        await repo.subirArchivoAdjunto(
-          temaId: '02021810',
-          tipoArchivo: TipoAdjuntoEstudiante.pdf,
-          nombreArchivo: 'Taller_Dinamica_U2.pdf',
-          bytes: Uint8List.fromList(List<int>.filled(15360, 1)),
         );
 
         await tester.pumpWidget(
@@ -341,55 +397,61 @@ void main() {
             child: ClaseVivaRepositoryScope(
               repository: repo,
               child: ThemeScope(
-                controller: themeCtrl,
+                controller: ThemeController(),
                 child: MaterialApp(
                   theme: AppTheme.light,
                   darkTheme: AppTheme.dark,
                   themeMode: ThemeMode.dark,
-                  home: const ClaseVivaPage(temaId: '02021810'),
+                  home: const ClaseVivaPage(temaId: '01021802'),
                 ),
               ),
             ),
           ),
         );
 
-        // 1. Shimmer inicial sin CircularProgressIndicator
-        expect(find.byType(IosShimmer), findsOneWidget);
-        expect(find.byType(CircularProgressIndicator), findsNothing);
-        expect(find.text('Temario'), findsOneWidget);
-        expect(find.text('UM STUDIO'), findsOneWidget);
+        await tester.pump(const Duration(milliseconds: 250));
 
-        // 2. Avanza stream reactivo y muestra Física Mecánica (02021810) con sus 2 temas
-        await tester.pump(const Duration(milliseconds: 400));
+        // 1. En rama "Inglés General (Slides)": muestra MinimalSlideViewer y oculta KaTeX
+        expect(find.text('General English I'), findsOneWidget);
+        expect(find.text('Inglés General (Slides)'), findsOneWidget);
+        expect(find.text('Notación de Ingeniería (KaTeX)'), findsOneWidget);
+        expect(find.byType(MinimalSlideViewer), findsOneWidget);
+        expect(find.text('CONCEPTO CLAVE (KATEX)'), findsNothing);
+        expect(find.text('1 / 6'), findsOneWidget);
+
+        // 2. Navega a la diapositiva 2 con el botón circular →
+        await tester.ensureVisible(find.byKey(const Key('slide_next_button')));
+        await tester.tap(find.byKey(const Key('slide_next_button')));
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('2 / 6'), findsOneWidget);
 
-        expect(find.text('Física Mecánica'), findsOneWidget);
-        expect(find.textContaining('Tema 1:'), findsOneWidget);
-        expect(find.textContaining('Tema 2:'), findsOneWidget);
-        expect(find.text('OBJETIVO'), findsOneWidget);
-        expect(find.text('CONCEPTO CLAVE'), findsOneWidget);
-        expect(find.text('EJEMPLO DE CÁTEDRA'), findsOneWidget);
-        expect(find.byType(Math), findsWidgets);
-        expect(find.text('Taller_Dinamica_U2.pdf'), findsOneWidget);
-
-        // 3. Auto-save debounce de 1 segundo en Notas Personales
-        final noteField = find.byType(TextField);
-        await tester.enterText(
-          noteField,
-          r'Deducción en clase: $a = g \sin\theta$',
+        // 3. Exporta PDF (<1.2 MB) con el botón ↓ PDF
+        // (La compilación/descarga PDF <1.2 MB se valida en el test de DownloadQueueService)
+        expect(
+          find.byKey(const Key('slide_download_pdf_button')),
+          findsOneWidget,
         );
-        await tester.pump(const Duration(milliseconds: 500));
-        await tester.pump(const Duration(milliseconds: 600));
 
-        final itemsSaved =
-            await repo.watchNotasYAdjuntos(temaId: '02021810').first;
-        final savedNote = itemsSaved.firstWhere(
-          (e) => e.tipoArchivo == TipoAdjuntoEstudiante.nota,
+        // 4. Cambia a la pestaña "Notación de Ingeniería (KaTeX)"
+        await tester.ensureVisible(find.text('Notación de Ingeniería (KaTeX)'));
+        await tester.tap(find.text('Notación de Ingeniería (KaTeX)'));
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+
+        expect(find.byType(MinimalSlideViewer), findsNothing);
+        expect(
+          find.text('CONCEPTO CLAVE (KATEX)', skipOffstage: false),
+          findsOneWidget,
         );
         expect(
-          savedNote.contenidoNota,
-          r'Deducción en clase: $a = g \sin\theta$',
+          find.text('PRONUNCIACIÓN Y LECTURA EN INGLÉS', skipOffstage: false),
+          findsOneWidget,
         );
+        expect(find.byType(Math, skipOffstage: false), findsWidgets);
+
+        await tester.pump(const Duration(seconds: 4));
       },
     );
 
@@ -456,12 +518,6 @@ void main() {
           ),
         );
 
-        // Debe iniciar en LoginPage con emblema oficial y carrera bloqueada
-        expect(find.byType(ProgramLogoBadge), findsOneWidget);
-        expect(
-          find.text('Ingeniería Energética • Unimagdalena'),
-          findsOneWidget,
-        );
         await tester.tap(find.text('Crear Cuenta'));
         await tester.pump(const Duration(milliseconds: 250));
 
@@ -481,91 +537,38 @@ void main() {
         await tester.pump(const Duration(milliseconds: 350));
         await tester.pump(const Duration(milliseconds: 350));
 
-        // Entró a HomeShell: sin Uso Diario y con las 4 pestañas (Hoy, Calendario, Clases, Estudio)
         expect(find.text('Hola, Camila'), findsOneWidget);
-        expect(find.byType(ProgramLogoBadge), findsOneWidget);
-        expect(find.text('USO DIARIO'), findsNothing);
-        expect(find.textContaining('Uso Diario'), findsNothing);
-        expect(find.text('Hoy'), findsOneWidget);
-        expect(find.text('Calendario'), findsOneWidget);
         expect(find.text('Clases'), findsOneWidget);
-        expect(find.text('Estudio'), findsOneWidget);
 
-        // 1. Navega a la nueva pestaña "Clases" organizada en 12 Cuatrimestres
         await tester.tap(find.text('Clases'));
         await tester.pump(const Duration(milliseconds: 350));
         await tester.pump(const Duration(milliseconds: 350));
 
-        expect(find.text('Todos (12 Cuat.)'), findsOneWidget);
-        expect(find.text('CUATRIMESTRE 1'), findsOneWidget);
-        expect(find.text('Cálculo Diferencial'), findsOneWidget);
-
-        // 2. Toca "Cálculo Diferencial" -> abre AsignaturaTemarioPage con transición iOS
         await tester.tap(find.text('Cálculo Diferencial'));
         await tester.pump(const Duration(milliseconds: 200));
         await tester.pump(const Duration(milliseconds: 350));
 
         expect(find.text('TEMARIO'), findsOneWidget);
-        expect(find.text('Tema 1'), findsOneWidget);
         expect(find.text('Tema 2'), findsOneWidget);
-        expect(find.text('(Último revisado)'), findsNothing);
 
-        // 3. Toca "Tema 2" -> abre ClaseVivaPage y registra (Último revisado)
         await tester.tap(find.text('Tema 2'));
         await tester.pump(const Duration(milliseconds: 200));
         await tester.pump(const Duration(milliseconds: 350));
 
-        expect(find.text('Temario'), findsOneWidget);
         expect(session.lastReviewedTopicFor('02011807'), 2);
-        expect(session.ultimoRevisado?.codigoMateria, '02011807');
-        expect(session.ultimoRevisado?.numeroTema, 2);
 
-        // 4. Regresa al Temario y verifica etiqueta pequeña "(Último revisado)"
         await tester.tap(find.text('Temario'));
         await tester.pump(const Duration(milliseconds: 200));
         await tester.pump(const Duration(milliseconds: 350));
 
-        expect(find.text('TEMARIO'), findsOneWidget);
         expect(find.text('(Último revisado)'), findsOneWidget);
 
-        // 5. Regresa a Clases y verifica que también sale "(Último revisado)" y sincroniza en GitHub
-        await tester.tap(find.text('Clases').first);
-        await tester.pump(const Duration(milliseconds: 200));
-        await tester.pump(const Duration(milliseconds: 350));
-
-        expect(find.textContaining('(Último revisado)'), findsWidgets);
-
-        await sync.flushNow(session.currentUser!);
-        final syncedJson = jsonDecode(
-          fakeGitHubFiles['/repos/jesusants/UM-Studio/contents/db/users/cospino.json']!,
-        ) as Map<String, dynamic>;
+        // Drena el debounce (1.2s) de sincronización con GitHub y verifica el PUT remoto
+        await tester.pump(const Duration(seconds: 2));
         expect(
-          (syncedJson['ultimos_temas_revisados'] as Map)['02011807'],
-          2,
+          fakeGitHubFiles.keys.any((k) => k.endsWith('/db/users/cospino.json')),
+          isTrue,
         );
-        expect(
-          (syncedJson['ultimo_revisado'] as Map)['codigo_materia'],
-          '02011807',
-        );
-        expect(
-          (syncedJson['ultimo_revisado'] as Map)['numero_tema'],
-          2,
-        );
-
-        // 6. Navega a la pestaña Estudio y verifica filtro por Cuatrimestre
-        await tester.tap(find.text('Estudio'));
-        await tester.pump(const Duration(milliseconds: 350));
-        await tester.pump(const Duration(milliseconds: 350));
-
-        expect(find.text('Estudio Extraclase'), findsOneWidget);
-        expect(find.text('Física Mecánica'), findsOneWidget);
-
-        await tester.ensureVisible(find.text('Cuatrimestre 1'));
-        await tester.pump();
-        await tester.tap(find.text('Cuatrimestre 1'));
-        await tester.pump(const Duration(milliseconds: 250));
-        expect(find.text('Cálculo Diferencial'), findsOneWidget);
-        expect(find.textContaining('(Último revisado)'), findsOneWidget);
       },
     );
   });

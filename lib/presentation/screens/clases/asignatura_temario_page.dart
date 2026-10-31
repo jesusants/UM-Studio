@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
@@ -10,9 +11,11 @@ import '../../providers/app_scopes.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
 
-/// Pantalla de Temario Oficial de una Asignatura con transición elástica iOS
-/// y registro sincronizado en GitHub del `(Último revisado)`.
-class AsignaturaTemarioPage extends StatelessWidget {
+/// Pantalla de Temario Oficial de una Asignatura con transición elástica iOS,
+/// intercambiador interno para los 5 niveles de Inglés (`Inglés General` vs
+/// `Notación de Ingeniería`), filtro por Cortes académicos y registro
+/// sincronizado en GitHub del `(Último revisado)`.
+class AsignaturaTemarioPage extends StatefulWidget {
   const AsignaturaTemarioPage({
     super.key,
     required this.asignatura,
@@ -54,6 +57,16 @@ class AsignaturaTemarioPage extends StatelessWidget {
     );
   }
 
+  @override
+  State<AsignaturaTemarioPage> createState() => _AsignaturaTemarioPageState();
+}
+
+class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
+  String _englishModalidad = 'general';
+  int _selectedCorte = 0;
+
+  AsignaturaModel get asignatura => widget.asignatura;
+
   void _openTopic(
     BuildContext context,
     InstitutionalSessionController? session,
@@ -81,6 +94,11 @@ class AsignaturaTemarioPage extends StatelessWidget {
     final isPinned =
         session?.progresoMaterias.containsKey(asignatura.codigo) ?? false;
     final accent = asignatura.accentColor;
+
+    final visibleTemas = asignatura.temasPorCorte(
+      _selectedCorte,
+      modalidad: asignatura.esIngles ? _englishModalidad : null,
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
@@ -253,7 +271,9 @@ class AsignaturaTemarioPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Cuatrimestre ${asignatura.cuatrimestre} • ${asignatura.creditos} créditos • ${asignatura.temas.length} ${asignatura.temas.length == 1 ? 'tema disponible' : 'temas disponibles'}',
+                                asignatura.esIngles
+                                    ? 'Cuatrimestre ${asignatura.cuatrimestre} • ${asignatura.temasInglesGeneral.length} temas Slides + ${asignatura.temasNotacionIngenieria.length} temas KaTeX'
+                                    : 'Cuatrimestre ${asignatura.cuatrimestre} • ${asignatura.creditos} créditos • ${asignatura.temas.length} ${asignatura.temas.length == 1 ? 'tema disponible' : 'temas disponibles'}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: p.textSecondary,
@@ -262,21 +282,153 @@ class AsignaturaTemarioPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
+
+                        // Intercambiador Interno (Segmented Switcher) exclusivo para los 5 niveles de Inglés
+                        if (asignatura.esIngles) ...[
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: CupertinoSlidingSegmentedControl<String>(
+                              key: const Key('temario_english_switcher'),
+                              backgroundColor: p.card,
+                              thumbColor: p.elevated,
+                              groupValue: _englishModalidad,
+                              onValueChanged: (value) {
+                                if (value == null) return;
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  _englishModalidad = value;
+                                  _selectedCorte = 0;
+                                });
+                              },
+                              children: {
+                                'general': Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 6,
+                                  ),
+                                  child: Text(
+                                    'Inglés General (Slides)',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: _englishModalidad == 'general'
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: _englishModalidad == 'general'
+                                          ? p.green
+                                          : p.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                'notacion_ingenieria': Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 6,
+                                  ),
+                                  child: Text(
+                                    'Notación de Ingeniería (KaTeX)',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: _englishModalidad ==
+                                              'notacion_ingenieria'
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: _englishModalidad ==
+                                              'notacion_ingenieria'
+                                          ? p.indigo
+                                          : p.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              },
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 14),
+
+                        // Filtro rápido por Cortes Académicos (Corte 1 - 30%, Corte 2 - 30%, Corte 3 - 40%)
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            children: [
+                              for (final entry in const [
+                                (0, 'Todos'),
+                                (1, 'Corte 1 • 30%'),
+                                (2, 'Corte 2 • 30%'),
+                                (3, 'Corte 3 • 40%'),
+                              ])
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: TapScale(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      setState(
+                                        () => _selectedCorte = entry.$1,
+                                      );
+                                    },
+                                    child: AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 180),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 11,
+                                        vertical: 5.5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _selectedCorte == entry.$1
+                                            ? accent.o(0.18)
+                                            : p.card,
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                        border: Border.all(
+                                          color: _selectedCorte == entry.$1
+                                              ? accent
+                                              : p.cardBorder,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        entry.$2,
+                                        style: mono(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: _selectedCorte == entry.$1
+                                              ? accent
+                                              : p.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
 
                         Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'TEMAS DISPONIBLES',
+                                asignatura.esIngles
+                                    ? (_englishModalidad == 'general'
+                                        ? 'INGLÉS GENERAL • SLIDES'
+                                        : 'NOTACIÓN TÉCNICA • KATEX')
+                                    : 'TEMAS DISPONIBLES',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: sectionMicroStyle(p),
                               ),
                             ),
                             Text(
-                              'Toca un tema para estudiar',
-                              style: TextStyle(
+                              '${visibleTemas.length} temas',
+                              style: mono(
                                 fontSize: 11,
                                 color: p.textTertiary,
                               ),
@@ -285,10 +437,12 @@ class AsignaturaTemarioPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
 
-                        for (final tema in asignatura.temas) ...[
+                        for (final tema in visibleTemas) ...[
                           _TemarioTopicCard(
                             tema: tema,
-                            accentColor: accent,
+                            accentColor: asignatura.esIngles
+                                ? (tema.esInglesGeneral ? p.green : p.indigo)
+                                : accent,
                             isLastReviewed: lastReviewedNum == tema.numeroTema,
                             onTap: () => _openTopic(context, session, tema),
                           ),
@@ -356,8 +510,27 @@ class _TemarioTopicCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: p.elevated,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: p.cardBorder),
+                  ),
+                  child: Text(
+                    tema.etiquetaCorteCorta,
+                    style: mono(
+                      fontSize: 9.5,
+                      color: p.textSecondary,
+                    ),
+                  ),
+                ),
                 if (isLastReviewed) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 7),
                   Dot(color: p.green, size: 5.5),
                   const SizedBox(width: 5),
                   Expanded(
@@ -403,31 +576,91 @@ class _TemarioTopicCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 11),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-              decoration: BoxDecoration(
-                color: p.background.o(0.42),
-                borderRadius: BorderRadius.circular(11),
-                border: Border.all(color: p.cardBorder),
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Math.tex(
-                  cleanLatex,
-                  mathStyle: MathStyle.text,
-                  textStyle: TextStyle(
-                    fontSize: 13.5,
-                    color: p.textPrimary,
-                  ),
-                  onErrorFallback: (_) => Text(
-                    cleanLatex,
-                    style: mono(fontSize: 12, color: p.textPrimary),
-                  ),
+
+            // Si es Inglés General: muestra previsualización minimalista de Slides (sin KaTeX)
+            if (tema.esInglesGeneral)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: p.background.o(0.42),
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(color: p.cardBorder),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.slideshow_rounded,
+                      size: 15,
+                      color: p.green,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        '${tema.slides.length} diapositivas interactivas • Exportable PDF (<1.2 MB)',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: mono(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w500,
+                          color: p.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (cleanLatex.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: p.background.o(0.42),
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(color: p.cardBorder),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Math.tex(
+                        cleanLatex,
+                        mathStyle: MathStyle.text,
+                        textStyle: TextStyle(
+                          fontSize: 13.5,
+                          color: p.textPrimary,
+                        ),
+                        onErrorFallback: (_) => Text(
+                          cleanLatex,
+                          style: mono(fontSize: 12, color: p.textPrimary),
+                        ),
+                      ),
+                    ),
+                    if (tema.esNotacionIngenieria &&
+                        tema.verbalizacionIngles.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        tema.verbalizacionIngles,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: p.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ),
           ],
         ),
       ),
