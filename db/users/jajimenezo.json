@@ -13,6 +13,17 @@
     "01021804": 35
   },
   "ultimos_temas_revisados": {},
-  "recordatorios_calendario": [],
+  "recordatorios_calendario": [
+    {
+      "id": "rem_1793420801646000",
+      "titulo": "Parcial Fundamentos de Electricidad II",
+      "subtitulo": "Salón C-102 • Antiderivadas, Integral Indefinida y Método de Sustitución",
+      "fecha": "2026-11-02",
+      "hora": "10:00",
+      "tipo": "parcial",
+      "codigo_materia": "03041820",
+      "completado": false
+    }
+  ],
   "apuntes_personales": {}
 }
