@@ -5,18 +5,15 @@
   "programa": "Ingeniería Energética",
   "cuatrimestre_actual": 3,
   "pin_hash": "ac4a809a95da52c2ecb3b8c2e5193380435d146237874912fa770fc68e469f96",
-  "uso_diario": {
-    "actual": 9,
-    "maximo": 15,
-    "ultima_fecha": "2026-10-30"
+  "progreso_materias": "enc:v1:UVrfnVE3y05TIygSjzie6BpZxKdAO7FCkcXKSK9EMNevDbSCjdioPyONtAh5snkmm9HPsGlXTlnEqR95hzztQlGTEYcCP5R2WwKWK6gz7O6xxI37w50OTp6fUxTpyo7BnJzGttdM6A==",
+  "ultimos_temas_revisados": {
+    "01021802": 1
   },
-  "progreso_materias": {
-    "02011808": 50,
-    "02021811": 60,
-    "03041820": 35,
-    "03021815": 35,
-    "01021804": 35
+  "ultimo_revisado": {
+    "codigo_materia": "01021802",
+    "numero_tema": 1,
+    "actualizado_en": "2026-10-31T15:58:20.443"
   },
-  "recordatorios_calendario": [],
-  "apuntes_personales": {}
+  "recordatorios_calendario": "enc:v1:0ZHVfgP0eV2/COpK6/VVmQ9zjUc5XO0EHB3VUKSb3tSxMg==",
+  "apuntes_personales": "enc:v1:SROrRep9glY/R4m5dphXJuHZoNrSntKWs8zSsW2RYrs16Q=="
 }
