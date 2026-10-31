@@ -12,7 +12,14 @@
     "03021815": 35,
     "01021804": 35
   },
-  "ultimos_temas_revisados": {},
+  "ultimos_temas_revisados": {
+    "02011807": 4
+  },
+  "ultimo_revisado": {
+    "codigo_materia": "02011807",
+    "numero_tema": 4,
+    "actualizado_en": "2026-10-30T23:27:33.262"
+  },
   "recordatorios_calendario": [
     {
       "id": "rem_1793420801646000",
