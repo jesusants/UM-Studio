@@ -5,7 +5,7 @@
   "programa": "Ingeniería Energética",
   "cuatrimestre_actual": 2,
   "pin_hash": "70a60076d7ddd626362129ea1b4f836d2736af553f2104f016fc05b7a5736c00",
-  "progreso_materias": "enc:v1:Msl2uQMqIPS0/ub4rYvEXE00d1lt2wWLQSAmdBMt+WtqYYy6aN4aUJpaDtjwL+2d0d295DnIZPB0lPUtWvzZ/FG0DZdoNdL/Kt2Bt7DpdVkJ1oJci5oHYUvXwglC+8JJ+PjdvxUVTZDqk8LRFfjh316Au7+/tH/HT1ZVFnufbmrBqmQJS0sBAN7/YDWtOTftI3USTf4TgrEH/VmfJrxO07Pv88oA89XjRjMHTc347iu9dckEoolsmS4+8WYMCZdPVGQO8ohRrVKeUA==",
+  "progreso_materias": "enc:v1:SMxM25kM1eVGZaaHh6CqCJgMaqV1sxBZncURWyVup5uZ5TprSinmMdwjwGtSAbtD55XwZcz1IJ7IUWoHbR6rMq5qx8Uman6Ix5k7Xy3eM+rDC1SVChKm4rLPT1ktWF9/mo9rOk1fy5J/hLcFM3VSNIAxjwIGxOiozw32zakKDeEEVvvpguYLg37RZ07DvCud5SqRUIGwXGv0sa6HF0g4tZ+h4PlSwTnLLCpbLO4Yz1QVBi0wNrxTW0mFjm7q5xL72vCWqYHsfEgXOA==",
   "ultimos_temas_revisados": {
     "02011807": 1,
     "03011813": 3,
@@ -16,10 +16,10 @@
     "03041820": 1
   },
   "ultimo_revisado": {
-    "codigo_materia": "03011813",
-    "numero_tema": 3,
-    "actualizado_en": "2026-10-31T04:42:07.745"
+    "codigo_materia": "01021802",
+    "numero_tema": 1,
+    "actualizado_en": "2026-10-31T04:42:33.837"
   },
-  "recordatorios_calendario": "enc:v1:dfMWDjOtTj51gsigP5SvOR/iOTrh898SjjAeyRdxNDYYxw==",
-  "apuntes_personales": "enc:v1:NWrYSJb9RZrDm7IWEaRf1hw5IpSbwE5q0iUQxxD295+lvhcUvED1iMXcXZ/MSHBY6l8en0jF"
+  "recordatorios_calendario": "enc:v1:WmUfMkOYY5l4KgvUUNI2I7vaaqXATIjvPHZp/OIilGNyjw==",
+  "apuntes_personales": "enc:v1:apmuAkJ9VnZzdQEkrtf+xnk3c/H1k4zgLvvnzoSxiLfDQ+cB9F4thfmVZOUk+pZolTdwiBxy"
 }
