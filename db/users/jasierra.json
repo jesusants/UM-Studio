@@ -20,14 +20,14 @@
     "03011813": 2,
     "01021802": 1,
     "01021804": 1,
-    "01021803": 2,
+    "01021803": 6,
     "04011822": 1,
     "03041820": 1
   },
   "ultimo_revisado": {
     "codigo_materia": "01021803",
-    "numero_tema": 2,
-    "actualizado_en": "2026-10-31T03:38:47.891"
+    "numero_tema": 6,
+    "actualizado_en": "2026-10-31T04:02:25.017"
   },
   "recordatorios_calendario": [],
   "apuntes_personales": {
