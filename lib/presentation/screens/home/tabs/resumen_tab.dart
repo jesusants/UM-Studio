@@ -11,16 +11,16 @@ import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/reminder_creator_sheet.dart';
 
 /// Pestaña 1: "Resumen de hoy" conectada al perfil del estudiante,
-/// su calendario personal en GitHub y sus materias activas de Ing. Energética.
+/// su calendario personal en GitHub, el último tema revisado y sus materias activas.
 class ResumenTab extends StatelessWidget {
   const ResumenTab({
     super.key,
     required this.onOpenClaseViva,
-    required this.onCompleteBlock,
+    this.onCompleteBlock,
   });
 
   final ValueChanged<String> onOpenClaseViva;
-  final VoidCallback onCompleteBlock;
+  final VoidCallback? onCompleteBlock;
 
   String _todaySpanishLabel() {
     final now = DateTime.now();
@@ -70,6 +70,11 @@ class ResumenTab extends StatelessWidget {
     if (db == null || db.allAsignaturas.isEmpty) return null;
 
     if (session != null) {
+      final lastRev = session.ultimoRevisado;
+      if (lastRev != null) {
+        final fromRev = db.findAsignatura(lastRev.codigoMateria);
+        if (fromRev != null) return fromRev;
+      }
       for (final code in session.progresoMaterias.keys) {
         final found = db.findAsignatura(code);
         if (found != null) return found;
@@ -86,7 +91,7 @@ class ResumenTab extends StatelessWidget {
     final session = SessionScope.maybeOf(context);
     final curriculum = CurriculumScope.maybeOf(context);
     final reminders = session?.reminders ?? const <CalendarReminderModel>[];
-    final todayIso = DailyUsageModel.todayIso();
+    final todayIso = IsoDateHelper.todayIso();
 
     CalendarReminderModel? nextParcial;
     CalendarReminderModel? nextClaseOrBlock;
@@ -105,13 +110,34 @@ class ResumenTab extends StatelessWidget {
       }
     }
 
+    final globalLast = session?.ultimoRevisado;
+    final lastAsignatura = globalLast != null
+        ? curriculum?.database?.findAsignatura(globalLast.codigoMateria)
+        : null;
+    TemaClaseVivaModel? lastTema;
+    if (lastAsignatura != null && globalLast != null) {
+      for (final t in lastAsignatura.temas) {
+        if (t.numeroTema == globalLast.numeroTema) {
+          lastTema = t;
+          break;
+        }
+      }
+    }
+
     final leadSubject = _resolveLeadSubject(session, curriculum);
     final leadCode = leadSubject?.codigo ?? '02021810';
     final leadTitle = leadSubject?.nombre ?? 'Física Mecánica';
     final leadTopic =
-        leadSubject?.primerTema.titulo ?? 'Leyes de Newton y Rozamiento';
-    final leadBlock = leadSubject?.primerTema.bloqueSugerido ??
+        lastTema?.titulo ??
+        leadSubject?.primerTema.titulo ??
+        'Leyes de Newton y Rozamiento';
+    final leadBlock =
+        lastTema?.bloqueSugerido ??
+        leadSubject?.primerTema.bloqueSugerido ??
         'Pomodoro 50/10 • Diagramas de cuerpo libre con fricción';
+    final resumeKey = (lastAsignatura != null && globalLast != null)
+        ? globalLast.temaKey
+        : leadCode;
 
     return ListView(
       physics: const BouncingScrollPhysics(),
@@ -264,8 +290,11 @@ class ResumenTab extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // 2. Siguiente clase magistral / Materia activa del cuatrimestre
+        // 2. Siguiente clase / Continuar último tema revisado o cátedra activa
         IosCard(
+          borderColor: lastTema != null && nextClaseOrBlock == null
+              ? p.green.o(0.38)
+              : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -275,7 +304,9 @@ class ResumenTab extends StatelessWidget {
                     child: Text(
                       nextClaseOrBlock != null
                           ? 'TU AGENDA DE HOY'
-                          : 'CÁTEDRA ACTIVA • CUAT. ${session?.cuatrimestreActual ?? 2}',
+                          : (lastTema != null
+                              ? 'CONTINUAR TEMA'
+                              : 'CÁTEDRA ACTIVA • CUAT. ${session?.cuatrimestreActual ?? 2}'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -286,17 +317,28 @@ class ResumenTab extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    nextClaseOrBlock != null
-                        ? nextClaseOrBlock.hora
-                        : leadCode,
-                    style: mono(fontSize: 12, color: p.green),
-                  ),
+                  if (lastTema != null && nextClaseOrBlock == null)
+                    Text(
+                      '(Último revisado)',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        color: p.green,
+                      ),
+                    )
+                  else
+                    Text(
+                      nextClaseOrBlock != null
+                          ? nextClaseOrBlock.hora
+                          : leadCode,
+                      style: mono(fontSize: 12, color: p.green),
+                    ),
                 ],
               ),
               const SizedBox(height: 6),
               Text(
-                nextClaseOrBlock?.titulo ?? leadTitle,
+                nextClaseOrBlock?.titulo ??
+                    (lastAsignatura?.nombre ?? leadTitle),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -305,13 +347,16 @@ class ResumenTab extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                nextClaseOrBlock?.subtitulo ?? 'Tema KaTeX: $leadTopic',
+                nextClaseOrBlock?.subtitulo ??
+                    (lastTema != null
+                        ? 'Tema ${lastTema.numeroTema}: ${lastTema.titulo}'
+                        : 'Tema KaTeX: $leadTopic'),
                 style: TextStyle(fontSize: 12, color: p.textSecondary),
               ),
               const SizedBox(height: 12),
               TapScale(
                 onTap: () => onOpenClaseViva(
-                  nextClaseOrBlock?.codigoMateria ?? leadCode,
+                  nextClaseOrBlock?.codigoMateria ?? resumeKey,
                 ),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -356,6 +401,8 @@ class ResumenTab extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Bloque de Enfoque Rápido',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -363,8 +410,9 @@ class ResumenTab extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
-                    '+2 Uso • +10% Avance',
+                    '+10% Avance',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -386,11 +434,11 @@ class ResumenTab extends StatelessWidget {
                     session.completeStudyBlock(codigoMateria: leadCode);
                     showIosToast(
                       context,
-                      '+2 Uso Diario y +10% en $leadTitle',
+                      '+10% de avance en $leadTitle',
                       accentColor: p.indigo,
                     );
                   } else {
-                    onCompleteBlock();
+                    onCompleteBlock?.call();
                   }
                 },
                 child: Container(
@@ -402,7 +450,7 @@ class ResumenTab extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
-                    'Completar bloque de estudio (+2 Uso Diario)',
+                    'Completar bloque de estudio (+10% Avance)',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

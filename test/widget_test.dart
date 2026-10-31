@@ -191,6 +191,7 @@ void main() {
         ) as Map<String, dynamic>;
         expect(savedRemoteJson['username'], 'jsierra');
         expect(savedRemoteJson['programa'], 'Ingeniería Energética');
+        expect(savedRemoteJson.containsKey('uso_diario'), isFalse);
 
         // 2. Crear recordatorio personal en 0 ms + sincronización con GitHub
         await session.addCalendarReminder(
@@ -297,7 +298,7 @@ void main() {
     });
   });
 
-  group('UI End-to-End: Login Ing. Energética, ClaseViva KaTeX & Auto-Save', () {
+  group('UI End-to-End: Login Ing. Energética, Clases, Temario & ClaseViva KaTeX', () {
     setUp(() => SharedPreferences.setMockInitialValues({}));
 
     testWidgets(
@@ -385,9 +386,9 @@ void main() {
     );
 
     testWidgets(
-      'flujo de Registro rápido en LoginPage entra a HomeShell y filtra malla por Cuatrimestre',
+      'flujo de Registro rápido entra a HomeShell sin Uso Diario, explora Clases -> Temario y sincroniza (Último revisado) con GitHub',
       (tester) async {
-        tester.view.physicalSize = const Size(430, 1100);
+        tester.view.physicalSize = const Size(430, 1200);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.reset);
 
@@ -396,10 +397,37 @@ void main() {
         final curriculum = MarkdownCurriculumService()
           ..seedDatabase(CurriculumMarkdownParser.parse(mdContent));
 
-        final mockHttp = MockClient(
-          (_) async => http.Response(jsonEncode({'message': 'Not Found'}), 404),
-        );
+        final fakeGitHubFiles = <String, String>{};
+        final mockHttp = MockClient((http.Request req) async {
+          final path = req.url.path;
+          if (req.method == 'GET') {
+            if (fakeGitHubFiles.containsKey(path)) {
+              final rawJson = fakeGitHubFiles[path]!;
+              final b64 = base64Encode(utf8.encode(rawJson));
+              return http.Response(
+                jsonEncode({'sha': 'sha_cospino', 'content': '$b64\n'}),
+                200,
+              );
+            }
+            return http.Response(jsonEncode({'message': 'Not Found'}), 404);
+          }
+          if (req.method == 'PUT') {
+            final body = jsonDecode(req.body) as Map<String, dynamic>;
+            fakeGitHubFiles[path] = utf8.decode(
+              base64Decode(body['content'].toString()),
+            );
+            return http.Response(
+              jsonEncode({
+                'content': {'sha': 'sha_cospino_v2'},
+              }),
+              201,
+            );
+          }
+          return http.Response('Unsupported', 500);
+        });
+
         final sync = GitHubSyncService(httpClient: mockHttp);
+        await sync.setCustomGitHubToken('test_token_local_mock');
         final repo = LocalReactiveClaseVivaRepository(
           initialLatency: Duration.zero,
           curriculumService: curriculum,
@@ -445,11 +473,78 @@ void main() {
         await tester.pump(const Duration(milliseconds: 350));
         await tester.pump(const Duration(milliseconds: 350));
 
-        // Entró automáticamente a HomeShell con emblema oficial arriba a la izquierda
+        // Entró a HomeShell: sin Uso Diario y con las 4 pestañas (Hoy, Calendario, Clases, Estudio)
         expect(find.text('Hola, Camila'), findsOneWidget);
         expect(find.byType(ProgramLogoBadge), findsOneWidget);
+        expect(find.text('USO DIARIO'), findsNothing);
+        expect(find.textContaining('Uso Diario'), findsNothing);
+        expect(find.text('Hoy'), findsOneWidget);
+        expect(find.text('Calendario'), findsOneWidget);
+        expect(find.text('Clases'), findsOneWidget);
+        expect(find.text('Estudio'), findsOneWidget);
 
-        // Navega a la pestaña Estudio y verifica filtro por Cuatrimestre
+        // 1. Navega a la nueva pestaña "Clases" organizada en 12 Cuatrimestres
+        await tester.tap(find.text('Clases'));
+        await tester.pump(const Duration(milliseconds: 350));
+        await tester.pump(const Duration(milliseconds: 350));
+
+        expect(find.text('Todos (12 Cuat.)'), findsOneWidget);
+        expect(find.text('CUATRIMESTRE 1'), findsOneWidget);
+        expect(find.text('Cálculo Diferencial'), findsOneWidget);
+
+        // 2. Toca "Cálculo Diferencial" -> abre AsignaturaTemarioPage con transición iOS
+        await tester.tap(find.text('Cálculo Diferencial'));
+        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pump(const Duration(milliseconds: 350));
+
+        expect(find.text('TEMARIO'), findsOneWidget);
+        expect(find.text('Tema 1'), findsOneWidget);
+        expect(find.text('Tema 2'), findsOneWidget);
+        expect(find.text('(Último revisado)'), findsNothing);
+
+        // 3. Toca "Tema 2" -> abre ClaseVivaPage y registra (Último revisado)
+        await tester.tap(find.text('Tema 2'));
+        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pump(const Duration(milliseconds: 350));
+
+        expect(find.text('Temario'), findsOneWidget);
+        expect(session.lastReviewedTopicFor('02011807'), 2);
+        expect(session.ultimoRevisado?.codigoMateria, '02011807');
+        expect(session.ultimoRevisado?.numeroTema, 2);
+
+        // 4. Regresa al Temario y verifica etiqueta pequeña "(Último revisado)"
+        await tester.tap(find.text('Temario'));
+        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pump(const Duration(milliseconds: 350));
+
+        expect(find.text('TEMARIO'), findsOneWidget);
+        expect(find.text('(Último revisado)'), findsOneWidget);
+
+        // 5. Regresa a Clases y verifica que también sale "(Último revisado)" y sincroniza en GitHub
+        await tester.tap(find.text('Clases').first);
+        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pump(const Duration(milliseconds: 350));
+
+        expect(find.textContaining('(Último revisado)'), findsWidgets);
+
+        await sync.flushNow(session.currentUser!);
+        final syncedJson = jsonDecode(
+          fakeGitHubFiles['/repos/jesusants/UM-Studio/contents/db/users/cospino.json']!,
+        ) as Map<String, dynamic>;
+        expect(
+          (syncedJson['ultimos_temas_revisados'] as Map)['02011807'],
+          2,
+        );
+        expect(
+          (syncedJson['ultimo_revisado'] as Map)['codigo_materia'],
+          '02011807',
+        );
+        expect(
+          (syncedJson['ultimo_revisado'] as Map)['numero_tema'],
+          2,
+        );
+
+        // 6. Navega a la pestaña Estudio y verifica filtro por Cuatrimestre
         await tester.tap(find.text('Estudio'));
         await tester.pump(const Duration(milliseconds: 350));
         await tester.pump(const Duration(milliseconds: 350));
@@ -462,6 +557,7 @@ void main() {
         await tester.tap(find.text('Cuatrimestre 1'));
         await tester.pump(const Duration(milliseconds: 250));
         expect(find.text('Cálculo Diferencial'), findsOneWidget);
+        expect(find.textContaining('(Último revisado)'), findsOneWidget);
       },
     );
   });

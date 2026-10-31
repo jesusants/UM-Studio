@@ -169,7 +169,7 @@ class _ReminderCreatorSheetBodyState extends State<_ReminderCreatorSheetBody> {
     await session.addCalendarReminder(
       titulo: title,
       subtitulo: subtitle,
-      fechaIso: DailyUsageModel.todayIso(_selectedDate),
+      fechaIso: IsoDateHelper.todayIso(_selectedDate),
       hora: _selectedTime,
       tipo: _kind,
       codigoMateria: _subject?.codigo,
@@ -372,8 +372,8 @@ class _ReminderCreatorSheetBodyState extends State<_ReminderCreatorSheetBody> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: DailyUsageModel.todayIso(_selectedDate) ==
-                                    DailyUsageModel.todayIso(d)
+                            color: IsoDateHelper.todayIso(_selectedDate) ==
+                                    IsoDateHelper.todayIso(d)
                                 ? p.inverse
                                 : p.elevated,
                             borderRadius: BorderRadius.circular(999),
@@ -384,8 +384,8 @@ class _ReminderCreatorSheetBodyState extends State<_ReminderCreatorSheetBody> {
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: DailyUsageModel.todayIso(_selectedDate) ==
-                                      DailyUsageModel.todayIso(d)
+                              color: IsoDateHelper.todayIso(_selectedDate) ==
+                                      IsoDateHelper.todayIso(d)
                                   ? p.onInverse
                                   : p.textSecondary,
                             ),

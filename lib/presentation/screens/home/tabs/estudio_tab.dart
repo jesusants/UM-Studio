@@ -7,12 +7,18 @@ import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
 
-/// Pestaña 3: "Estudio Extraclase" alimentada desde `ingenieria_energetica.md`
-/// con filtro horizontal estilo píldora iOS por Cuatrimestre (`1..12`) y `Mis Materias`.
+/// Pestaña 4: "Estudio Extraclase" alimentada desde `ingenieria_energetica.md`
+/// con filtro horizontal estilo píldora iOS por Cuatrimestre (`1..12`), `Mis Materias`
+/// y registro sincronizado en GitHub de `(Último revisado)`.
 class EstudioTab extends StatefulWidget {
-  const EstudioTab({super.key, required this.onOpenClaseViva});
+  const EstudioTab({
+    super.key,
+    required this.onOpenClaseViva,
+    this.onOpenTemario,
+  });
 
   final ValueChanged<String> onOpenClaseViva;
+  final ValueChanged<AsignaturaModel>? onOpenTemario;
 
   @override
   State<EstudioTab> createState() => _EstudioTabState();
@@ -235,11 +241,20 @@ class _EstudioTabState extends State<EstudioTab> {
             _CurriculumSubjectCard(
               asignatura: asignatura,
               progressPercent: session?.subjectProgress(asignatura.codigo) ?? 0,
+              lastReviewedTopicNum: session?.lastReviewedTopicFor(
+                asignatura.codigo,
+              ),
               isPinned:
                   session?.progresoMaterias.containsKey(asignatura.codigo) ??
                       false,
               isCurrentSemester: asignatura.cuatrimestre == currentCuat,
-              onTap: () => widget.onOpenClaseViva(asignatura.codigo),
+              onTap: () {
+                if (widget.onOpenTemario != null) {
+                  widget.onOpenTemario!(asignatura);
+                } else {
+                  widget.onOpenClaseViva(asignatura.codigo);
+                }
+              },
               onTogglePin: session == null
                   ? null
                   : () async {
@@ -313,6 +328,7 @@ class _CurriculumSubjectCard extends StatelessWidget {
   const _CurriculumSubjectCard({
     required this.asignatura,
     required this.progressPercent,
+    required this.lastReviewedTopicNum,
     required this.isPinned,
     required this.isCurrentSemester,
     required this.onTap,
@@ -321,6 +337,7 @@ class _CurriculumSubjectCard extends StatelessWidget {
 
   final AsignaturaModel asignatura;
   final int progressPercent;
+  final int? lastReviewedTopicNum;
   final bool isPinned;
   final bool isCurrentSemester;
   final VoidCallback onTap;
@@ -331,6 +348,16 @@ class _CurriculumSubjectCard extends StatelessWidget {
     final p = context.palette;
     final accent = asignatura.accentColor;
     final active = isPinned || isCurrentSemester;
+
+    TemaClaseVivaModel? reviewedTopic;
+    if (lastReviewedTopicNum != null) {
+      for (final t in asignatura.temas) {
+        if (t.numeroTema == lastReviewedTopicNum) {
+          reviewedTopic = t;
+          break;
+        }
+      }
+    }
 
     return TapScale(
       onTap: onTap,
@@ -413,17 +440,28 @@ class _CurriculumSubjectCard extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: p.textSecondary),
                 children: [
                   TextSpan(
-                    text: asignatura.temas.length > 1
-                        ? 'Temas (${asignatura.temas.length}): '
-                        : 'Tema KaTeX: ',
+                    text: reviewedTopic != null
+                        ? 'Tema ${reviewedTopic.numeroTema}: '
+                        : (asignatura.temas.length > 1
+                            ? 'Temas (${asignatura.temas.length}): '
+                            : 'Tema KaTeX: '),
                   ),
                   TextSpan(
-                    text: asignatura.primerTema.titulo,
+                    text: (reviewedTopic ?? asignatura.primerTema).titulo,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: p.textPrimary,
                     ),
                   ),
+                  if (reviewedTopic != null)
+                    TextSpan(
+                      text: '  (Último revisado)',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        color: p.green,
+                      ),
+                    ),
                 ],
               ),
               maxLines: 2,

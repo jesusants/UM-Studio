@@ -54,7 +54,7 @@ class _CalendarioTabState extends State<CalendarioTab> {
   }
 
   bool _matchesFilter(CalendarReminderModel r) {
-    final selectedIso = DailyUsageModel.todayIso(_selectedDate);
+    final selectedIso = IsoDateHelper.todayIso(_selectedDate);
     if (_filter == 'Día') {
       return r.fechaIso == selectedIso;
     }
@@ -180,7 +180,7 @@ class _CalendarioTabState extends State<CalendarioTab> {
             ),
             Expanded(
               child: Text(
-                '${_formatDateShort(DailyUsageModel.todayIso(weekDays.first))} — ${_formatDateShort(DailyUsageModel.todayIso(weekDays.last))}',
+                '${_formatDateShort(IsoDateHelper.todayIso(weekDays.first))} — ${_formatDateShort(IsoDateHelper.todayIso(weekDays.last))}',
                 textAlign: TextAlign.center,
                 style: mono(fontSize: 11, color: p.textSecondary),
               ),
@@ -271,7 +271,7 @@ class _CalendarioTabState extends State<CalendarioTab> {
                 const SizedBox(height: 8),
                 Text(
                   _filter == 'Día'
-                      ? 'Sin recordatorios para el ${_formatDateShort(DailyUsageModel.todayIso(_selectedDate))}.'
+                      ? 'Sin recordatorios para el ${_formatDateShort(IsoDateHelper.todayIso(_selectedDate))}.'
                       : 'Aún no tienes recordatorios en "${_filter.toLowerCase()}".',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12.5, color: p.textSecondary),
@@ -336,8 +336,8 @@ class _CalendarioTabState extends State<CalendarioTab> {
     DateTime date,
     List<CalendarReminderModel> reminders,
   ) {
-    final iso = DailyUsageModel.todayIso(date);
-    final selected = iso == DailyUsageModel.todayIso(_selectedDate);
+    final iso = IsoDateHelper.todayIso(date);
+    final selected = iso == IsoDateHelper.todayIso(_selectedDate);
     final dayEvents = reminders.where((r) => r.fechaIso == iso).toList();
     final hasParcial = dayEvents.any(
       (r) =>

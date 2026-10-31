@@ -66,11 +66,29 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
 
   bool _uploading = false;
   String? _uploadingLabel;
+  bool _recordedInitialReview = false;
 
   @override
   void initState() {
     super.initState();
     _activeTemaKey = widget.temaId;
+  }
+
+  void _recordCurrentTopicAsReviewed() {
+    if (!mounted) return;
+    final session = SessionScope.maybeOf(context);
+    if (session == null) return;
+    final asig =
+        CurriculumScope.maybeOf(context)?.database?.findAsignatura(_activeTemaKey);
+    if (asig == null) return;
+    var topicNum = 1;
+    if (_activeTemaKey.contains('_t')) {
+      topicNum = int.tryParse(_activeTemaKey.split('_t').last) ?? 1;
+    }
+    session.markTopicReviewed(
+      codigoMateria: asig.codigo,
+      numeroTema: topicNum,
+    );
   }
 
   void _rebindStreams() {
@@ -89,6 +107,10 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
     final nextKey = topicNum <= 1
         ? asignatura.codigo
         : '${asignatura.codigo}_t$topicNum';
+    SessionScope.maybeOf(context)?.markTopicReviewed(
+      codigoMateria: asignatura.codigo,
+      numeroTema: topicNum,
+    );
     if (nextKey == _activeTemaKey) return;
     HapticFeedback.lightImpact();
     setState(() {
@@ -104,6 +126,12 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
     final currentUser = repo.activeUserId;
     if (_boundRepo != repo || _boundUser != currentUser) {
       _rebindStreams();
+    }
+    if (!_recordedInitialReview) {
+      _recordedInitialReview = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _recordCurrentTopicAsReviewed();
+      });
     }
   }
 
@@ -751,7 +779,7 @@ class _OfficialTopicSection extends StatelessWidget {
                             if (context.mounted) {
                               showIosToast(
                                 context,
-                                '+2 Uso Diario y +10% en ${tema.nombreAsignatura}',
+                                '+10% de avance en ${tema.nombreAsignatura}',
                                 accentColor: p.green,
                               );
                             }

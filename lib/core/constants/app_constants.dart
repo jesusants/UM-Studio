@@ -10,11 +10,6 @@ abstract final class AppConstants {
       'Unimagdalena • Ingeniería Energética (Plan 8108)';
   static const String institutionalDomain = '@unimagdalena.edu.co';
 
-  /// Cupo diario de consultas y bloques académicos.
-  static const int initialDailyUsage = 9;
-  static const int warningDailyThreshold = 12;
-  static const int maxDailyUsage = 15;
-
   /// Dimensiones base del shell móvil iOS.
   static const double maxPhoneViewportWidth = 430.0;
 

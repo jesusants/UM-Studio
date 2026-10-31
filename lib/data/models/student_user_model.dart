@@ -3,61 +3,48 @@ import 'dart:convert';
 import '../../core/constants/app_constants.dart';
 import '../../domain/entities/subject_summary.dart';
 
-/// Cupo diario personal del estudiante en `db/users/{username}.json`.
-class DailyUsageModel {
-  const DailyUsageModel({
-    required this.actual,
-    required this.maximo,
-    required this.ultimaFecha,
-  });
-
-  final int actual;
-  final int maximo;
-  final String ultimaFecha;
-
+/// Utilidad de fecha ISO local `YYYY-MM-DD`.
+abstract final class IsoDateHelper {
   static String todayIso([DateTime? now]) {
     final d = now ?? DateTime.now();
     final m = d.month.toString().padLeft(2, '0');
     final day = d.day.toString().padLeft(2, '0');
     return '${d.year}-$m-$day';
   }
+}
 
-  factory DailyUsageModel.initial([DateTime? now]) {
-    return DailyUsageModel(
-      actual: AppConstants.initialDailyUsage,
-      maximo: AppConstants.maxDailyUsage,
-      ultimaFecha: todayIso(now),
-    );
-  }
+/// Registro global del último tema revisado por el estudiante.
+class LastReviewedTopicModel {
+  const LastReviewedTopicModel({
+    required this.codigoMateria,
+    required this.numeroTema,
+    required this.actualizadoEn,
+  });
 
-  factory DailyUsageModel.fromJson(Map<String, dynamic> json) {
-    return DailyUsageModel(
-      actual: (json['actual'] is num)
-          ? (json['actual'] as num).toInt()
-          : AppConstants.initialDailyUsage,
-      maximo: (json['maximo'] is num)
-          ? (json['maximo'] as num).toInt()
-          : AppConstants.maxDailyUsage,
-      ultimaFecha: (json['ultima_fecha'] ?? todayIso()).toString(),
-    );
-  }
+  final String codigoMateria;
+  final int numeroTema;
+  final String actualizadoEn;
 
-  DailyUsageModel copyWith({
-    int? actual,
-    int? maximo,
-    String? ultimaFecha,
-  }) {
-    return DailyUsageModel(
-      actual: actual ?? this.actual,
-      maximo: maximo ?? this.maximo,
-      ultimaFecha: ultimaFecha ?? this.ultimaFecha,
+  String get temaKey =>
+      numeroTema <= 1 ? codigoMateria : '${codigoMateria}_t$numeroTema';
+
+  factory LastReviewedTopicModel.fromJson(Map<String, dynamic> json) {
+    final rawNum = json['numero_tema'] ?? 1;
+    return LastReviewedTopicModel(
+      codigoMateria: (json['codigo_materia'] ?? '').toString(),
+      numeroTema: rawNum is num
+          ? rawNum.toInt()
+          : int.tryParse(rawNum.toString()) ?? 1,
+      actualizadoEn:
+          (json['actualizado_en'] ?? DateTime.now().toIso8601String())
+              .toString(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'actual': actual,
-        'maximo': maximo,
-        'ultima_fecha': ultimaFecha,
+        'codigo_materia': codigoMateria,
+        'numero_tema': numeroTema,
+        'actualizado_en': actualizadoEn,
       };
 }
 
@@ -125,7 +112,7 @@ class CalendarReminderModel {
       titulo: (json['titulo'] ?? 'Recordatorio académico').toString(),
       subtitulo: (json['subtitulo'] ?? '').toString(),
       fechaIso:
-          (json['fecha'] ?? json['fecha_iso'] ?? DailyUsageModel.todayIso())
+          (json['fecha'] ?? json['fecha_iso'] ?? IsoDateHelper.todayIso())
               .toString(),
       hora: (json['hora'] ?? '10:00').toString(),
       tipo: parseTipo((json['tipo'] ?? 'bloque').toString()),
@@ -177,10 +164,11 @@ class StudentUserModel {
     required this.email,
     required this.programa,
     required this.pinHash,
-    required this.usoDiario,
     required this.progresoMaterias,
     required this.recordatoriosCalendario,
     required this.apuntesPersonales,
+    this.ultimosTemasRevisados = const {},
+    this.ultimoRevisado,
     this.cuatrimestreActual = 2,
   });
 
@@ -189,10 +177,16 @@ class StudentUserModel {
   final String email;
   final String programa;
   final String pinHash;
-  final DailyUsageModel usoDiario;
   final Map<String, int> progresoMaterias;
   final List<CalendarReminderModel> recordatoriosCalendario;
   final Map<String, dynamic> apuntesPersonales;
+
+  /// Mapa `{ codigo_materia: numero_tema }` con el último tema revisado en cada asignatura.
+  final Map<String, int> ultimosTemasRevisados;
+
+  /// Último tema revisado globalmente por el estudiante.
+  final LastReviewedTopicModel? ultimoRevisado;
+
   final int cuatrimestreActual;
 
   String get primerNombre {
@@ -222,7 +216,8 @@ class StudentUserModel {
   }) {
     final starterProgress = <String, int>{};
     for (var i = 0; i < starterSubjectCodes.length; i++) {
-      starterProgress[starterSubjectCodes[i]] = i == 0 ? 50 : (i == 1 ? 60 : 35);
+      starterProgress[starterSubjectCodes[i]] =
+          i == 0 ? 50 : (i == 1 ? 60 : 35);
     }
 
     return StudentUserModel(
@@ -232,21 +227,14 @@ class StudentUserModel {
       programa: AppConstants.programName,
       pinHash: pinHash,
       cuatrimestreActual: cuatrimestreActual.clamp(1, 12),
-      usoDiario: DailyUsageModel.initial(),
       progresoMaterias: starterProgress,
       recordatoriosCalendario: const [],
       apuntesPersonales: const {},
+      ultimosTemasRevisados: const {},
     );
   }
 
   factory StudentUserModel.fromJson(Map<String, dynamic> json) {
-    final rawUso = json['uso_diario'];
-    final uso = rawUso is Map
-        ? DailyUsageModel.fromJson(
-            rawUso.map((k, v) => MapEntry(k.toString(), v)),
-          )
-        : DailyUsageModel.initial();
-
     final progress = <String, int>{};
     final rawProg = json['progreso_materias'];
     if (rawProg is Map) {
@@ -254,6 +242,28 @@ class StudentUserModel {
         final pct = v is num ? v.toInt() : int.tryParse(v.toString()) ?? 0;
         progress[k.toString()] = pct.clamp(0, 100);
       });
+    }
+
+    final reviewedMap = <String, int>{};
+    final rawReviewed = json['ultimos_temas_revisados'];
+    if (rawReviewed is Map) {
+      rawReviewed.forEach((k, v) {
+        final tNum = v is num ? v.toInt() : int.tryParse(v.toString()) ?? 1;
+        if (tNum >= 1) {
+          reviewedMap[k.toString()] = tNum;
+        }
+      });
+    }
+
+    LastReviewedTopicModel? globalLast;
+    final rawLast = json['ultimo_revisado'];
+    if (rawLast is Map) {
+      final parsed = LastReviewedTopicModel.fromJson(
+        rawLast.map((k, v) => MapEntry(k.toString(), v)),
+      );
+      if (parsed.codigoMateria.isNotEmpty) {
+        globalLast = parsed;
+      }
     }
 
     final reminders = <CalendarReminderModel>[];
@@ -294,10 +304,11 @@ class StudentUserModel {
       cuatrimestreActual: (json['cuatrimestre_actual'] is num)
           ? (json['cuatrimestre_actual'] as num).toInt().clamp(1, 12)
           : 2,
-      usoDiario: uso,
       progresoMaterias: progress,
       recordatoriosCalendario: reminders,
       apuntesPersonales: notes,
+      ultimosTemasRevisados: reviewedMap,
+      ultimoRevisado: globalLast,
     );
   }
 
@@ -307,10 +318,11 @@ class StudentUserModel {
     String? email,
     String? programa,
     String? pinHash,
-    DailyUsageModel? usoDiario,
     Map<String, int>? progresoMaterias,
     List<CalendarReminderModel>? recordatoriosCalendario,
     Map<String, dynamic>? apuntesPersonales,
+    Map<String, int>? ultimosTemasRevisados,
+    LastReviewedTopicModel? ultimoRevisado,
     int? cuatrimestreActual,
   }) {
     return StudentUserModel(
@@ -319,11 +331,13 @@ class StudentUserModel {
       email: email ?? this.email,
       programa: programa ?? this.programa,
       pinHash: pinHash ?? this.pinHash,
-      usoDiario: usoDiario ?? this.usoDiario,
       progresoMaterias: progresoMaterias ?? this.progresoMaterias,
       recordatoriosCalendario:
           recordatoriosCalendario ?? this.recordatoriosCalendario,
       apuntesPersonales: apuntesPersonales ?? this.apuntesPersonales,
+      ultimosTemasRevisados:
+          ultimosTemasRevisados ?? this.ultimosTemasRevisados,
+      ultimoRevisado: ultimoRevisado ?? this.ultimoRevisado,
       cuatrimestreActual: cuatrimestreActual ?? this.cuatrimestreActual,
     );
   }
@@ -335,8 +349,10 @@ class StudentUserModel {
         'programa': programa,
         'cuatrimestre_actual': cuatrimestreActual,
         'pin_hash': pinHash,
-        'uso_diario': usoDiario.toJson(),
         'progreso_materias': progresoMaterias,
+        'ultimos_temas_revisados': ultimosTemasRevisados,
+        if (ultimoRevisado != null)
+          'ultimo_revisado': ultimoRevisado!.toJson(),
         'recordatorios_calendario':
             recordatoriosCalendario.map((r) => r.toJson()).toList(),
         'apuntes_personales': apuntesPersonales,

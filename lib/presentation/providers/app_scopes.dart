@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -67,8 +68,8 @@ class ClaseVivaRepositoryScope extends InheritedWidget {
 }
 
 /// Controlador principal de sesión estudiantil de Ingeniería Energética,
-/// conectado con `GitHubSyncService` (`db/users/{username}.json`) y
-/// almacenamiento local instantáneo (0 ms).
+/// conectado con `GitHubSyncService` (`db/users/{username}.json`),
+/// seguimiento de `Último revisado` y almacenamiento local instantáneo (0 ms).
 class InstitutionalSessionController extends ChangeNotifier {
   InstitutionalSessionController({
     required IClaseVivaRepository repository,
@@ -85,7 +86,8 @@ class InstitutionalSessionController extends ChangeNotifier {
   }
 
   static const String _legacyEmailPrefsKey = 'um_studio_institutional_email';
-  static const String _legacyUsagePrefsKey = 'um_studio_daily_usage';
+  static const String _fallbackReviewedPrefsKey =
+      'um_studio_fallback_reviewed_map';
 
   final IClaseVivaRepository _repository;
   final GitHubSyncService _syncService;
@@ -93,7 +95,8 @@ class InstitutionalSessionController extends ChangeNotifier {
 
   StudentUserModel? _currentUser;
   String _fallbackEmail = AppConstants.defaultStudentEmail;
-  int _fallbackUsage = AppConstants.initialDailyUsage;
+  final Map<String, int> _fallbackReviewed = {};
+  LastReviewedTopicModel? _fallbackGlobalLast;
   bool _initialized = false;
 
   bool get isInitialized => _initialized;
@@ -109,12 +112,18 @@ class InstitutionalSessionController extends ChangeNotifier {
   String get initials => _currentUser?.iniciales ?? 'UM';
   int get cuatrimestreActual => _currentUser?.cuatrimestreActual ?? 2;
 
-  int get dailyUsage => _currentUser?.usoDiario.actual ?? _fallbackUsage;
-  int get maxDailyUsage =>
-      _currentUser?.usoDiario.maximo ?? AppConstants.maxDailyUsage;
-
   Map<String, int> get progresoMaterias =>
       _currentUser?.progresoMaterias ?? const {};
+
+  Map<String, int> get ultimosTemasRevisados =>
+      _currentUser?.ultimosTemasRevisados ?? _fallbackReviewed;
+
+  LastReviewedTopicModel? get ultimoRevisado =>
+      _currentUser?.ultimoRevisado ?? _fallbackGlobalLast;
+
+  /// Devuelve el número del último tema revisado en una asignatura (o `null`).
+  int? lastReviewedTopicFor(String codigoMateria) =>
+      ultimosTemasRevisados[codigoMateria];
 
   List<CalendarReminderModel> get reminders {
     final list = List<CalendarReminderModel>.from(
@@ -156,9 +165,15 @@ class InstitutionalSessionController extends ChangeNotifier {
       _fallbackEmail = savedEmail;
       _repository.updateActiveUser(savedEmail);
     }
-    final savedUsage = prefs.getInt(_legacyUsagePrefsKey);
-    if (savedUsage != null) {
-      _fallbackUsage = savedUsage.clamp(0, AppConstants.maxDailyUsage);
+
+    final rawRev = prefs.getString(_fallbackReviewedPrefsKey);
+    if (rawRev != null && rawRev.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawRev) as Map<String, dynamic>;
+        decoded.forEach((k, v) {
+          if (v is num) _fallbackReviewed[k] = v.toInt();
+        });
+      } catch (_) {}
     }
 
     _initialized = true;
@@ -178,7 +193,6 @@ class InstitutionalSessionController extends ChangeNotifier {
   Future<void> _activateUser(StudentUserModel user) async {
     _currentUser = user;
     _fallbackEmail = user.email;
-    _fallbackUsage = user.usoDiario.actual;
     if (InstitutionalValidator.isValidInstitutionalEmail(user.email)) {
       _repository.updateActiveUser(user.email);
     }
@@ -276,18 +290,35 @@ class InstitutionalSessionController extends ChangeNotifier {
     return null;
   }
 
-  /// Suma puntos de cupo diario (`+ Mérito` o bloques completados) en 0 ms.
-  Future<void> addUsageQuota(int delta) async {
-    if (_currentUser != null) {
-      final max = _currentUser!.usoDiario.maximo;
-      final next = (_currentUser!.usoDiario.actual + delta).clamp(0, max);
-      if (next == _currentUser!.usoDiario.actual) return;
+  /// Registra el tema que el estudiante acaba de abrir como `Último revisado`
+  /// en 0 ms (almacenamiento local inmediato) y lo sincroniza con GitHub.
+  Future<void> markTopicReviewed({
+    required String codigoMateria,
+    required int numeroTema,
+  }) async {
+    final cleanCode = codigoMateria.trim();
+    if (cleanCode.isEmpty) return;
+    final cleanNum = numeroTema < 1 ? 1 : numeroTema;
+    final nowIso = DateTime.now().toIso8601String();
+    final lastRecord = LastReviewedTopicModel(
+      codigoMateria: cleanCode,
+      numeroTema: cleanNum,
+      actualizadoEn: nowIso,
+    );
 
-      final updated = _currentUser!.copyWith(
-        usoDiario: _currentUser!.usoDiario.copyWith(
-          actual: next,
-          ultimaFecha: DailyUsageModel.todayIso(),
-        ),
+    final user = _currentUser;
+    if (user != null) {
+      final alreadySame = user.ultimosTemasRevisados[cleanCode] == cleanNum &&
+          user.ultimoRevisado?.codigoMateria == cleanCode &&
+          user.ultimoRevisado?.numeroTema == cleanNum;
+      if (alreadySame) return;
+
+      final nextReviewed = Map<String, int>.from(user.ultimosTemasRevisados);
+      nextReviewed[cleanCode] = cleanNum;
+
+      final updated = user.copyWith(
+        ultimosTemasRevisados: nextReviewed,
+        ultimoRevisado: lastRecord,
       );
       _currentUser = updated;
       notifyListeners();
@@ -295,13 +326,14 @@ class InstitutionalSessionController extends ChangeNotifier {
       return;
     }
 
-    final next = (_fallbackUsage + delta).clamp(0, AppConstants.maxDailyUsage);
-    if (next == _fallbackUsage) return;
-    _fallbackUsage = next;
+    _fallbackReviewed[cleanCode] = cleanNum;
+    _fallbackGlobalLast = lastRecord;
     notifyListeners();
-
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_legacyUsagePrefsKey, _fallbackUsage);
+    await prefs.setString(
+      _fallbackReviewedPrefsKey,
+      jsonEncode(_fallbackReviewed),
+    );
   }
 
   /// Cambia el cuatrimestre activo del estudiante y lo sincroniza.
@@ -358,34 +390,21 @@ class InstitutionalSessionController extends ChangeNotifier {
     return pinned;
   }
 
-  /// Completa un bloque de estudio: suma `+2` al Uso Diario y avanza el progreso
-  /// de la asignatura vinculada en 0 ms con sincronización en segundo plano.
+  /// Completa un bloque de estudio avanzando el progreso de la asignatura en 0 ms.
   Future<void> completeStudyBlock({
     String? codigoMateria,
-    int usageBonus = 2,
     int progressDelta = 10,
   }) async {
     final user = _currentUser;
-    if (user == null) {
-      await addUsageQuota(usageBonus);
-      return;
-    }
+    if (user == null) return;
 
-    final max = user.usoDiario.maximo;
-    final nextUsage = (user.usoDiario.actual + usageBonus).clamp(0, max);
     final nextMap = Map<String, int>.from(user.progresoMaterias);
     if (codigoMateria != null && codigoMateria.isNotEmpty) {
       final currentPct = nextMap[codigoMateria] ?? 0;
       nextMap[codigoMateria] = (currentPct + progressDelta).clamp(0, 100);
     }
 
-    final updated = user.copyWith(
-      usoDiario: user.usoDiario.copyWith(
-        actual: nextUsage,
-        ultimaFecha: DailyUsageModel.todayIso(),
-      ),
-      progresoMaterias: nextMap,
-    );
+    final updated = user.copyWith(progresoMaterias: nextMap);
     _currentUser = updated;
     notifyListeners();
     await _syncService.saveOptimisticAndSync(updated);
@@ -423,7 +442,7 @@ class InstitutionalSessionController extends ChangeNotifier {
     await _syncService.saveOptimisticAndSync(updated);
   }
 
-  /// Alterna el estado completado de un recordatorio (si es bloque suma Uso Diario).
+  /// Alterna el estado completado de un recordatorio (si es bloque suma avance).
   Future<void> toggleReminderCompleted(String reminderId) async {
     final user = _currentUser;
     if (user == null) return;
@@ -440,24 +459,16 @@ class InstitutionalSessionController extends ChangeNotifier {
       return r.copyWith(completado: nowDone);
     }).toList();
 
-    var nextUso = user.usoDiario;
     final nextProg = Map<String, int>.from(user.progresoMaterias);
-    if (giveBonus) {
-      nextUso = nextUso.copyWith(
-        actual: (nextUso.actual + 2).clamp(0, nextUso.maximo),
-        ultimaFecha: DailyUsageModel.todayIso(),
+    if (giveBonus && bonusSubject != null && bonusSubject!.isNotEmpty) {
+      nextProg[bonusSubject!] = ((nextProg[bonusSubject!] ?? 0) + 10).clamp(
+        0,
+        100,
       );
-      if (bonusSubject != null && bonusSubject!.isNotEmpty) {
-        nextProg[bonusSubject!] = ((nextProg[bonusSubject!] ?? 0) + 10).clamp(
-          0,
-          100,
-        );
-      }
     }
 
     final updated = user.copyWith(
       recordatoriosCalendario: nextList,
-      usoDiario: nextUso,
       progresoMaterias: nextProg,
     );
     _currentUser = updated;

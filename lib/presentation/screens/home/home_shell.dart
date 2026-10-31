@@ -5,18 +5,21 @@ import 'package:flutter/services.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/models/curriculum_models.dart';
 import '../../../data/services/github_sync_service.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
+import '../clases/asignatura_temario_page.dart';
 import 'tabs/calendario_tab.dart';
+import 'tabs/clases_tab.dart';
 import 'tabs/estudio_tab.dart';
 import 'tabs/resumen_tab.dart';
 
 /// Contenedor principal de UM STUDIO:
-/// Header con perfil de Ingeniería Energética (`@unimagdalena.edu.co`),
-/// estado de sincronización GitHub, barra de Uso Diario (`borderRadius: 999`),
-/// 3 pestañas deslizables a 60/120fps y barra inferior iOS.
+/// Header minimalista con emblema de Ingeniería Energética (`@unimagdalena.edu.co`),
+/// estado de sincronización GitHub y 4 pestañas deslizables a 60/120fps
+/// (`Hoy`, `Calendario`, `Clases`, `Estudio`).
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -26,25 +29,12 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   final PageController _pageController = PageController();
-  int _fallbackUsage = AppConstants.initialDailyUsage;
   int _tab = 0;
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  void _addUsage(int amount) {
-    final session = SessionScope.maybeOf(context);
-    if (session != null) {
-      session.addUsageQuota(amount);
-    } else {
-      setState(() {
-        _fallbackUsage =
-            (_fallbackUsage + amount).clamp(0, AppConstants.maxDailyUsage);
-      });
-    }
   }
 
   void _goToTab(int index) {
@@ -57,6 +47,10 @@ class _HomeShellState extends State<HomeShell> {
 
   void _openClaseViva(String subjectId) {
     Navigator.of(context).push(ClaseVivaPage.route(subjectId));
+  }
+
+  void _openTemario(AsignaturaModel asignatura) {
+    Navigator.of(context).push(AsignaturaTemarioPage.route(asignatura));
   }
 
   Future<void> _openStudentProfileSheet() async {
@@ -367,8 +361,6 @@ class _HomeShellState extends State<HomeShell> {
     final p = context.palette;
     final isDark = ThemeScope.of(context).isDark;
     final session = SessionScope.maybeOf(context);
-    final currentUsage = session?.dailyUsage ?? _fallbackUsage;
-    final maxUsage = session?.maxDailyUsage ?? AppConstants.maxDailyUsage;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final wide = screenWidth > AppConstants.maxPhoneViewportWidth;
 
@@ -392,9 +384,6 @@ class _HomeShellState extends State<HomeShell> {
                 _Header(
                   syncStatus:
                       session?.syncService.status ?? GitHubSyncStatus.idle,
-                  usage: currentUsage,
-                  maxUsage: maxUsage,
-                  onMerit: () => _addUsage(1),
                   onTapIdentity: _openStudentProfileSheet,
                 ),
                 Expanded(
@@ -403,12 +392,13 @@ class _HomeShellState extends State<HomeShell> {
                     physics: const BouncingScrollPhysics(),
                     onPageChanged: (i) => setState(() => _tab = i),
                     children: [
-                      ResumenTab(
-                        onOpenClaseViva: _openClaseViva,
-                        onCompleteBlock: () => _addUsage(2),
-                      ),
+                      ResumenTab(onOpenClaseViva: _openClaseViva),
                       CalendarioTab(onOpenClaseViva: _openClaseViva),
-                      EstudioTab(onOpenClaseViva: _openClaseViva),
+                      const ClasesTab(),
+                      EstudioTab(
+                        onOpenClaseViva: _openClaseViva,
+                        onOpenTemario: _openTemario,
+                      ),
                     ],
                   ),
                 ),
@@ -425,16 +415,10 @@ class _HomeShellState extends State<HomeShell> {
 class _Header extends StatelessWidget {
   const _Header({
     required this.syncStatus,
-    required this.usage,
-    required this.maxUsage,
-    required this.onMerit,
     required this.onTapIdentity,
   });
 
   final GitHubSyncStatus syncStatus;
-  final int usage;
-  final int maxUsage;
-  final VoidCallback onMerit;
   final VoidCallback onTapIdentity;
 
   @override
@@ -461,164 +445,71 @@ class _Header extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 16 + top, 20, 14),
+      padding: EdgeInsets.fromLTRB(20, 14 + top, 20, 13),
       decoration: BoxDecoration(
         color: p.glass,
         border: Border(bottom: BorderSide(color: p.cardBorder.o(0.8))),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              TapScale(
-                onTap: onTapIdentity,
-                child: const ProgramLogoBadge(size: 36),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppConstants.appTitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.3,
-                        color: p.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      AppConstants.programSubtitle,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 11, color: p.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
-              const ThemeToggleButton(),
-              const SizedBox(width: 8),
-              TapScale(
-                onTap: onTapIdentity,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: p.card,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: p.cardBorder),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      PulseDot(color: dotColor),
-                      const SizedBox(width: 6),
-                      Text(
-                        badgeText,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: p.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          TapScale(
+            onTap: onTapIdentity,
+            child: const ProgramLogoBadge(size: 36),
           ),
-          const SizedBox(height: 12),
-          _DailyUsageCard(usage: usage, maxUsage: maxUsage, onMerit: onMerit),
-        ],
-      ),
-    );
-  }
-}
-
-class _DailyUsageCard extends StatelessWidget {
-  const _DailyUsageCard({
-    required this.usage,
-    required this.maxUsage,
-    required this.onMerit,
-  });
-
-  final int usage;
-  final int maxUsage;
-  final VoidCallback onMerit;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    final barColor =
-        usage >= AppConstants.warningDailyThreshold ? p.orange : p.green;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: p.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: p.cardBorder),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(Icons.bolt_rounded, size: 15, color: p.green),
-              const SizedBox(width: 4),
-              Text(
-                'USO DIARIO',
-                style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 1,
-                  fontWeight: FontWeight.w500,
-                  color: p.textSecondary,
-                ),
-              ),
-              const Spacer(),
-              Text.rich(
-                TextSpan(
-                  style: mono(fontSize: 11, color: p.textSecondary),
-                  children: [
-                    TextSpan(
-                      text: '$usage',
-                      style: TextStyle(
-                        color: p.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    TextSpan(text: ' / $maxUsage consultas'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          ProgressBar(value: usage / maxUsage, color: barColor, height: 6),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Completa bloques de estudio para ampliar tu cupo diario',
-                  style: TextStyle(fontSize: 10, color: p.textTertiary),
-                ),
-              ),
-              TapScale(
-                onTap: onMerit,
-                child: Text(
-                  '+ Mérito',
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppConstants.appTitle,
                   style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: p.green,
+                    fontSize: 14,
+                    height: 1,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.3,
+                    color: p.textPrimary,
                   ),
                 ),
+                const SizedBox(height: 3),
+                Text(
+                  AppConstants.programSubtitle,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, color: p.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          const ThemeToggleButton(),
+          const SizedBox(width: 8),
+          TapScale(
+            onTap: onTapIdentity,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 4,
               ),
-            ],
+              decoration: BoxDecoration(
+                color: p.card,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: p.cardBorder),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PulseDot(color: dotColor),
+                  const SizedBox(width: 6),
+                  Text(
+                    badgeText,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: p.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -635,6 +526,7 @@ class _BottomNav extends StatelessWidget {
   static const _items = [
     (Icons.today_rounded, 'Hoy'),
     (Icons.calendar_month_rounded, 'Calendario'),
+    (Icons.school_rounded, 'Clases'),
     (Icons.menu_book_rounded, 'Estudio'),
   ];
 
@@ -649,7 +541,7 @@ class _BottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
           child: Row(
             children: List.generate(_items.length, (i) {
               final (icon, label) = _items[i];
@@ -661,7 +553,7 @@ class _BottomNav extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 280),
                     curve: kIosSpring,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     decoration: BoxDecoration(
                       color: selected ? p.elevated : Colors.transparent,
@@ -674,8 +566,10 @@ class _BottomNav extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 9.5,
                             fontWeight:
                                 selected ? FontWeight.w600 : FontWeight.w500,
                             color: color,
