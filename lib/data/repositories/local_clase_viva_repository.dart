@@ -137,22 +137,33 @@ class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
   }) {
     final uid = usuarioId ?? activeUserId;
     final key = _key(temaId, uid);
-    final ctrl = _controllers.putIfAbsent(
+    final hub = _controllers.putIfAbsent(
       key,
       () => StreamController<List<NotaAdjuntoEntity>>.broadcast(),
     );
-    return _createInitialPlusUpdatesStream(temaId, uid, ctrl)
-        .asBroadcastStream();
-  }
 
-  Stream<List<NotaAdjuntoEntity>> _createInitialPlusUpdatesStream(
-    String temaId,
-    String uid,
-    StreamController<List<NotaAdjuntoEntity>> broadcastCtrl,
-  ) async* {
-    final initial = await _loadItems(temaId, uid);
-    yield List<NotaAdjuntoEntity>.unmodifiable(initial);
-    yield* broadcastCtrl.stream;
+    late final StreamController<List<NotaAdjuntoEntity>> controller;
+    StreamSubscription<List<NotaAdjuntoEntity>>? hubSub;
+
+    controller = StreamController<List<NotaAdjuntoEntity>>.broadcast(
+      onListen: () async {
+        final initial = await _loadItems(temaId, uid);
+        if (!controller.isClosed) {
+          controller.add(List<NotaAdjuntoEntity>.unmodifiable(initial));
+        }
+        hubSub ??= hub.stream.listen((data) {
+          if (!controller.isClosed) {
+            controller.add(data);
+          }
+        });
+      },
+      onCancel: () {
+        hubSub?.cancel();
+        hubSub = null;
+      },
+    );
+
+    return controller.stream;
   }
 
   Future<List<NotaAdjuntoModel>> _loadItems(
