@@ -1,0 +1,22 @@
+{
+  "username": "marrodriguez",
+  "nombre": "Mateo Rodríguez",
+  "email": "marrodriguez@unimagdalena.edu.co",
+  "programa": "Ingeniería Energética",
+  "cuatrimestre_actual": 3,
+  "pin_hash": "ac4a809a95da52c2ecb3b8c2e5193380435d146237874912fa770fc68e469f96",
+  "uso_diario": {
+    "actual": 9,
+    "maximo": 15,
+    "ultima_fecha": "2026-10-30"
+  },
+  "progreso_materias": {
+    "02011808": 50,
+    "02021811": 60,
+    "03041820": 35,
+    "03021815": 35,
+    "01021804": 35
+  },
+  "recordatorios_calendario": [],
+  "apuntes_personales": {}
+}
