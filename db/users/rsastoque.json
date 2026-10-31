@@ -1,0 +1,18 @@
+{
+  "username": "rsastoque",
+  "nombre": "Ricardo Sastoque",
+  "email": "rsastoque@unimagdalena.edu.co",
+  "programa": "Ingeniería Energética",
+  "cuatrimestre_actual": 3,
+  "pin_hash": "c947b7e7e61c8fab08ad90eb0c5c785b487afebe1efb7bb76f6e6575832b1a14",
+  "progreso_materias": {
+    "02011808": 50,
+    "02021811": 60,
+    "03041820": 35,
+    "03021815": 35,
+    "01021804": 35
+  },
+  "ultimos_temas_revisados": {},
+  "recordatorios_calendario": [],
+  "apuntes_personales": {}
+}
