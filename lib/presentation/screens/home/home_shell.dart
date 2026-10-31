@@ -59,8 +59,8 @@ class _HomeShellState extends State<HomeShell> {
     if (session == null) return;
 
     final p = context.palette;
-    final tokenCtrl = TextEditingController();
-    var showTokenField = false;
+    var adminTaps = 0;
+    DateTime? lastTap;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -97,9 +97,25 @@ class _HomeShellState extends State<HomeShell> {
                     const SizedBox(height: 14),
                     Row(
                       children: [
-                        HeaderMorphAvatar(
-                          size: 40,
-                          photoBytes: session.userPhotoBytes,
+                        GestureDetector(
+                          onTap: () async {
+                            final now = DateTime.now();
+                            if (lastTap != null &&
+                                now.difference(lastTap!).inMilliseconds > 2500) {
+                              adminTaps = 0;
+                            }
+                            lastTap = now;
+                            adminTaps++;
+                            if (adminTaps >= 7) {
+                              adminTaps = 0;
+                              HapticFeedback.heavyImpact();
+                              await _showSecretAdminSyncDialog(sheetCtx, session);
+                            }
+                          },
+                          child: HeaderMorphAvatar(
+                            size: 40,
+                            photoBytes: session.userPhotoBytes,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -139,11 +155,6 @@ class _HomeShellState extends State<HomeShell> {
                       session.email,
                       style: mono(fontSize: 12, color: p.green),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Archivo en GitHub: db/users/${session.username}.json',
-                      style: mono(fontSize: 10.5, color: p.textSecondary),
-                    ),
                     const SizedBox(height: 14),
                     const IosHairline(),
                     const SizedBox(height: 12),
@@ -151,12 +162,12 @@ class _HomeShellState extends State<HomeShell> {
                     Row(
                       children: [
                         Text(
-                          'CUATRIMESTRE ACTIVO',
+                          'CUATRIMESTRE ACTIVO (PLAN 8108)',
                           style: sectionMicroStyle(p),
                         ),
                         const Spacer(),
                         Text(
-                          'Cuatrimestre $currentCuat',
+                          'Cuatrimestre $currentCuat de 12',
                           style: mono(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -165,159 +176,81 @@ class _HomeShellState extends State<HomeShell> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      child: Row(
-                        children: List.generate(12, (idx) {
-                          final c = idx + 1;
-                          final selected = c == currentCuat;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: TapScale(
-                              onTap: () async {
-                                await session.setCuatrimestreActual(c);
-                                setModalState(() {});
-                              },
-                              child: Container(
-                                width: 34,
-                                height: 32,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: selected ? p.green : p.elevated,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: selected ? p.green : p.cardBorder,
-                                  ),
-                                ),
-                                child: Text(
-                                  '$c',
-                                  style: mono(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: selected
-                                        ? Colors.black
-                                        : p.textSecondary,
-                                  ),
-                                ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 7,
+                      runSpacing: 7,
+                      children: List.generate(12, (idx) {
+                        final c = idx + 1;
+                        final selected = c == currentCuat;
+                        return TapScale(
+                          onTap: () async {
+                            await session.setCuatrimestreActual(c);
+                            setModalState(() {});
+                          },
+                          child: Container(
+                            width: 38,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: selected ? p.green : p.elevated,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: selected ? p.green : p.cardBorder,
                               ),
                             ),
-                          );
-                        }),
-                      ),
+                            child: Text(
+                              '$c',
+                              style: mono(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: selected
+                                    ? Colors.black
+                                    : p.textSecondary,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
 
                     if (user != null) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TapScale(
-                              onTap: () async {
-                                final ok = await session.syncService.flushNow(
-                                  user,
-                                );
-                                if (sheetCtx.mounted) {
-                                  Navigator.of(sheetCtx).pop();
-                                }
-                                if (mounted) {
-                                  showIosToast(
-                                    context,
-                                    ok
-                                        ? 'Sincronizado con jesusants/UM-Studio'
-                                        : 'Guardado localmente (pendiente token/red)',
-                                    accentColor: ok ? p.green : p.indigo,
-                                  );
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 11,
-                                ),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: p.green,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Text(
-                                  'Sincronizar con GitHub',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          TapScale(
-                            onTap: () => setModalState(
-                              () => showTokenField = !showTokenField,
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 11,
-                              ),
-                              decoration: BoxDecoration(
-                                color: p.elevated,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: p.cardBorder),
-                              ),
-                              child: Icon(
-                                Icons.vpn_key_outlined,
-                                size: 17,
-                                color: p.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-
-                    if (showTokenField) ...[
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: tokenCtrl,
-                        obscureText: true,
-                        autocorrect: false,
-                        style: mono(fontSize: 12, color: p.textPrimary),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          filled: true,
-                          fillColor: p.background.o(0.45),
-                          hintText: 'Token PAT de GitHub (github_pat_...)',
-                          hintStyle: mono(fontSize: 11.5, color: p.textTertiary),
-                          contentPadding: const EdgeInsets.all(11),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: p.cardBorder),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: p.green),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       TapScale(
                         onTap: () async {
-                          await session.syncService.setCustomGitHubToken(
-                            tokenCtrl.text,
+                          final ok = await session.syncService.flushNow(
+                            user,
                           );
-                          setModalState(() => showTokenField = false);
+                          if (sheetCtx.mounted) {
+                            Navigator.of(sheetCtx).pop();
+                          }
                           if (mounted) {
-                            showIosToast(context, 'Token GitHub actualizado');
+                            showIosToast(
+                              context,
+                              ok
+                                  ? 'Sincronizado con UM Cloud'
+                                  : 'Guardado localmente (pendiente de red)',
+                              accentColor: ok ? p.green : p.indigo,
+                            );
                           }
                         },
-                        child: Text(
-                          'Guardar Token PAT',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
                             color: p.green,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Sincronizar ahora',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       ),
@@ -357,6 +290,191 @@ class _HomeShellState extends State<HomeShell> {
           },
         );
       },
+    );
+  }
+
+  Future<void> _showSecretAdminSyncDialog(
+    BuildContext context,
+    InstitutionalSessionController session,
+  ) async {
+    final p = context.palette;
+    final pinCtrl = TextEditingController();
+    var pinError = false;
+
+    final authorized = await showDialog<bool>(
+      context: context,
+      builder: (dlgCtx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: p.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: p.cardBorder),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.admin_panel_settings_rounded, size: 20, color: p.green),
+              const SizedBox(width: 8),
+              Text(
+                'Acceso Técnico Admin',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: p.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Ingresa el PIN maestro de administración (Plan 8108) para configurar el Token PAT de GitHub o endpoint.',
+                style: TextStyle(fontSize: 12.5, color: p.textSecondary),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: pinCtrl,
+                obscureText: true,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                style: mono(fontSize: 14, color: p.textPrimary),
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: p.background.o(0.45),
+                  hintText: 'PIN Maestro...',
+                  hintStyle: mono(fontSize: 12, color: p.textTertiary),
+                  errorText: pinError ? 'PIN incorrecto' : null,
+                  contentPadding: const EdgeInsets.all(12),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: p.cardBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: p.green),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dlgCtx).pop(false),
+              child: Text('Cancelar', style: TextStyle(color: p.textSecondary)),
+            ),
+            TapScale(
+              onTap: () {
+                if (pinCtrl.text.trim() == '8108') {
+                  Navigator.of(dlgCtx).pop(true);
+                } else {
+                  setDlgState(() => pinError = true);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: p.green,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'Entrar',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (authorized != true || !context.mounted) return;
+
+    final tokenCtrl =
+        TextEditingController(text: session.syncService.effectiveToken);
+    await showDialog<void>(
+      context: context,
+      builder: (dlgCtx) => AlertDialog(
+        backgroundColor: p.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: p.cardBorder),
+        ),
+        title: Text(
+          'Configuración Técnica PAT',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: p.textPrimary,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Token Personal de GitHub para sincronización en la nube:',
+              style: TextStyle(fontSize: 12, color: p.textSecondary),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: tokenCtrl,
+              obscureText: true,
+              style: mono(fontSize: 12, color: p.textPrimary),
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: p.background.o(0.45),
+                hintText: 'github_pat_...',
+                contentPadding: const EdgeInsets.all(12),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: p.cardBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: p.green),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dlgCtx).pop(),
+            child: Text('Cerrar', style: TextStyle(color: p.textSecondary)),
+          ),
+          TapScale(
+            onTap: () async {
+              await session.syncService.setCustomGitHubToken(tokenCtrl.text);
+              if (dlgCtx.mounted) Navigator.of(dlgCtx).pop();
+              if (context.mounted) {
+                showIosToast(context, 'Token PAT de GitHub actualizado');
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: p.green,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text(
+                'Guardar Token',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -439,7 +557,7 @@ class _Header extends StatelessWidget {
         badgeText = 'Sync...';
       case GitHubSyncStatus.synced:
         dotColor = p.green;
-        badgeText = 'GitHub • Sync';
+        badgeText = 'UM Cloud • Sync';
       case GitHubSyncStatus.error:
         dotColor = p.orange;
         badgeText = 'Local • Retry';

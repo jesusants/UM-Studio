@@ -22,12 +22,11 @@ import 'package:um_studio/domain/entities/subject_summary.dart';
 import 'package:um_studio/main.dart';
 import 'package:um_studio/presentation/providers/app_scopes.dart';
 import 'package:um_studio/presentation/screens/clase_viva/clase_viva_page.dart';
+import 'package:um_studio/core/utils/user_payload_cipher.dart';
 import 'package:um_studio/data/models/student_user_model.dart';
-import 'package:um_studio/data/services/microsoft_entra_auth_service.dart';
+import 'package:um_studio/data/services/download_queue_service.dart';
 import 'package:um_studio/presentation/widgets/header_morph_avatar.dart';
-import 'package:um_studio/services/download_queue_service.dart';
-import 'package:um_studio/services/oauth_platform/oauth_flow_exception.dart';
-import 'package:um_studio/widgets/minimal_slide_viewer.dart';
+import 'package:um_studio/presentation/widgets/minimal_slide_viewer.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -584,77 +583,80 @@ void main() {
     );
   });
 
-  group('Microsoft Entra ID (Azure AD PKCE) & Migración de Identidad', () {
-    test('genera code_verifier (64 caracteres) y code_challenge S256 válido según RFC 7636', () {
-      final entraService = MicrosoftEntraAuthService();
-      final verifier = entraService.generateCodeVerifier();
-      expect(verifier.length, 64);
-      final challenge = entraService.generateCodeChallenge(verifier);
-      expect(challenge.isNotEmpty, isTrue);
-      expect(challenge.contains('='), isFalse); // Base64Url sin padding
-
-      final state = entraService.generateState();
-      expect(state.length, 32);
-
-      final authUri = entraService.buildAuthorizeUri(
-        codeChallenge: challenge,
-        state: state,
-        redirectUri: 'https://jesusants.github.io/UM-Studio/',
-      );
-      expect(authUri.scheme, 'https');
-      expect(authUri.host, 'login.microsoftonline.com');
-      expect(
-        authUri.path,
-        '/organizations/oauth2/v2.0/authorize',
-      );
-      expect(
-        authUri.queryParameters['client_id'],
-        'bb954d45-ebcd-4a04-8ac0-af00cc9cece1',
-      );
-      expect(authUri.queryParameters['code_challenge_method'], 'S256');
-      expect(authUri.queryParameters['code_challenge'], challenge);
-    });
-
-    test('decodifica claims de id_token JWT y mapea clave inmutable \${tid}_\${oid}', () {
-      final payload = {
-        'oid': '00000000-0000-0000-0000-000000000001',
-        'tid': 'b6b897f5-08ad-4ed7-8ed6-55207495fad0',
-        'preferred_username': 'estudiante@unimagdalena.edu.co',
-        'name': 'Jesús Estudiante',
+  group('Blindaje de Seguridad, Cifrado de Datos & Normalización de Usuarios', () {
+    test('UserPayloadCipher cifra y descifra estructuras JSON simétricamente con HMAC', () {
+      const username = 'jasierra';
+      const pin = '8108';
+      final testData = {
+        '02021810': 75,
+        '03041819': 90,
       };
-      final jsonStr = jsonEncode(payload);
-      final base64Payload = base64Url.encode(utf8.encode(jsonStr)).replaceAll('=', '');
-      final fakeJwt = 'header.$base64Payload.signature';
 
-      final claims = MicrosoftEntraAuthService.decodeIdToken(fakeJwt);
-      expect(claims['oid'], '00000000-0000-0000-0000-000000000001');
-      expect(claims['tid'], 'b6b897f5-08ad-4ed7-8ed6-55207495fad0');
-
-      final user = StudentUserModel(
-        oid: claims['oid'],
-        tid: claims['tid'],
-        username: 'estudiante',
-        email: 'estudiante@unimagdalena.edu.co',
-        nombre: 'Jesús Estudiante',
-        programa: 'Ingeniería Energética',
-        pinHash: '',
-        progresoMaterias: const {},
-        recordatoriosCalendario: const [],
-        apuntesPersonales: const {},
+      final encrypted = UserPayloadCipher.encryptJson(
+        testData,
+        username: username,
+        pinOrHash: pin,
       );
+      expect(encrypted.startsWith(UserPayloadCipher.prefix), isTrue);
+
+      final decrypted = UserPayloadCipher.decryptJson(
+        encrypted,
+        username: username,
+        pinOrHash: pin,
+      );
+      expect(decrypted, equals(testData));
+
+      // Descifrado con PIN incorrecto debe fallar (retorna null)
+      final failed = UserPayloadCipher.decryptJson(
+        encrypted,
+        username: username,
+        pinOrHash: 'wrong_pin',
+      );
+      expect(failed, isNull);
+
+      // Retrocompatibilidad con Maps o Lists legados
       expect(
-        user.immutableKey,
-        'b6b897f5-08ad-4ed7-8ed6-55207495fad0_00000000-0000-0000-0000-000000000001',
+        UserPayloadCipher.decryptJson(
+          testData,
+          username: username,
+          pinOrHash: pin,
+        ),
+        equals(testData),
       );
-      expect(user.programa, 'Ingeniería Energética');
     });
 
-    test('OAuthFlowException traduce errores de Microsoft a mensajes claros en español', () {
-      final denied = OAuthFlowException.fromOAuthError('access_denied', 'User cancelled login');
-      expect(denied.message.contains('Cancelaste el inicio de sesión'), isTrue);
+    test('StudentUserModel serializa progreso cifrado para GitHub y descifra transparentemente', () {
+      final user = StudentUserModel.createNew(
+        username: 'jasierra',
+        nombre: 'Jesus Sierra',
+        email: 'jasierra@unimagdalena.edu.co',
+        pinHash: InstitutionalValidator.hashPin('8108'),
+        cuatrimestreActual: 3,
+      );
 
-      final timeout = OAuthFlowException.fromOAuthError('server_error', null);
-      expect(timeout.message.contains('Microsoft no está disponible'), isTrue);
+      final encryptedJson = user.toEncryptedJson(pinOrHash: '8108');
+      expect(
+        encryptedJson['progreso_materias'].toString().startsWith(UserPayloadCipher.prefix),
+        isTrue,
+      );
+      expect(
+        encryptedJson['recordatorios_calendario'].toString().startsWith(UserPayloadCipher.prefix),
+        isTrue,
+      );
+
+      // Deserialización automática con PIN
+      final restored = StudentUserModel.fromJson(encryptedJson, pinOrHash: '8108');
+      expect(restored.username, 'jasierra');
+      expect(restored.progresoMaterias.isNotEmpty, isTrue);
+    });
+
+    test('InstitutionalValidator normaliza identificadores y elimina caracteres especiales', () {
+      final res1 = InstitutionalValidator.parseInstitutionalUser('JaSierra@UniMagdalena.edu.co');
+      expect(res1.identity?.username, 'jasierra');
+      expect(res1.identity?.email, 'jasierra@unimagdalena.edu.co');
+
+      final res2 = InstitutionalValidator.parseInstitutionalUser('  jasierras#%  ');
+      expect(res2.identity?.username, 'jasierras');
     });
   });
 

@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import '../core/theme/app_theme.dart';
-import '../core/utils/institutional_validator.dart';
-import '../domain/entities/tema_estudio_entity.dart';
-import '../presentation/widgets/ios_primitives.dart';
-import '../services/download_queue_service.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/utils/institutional_validator.dart';
+import '../../data/services/download_queue_service.dart';
+import '../../domain/entities/tema_estudio_entity.dart';
+import 'ios_primitives.dart';
 
 /// Compilador vectorial minimalista de presentaciones PDF (< 1.2 MB con Deflate).
 abstract final class SlideDeckPdfCompiler {

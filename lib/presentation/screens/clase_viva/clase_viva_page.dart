@@ -14,7 +14,7 @@ import '../../../domain/entities/nota_adjunto_entity.dart';
 import '../../../domain/entities/subject_summary.dart';
 import '../../../domain/entities/tema_estudio_entity.dart';
 import '../../../domain/repositories/i_clase_viva_repository.dart';
-import '../../../widgets/minimal_slide_viewer.dart';
+import '../../widgets/minimal_slide_viewer.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/ios_primitives.dart';
 import '../../widgets/katex_formula_card.dart';

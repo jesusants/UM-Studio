@@ -1,7 +1,9 @@
 import '../../domain/entities/subject_summary.dart';
 import '../models/tema_estudio_model.dart';
 
-/// Fuente de datos semilla oficial de Ingeniería Energética (Unimagdalena).
+/// Fuente de datos semilla de respaldo para pruebas unitarias.
+/// El temario oficial se carga dinámicamente desde `ingenieria_energetica.md`.
+@Deprecated('Utilizar MarkdownCurriculumService para cargar el temario real')
 abstract final class AcademicSeedData {
   static const Map<String, TemaEstudioModel> temasEstudio = {
     'fisica': TemaEstudioModel(

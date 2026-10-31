@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/user_payload_cipher.dart';
 import '../../domain/entities/subject_summary.dart';
 
 /// Utilidad de fecha ISO local `YYYY-MM-DD`.
@@ -248,9 +249,23 @@ class StudentUserModel {
     );
   }
 
-  factory StudentUserModel.fromJson(Map<String, dynamic> json) {
+  factory StudentUserModel.fromJson(
+    Map<String, dynamic> json, {
+    String? pinOrHash,
+  }) {
+    final username = (json['username'] ?? '').toString().trim().toLowerCase();
+    final pinHash = (json['pin_hash'] ?? '').toString();
+    final effectiveSecret = (pinOrHash != null && pinOrHash.isNotEmpty)
+        ? pinOrHash
+        : pinHash;
+
+    // Desencriptar progreso de materias (soporta payload cifrado o Map legado)
+    final rawProg = UserPayloadCipher.decryptJson(
+      json['progreso_materias'],
+      username: username,
+      pinOrHash: effectiveSecret,
+    );
     final progress = <String, int>{};
-    final rawProg = json['progreso_materias'];
     if (rawProg is Map) {
       rawProg.forEach((k, v) {
         final pct = v is num ? v.toInt() : int.tryParse(v.toString()) ?? 0;
@@ -280,8 +295,13 @@ class StudentUserModel {
       }
     }
 
+    // Desencriptar recordatorios de calendario (soporta payload cifrado o List legado)
+    final rawRem = UserPayloadCipher.decryptJson(
+      json['recordatorios_calendario'],
+      username: username,
+      pinOrHash: effectiveSecret,
+    );
     final reminders = <CalendarReminderModel>[];
-    final rawRem = json['recordatorios_calendario'];
     if (rawRem is Iterable) {
       for (final item in rawRem) {
         if (item is Map) {
@@ -294,15 +314,19 @@ class StudentUserModel {
       }
     }
 
+    // Desencriptar apuntes personales (soporta payload cifrado o Map legado)
+    final rawNotes = UserPayloadCipher.decryptJson(
+      json['apuntes_personales'],
+      username: username,
+      pinOrHash: effectiveSecret,
+    );
     final notes = <String, dynamic>{};
-    final rawNotes = json['apuntes_personales'];
     if (rawNotes is Map) {
       rawNotes.forEach((k, v) {
         notes[k.toString()] = v;
       });
     }
 
-    final username = (json['username'] ?? '').toString().trim().toLowerCase();
     final email = (json['email'] ??
             (username.isNotEmpty
                 ? '$username${AppConstants.institutionalDomain}'
@@ -314,7 +338,7 @@ class StudentUserModel {
       nombre: (json['nombre'] ?? username).toString(),
       email: email,
       programa: (json['programa'] ?? AppConstants.programName).toString(),
-      pinHash: (json['pin_hash'] ?? '').toString(),
+      pinHash: pinHash,
       cuatrimestreActual: (json['cuatrimestre_actual'] is num)
           ? (json['cuatrimestre_actual'] as num).toInt().clamp(1, 12)
           : 2,
@@ -362,6 +386,7 @@ class StudentUserModel {
     );
   }
 
+  /// Estructura de datos sin cifrar para almacenamiento local en el sandbox del dispositivo.
   Map<String, dynamic> toJson() => {
         'username': username,
         'nombre': nombre,
@@ -380,6 +405,47 @@ class StudentUserModel {
         'apuntes_personales': apuntesPersonales,
       };
 
+  /// Estructura de datos cifrada simétricamente (AES/CTR + HMAC-SHA256) para
+  /// exportar y sincronizar en el repositorio público de GitHub (`db/users/{username}.json`).
+  Map<String, dynamic> toEncryptedJson({String? pinOrHash}) {
+    final secret = (pinOrHash != null && pinOrHash.isNotEmpty)
+        ? pinOrHash
+        : pinHash;
+    return {
+      'username': username,
+      'nombre': nombre,
+      'email': email,
+      'programa': programa,
+      'cuatrimestre_actual': cuatrimestreActual,
+      'pin_hash': pinHash,
+      'progreso_materias': UserPayloadCipher.encryptJson(
+        progresoMaterias,
+        username: username,
+        pinOrHash: secret,
+      ),
+      'ultimos_temas_revisados': ultimosTemasRevisados,
+      if (ultimoRevisado != null)
+        'ultimo_revisado': ultimoRevisado!.toJson(),
+      if (oid != null && oid!.isNotEmpty) 'oid': oid,
+      if (tid != null && tid!.isNotEmpty) 'tid': tid,
+      'recordatorios_calendario': UserPayloadCipher.encryptJson(
+        recordatoriosCalendario.map((r) => r.toJson()).toList(),
+        username: username,
+        pinOrHash: secret,
+      ),
+      'apuntes_personales': UserPayloadCipher.encryptJson(
+        apuntesPersonales,
+        username: username,
+        pinOrHash: secret,
+      ),
+    };
+  }
+
   String toPrettyJsonString() =>
       const JsonEncoder.withIndent('  ').convert(toJson());
+
+  String toEncryptedPrettyJsonString({String? pinOrHash}) =>
+      const JsonEncoder.withIndent('  ').convert(
+        toEncryptedJson(pinOrHash: pinOrHash),
+      );
 }

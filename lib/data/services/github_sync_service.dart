@@ -135,7 +135,10 @@ class GitHubSyncService extends ChangeNotifier {
   }
 
   /// Consulta `GET /repos/jesusants/UM-Studio/contents/db/users/{username}.json`.
-  Future<RemoteUserFetchResult> fetchRemoteUser(String username) async {
+  Future<RemoteUserFetchResult> fetchRemoteUser(
+    String username, {
+    String? pinOrHash,
+  }) async {
     try {
       final res = await _http
           .get(_userContentsUri(username), headers: _buildHeaders())
@@ -151,7 +154,7 @@ class GitHubSyncService extends ChangeNotifier {
         final decodedJson = utf8.decode(base64Decode(rawB64));
         final userMap = jsonDecode(decodedJson) as Map<String, dynamic>;
         return RemoteUserFetchResult(
-          user: StudentUserModel.fromJson(userMap),
+          user: StudentUserModel.fromJson(userMap, pinOrHash: pinOrHash),
           sha: sha,
           statusCode: 200,
         );
@@ -169,7 +172,7 @@ class GitHubSyncService extends ChangeNotifier {
         if (rawRes.statusCode == 200) {
           final userMap = jsonDecode(rawRes.body) as Map<String, dynamic>;
           return RemoteUserFetchResult(
-            user: StudentUserModel.fromJson(userMap),
+            user: StudentUserModel.fromJson(userMap, pinOrHash: pinOrHash),
             statusCode: 200,
           );
         } else if (rawRes.statusCode == 404) {
@@ -215,7 +218,7 @@ class GitHubSyncService extends ChangeNotifier {
     }
 
     final identity = parsed.identity!;
-    final remote = await fetchRemoteUser(identity.username);
+    final remote = await fetchRemoteUser(identity.username, pinOrHash: cleanPin);
 
     if (remote.exists && remote.user != null) {
       // Si el usuario ya existía y colocó su mismo PIN, iniciamos sesión sin fricción.
@@ -294,7 +297,7 @@ class GitHubSyncService extends ChangeNotifier {
     }
 
     final identity = parsed.identity!;
-    final remote = await fetchRemoteUser(identity.username);
+    final remote = await fetchRemoteUser(identity.username, pinOrHash: cleanPin);
 
     if (remote.exists && remote.user != null) {
       if (!InstitutionalValidator.verifyPin(cleanPin, remote.user!.pinHash)) {
@@ -427,7 +430,7 @@ class GitHubSyncService extends ChangeNotifier {
         }
       }
 
-      final prettyJson = user.toPrettyJsonString();
+      final prettyJson = user.toEncryptedPrettyJsonString();
       final contentB64 = base64Encode(utf8.encode(prettyJson));
 
       final payload = <String, dynamic>{

@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../core/utils/institutional_validator.dart';
+import '../../core/utils/institutional_validator.dart';
 import 'pdf_saver_stub.dart'
     if (dart.library.js_interop) 'pdf_saver_web.dart'
     if (dart.library.io) 'pdf_saver_io.dart';

@@ -62,9 +62,7 @@ abstract final class InstitutionalValidator {
       );
     }
 
-    String username;
-    String email;
-
+    String rawUsername;
     if (trimmed.contains('@')) {
       if (!isValidInstitutionalEmail(trimmed)) {
         return (
@@ -73,12 +71,13 @@ abstract final class InstitutionalValidator {
               'Solo se permiten cuentas ${AppConstants.institutionalDomain}.',
         );
       }
-      username = trimmed.split('@').first;
-      email = trimmed;
+      rawUsername = trimmed.split('@').first;
     } else {
-      username = trimmed;
-      email = '$username${AppConstants.institutionalDomain}';
+      rawUsername = trimmed;
     }
+
+    final username = rawUsername.replaceAll(RegExp(r'[^a-z0-9._-]'), '');
+    final email = '$username${AppConstants.institutionalDomain}';
 
     if (username.length < 2 || !_usernameRegex.hasMatch(username)) {
       return (
