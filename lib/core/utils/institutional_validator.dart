@@ -1,13 +1,31 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 import '../constants/app_constants.dart';
 
+/// Resultado normalizado de credencial institucional `@unimagdalena.edu.co`.
+class InstitutionalIdentity {
+  const InstitutionalIdentity({
+    required this.username,
+    required this.email,
+  });
+
+  final String username;
+  final String email;
+}
+
 /// Utilidades de validación institucional `@unimagdalena.edu.co`,
-/// sanitización de expresiones LaTeX y formateo de tamaños de archivo.
+/// hashing ligero de PIN, sanitización de expresiones LaTeX y tamaños de archivo.
 abstract final class InstitutionalValidator {
   /// Expresión regular estricta para correos institucionales de Unimagdalena.
   static final RegExp _institutionalEmailRegex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@unimagdalena\.edu\.co$',
     caseSensitive: false,
   );
+
+  /// Expresión regular para prefijo de usuario / código estudiantil seguro para ruta JSON.
+  static final RegExp _usernameRegex = RegExp(r'^[a-zA-Z0-9._-]+$');
 
   /// Expresión regular para detectar fórmulas inline `$...$` en notas.
   static final RegExp inlineLatexRegex = RegExp(r'\$([^$\n]+)\$');
@@ -23,12 +41,72 @@ abstract final class InstitutionalValidator {
   static String? validateEmailOrError(String email) {
     final trimmed = email.trim();
     if (trimmed.isEmpty) {
-      return 'Ingresa tu correo institucional.';
+      return 'Ingresa tu usuario o correo institucional.';
     }
     if (!isValidInstitutionalEmail(trimmed)) {
       return 'Acceso restringido al dominio ${AppConstants.institutionalDomain}';
     }
     return null;
+  }
+
+  /// Acepta tanto el prefijo (`jsierra` o código `2024118001`) como el correo
+  /// completo (`jsierra@unimagdalena.edu.co`), autocompletando el dominio
+  /// oficial y bloqueando cualquier otro dominio externo.
+  static ({InstitutionalIdentity? identity, String? error})
+      parseInstitutionalUser(String rawInput) {
+    final trimmed = rawInput.trim().toLowerCase();
+    if (trimmed.isEmpty) {
+      return (
+        identity: null,
+        error: 'Ingresa tu usuario o correo institucional.',
+      );
+    }
+
+    String username;
+    String email;
+
+    if (trimmed.contains('@')) {
+      if (!isValidInstitutionalEmail(trimmed)) {
+        return (
+          identity: null,
+          error:
+              'Solo se permiten cuentas ${AppConstants.institutionalDomain}.',
+        );
+      }
+      username = trimmed.split('@').first;
+      email = trimmed;
+    } else {
+      username = trimmed;
+      email = '$username${AppConstants.institutionalDomain}';
+    }
+
+    if (username.length < 2 || !_usernameRegex.hasMatch(username)) {
+      return (
+        identity: null,
+        error: 'Usa solo letras, números, punto o guion en tu usuario.',
+      );
+    }
+
+    return (
+      identity: InstitutionalIdentity(username: username, email: email),
+      error: null,
+    );
+  }
+
+  /// Genera un hash SHA-256 determinista para no exponer el PIN en texto plano
+  /// dentro de `db/users/{username}.json`.
+  static String hashPin(String rawPin) {
+    final clean = rawPin.trim();
+    final bytes = utf8.encode('um_studio_8108:$clean');
+    return sha256.convert(bytes).toString();
+  }
+
+  /// Verifica un PIN contra `pin_hash` (soporta hash SHA-256 o PIN plano legado).
+  static bool verifyPin(String inputPin, String storedPinHash) {
+    final cleanInput = inputPin.trim();
+    final cleanStored = storedPinHash.trim();
+    if (cleanInput.isEmpty || cleanStored.isEmpty) return false;
+    return hashPin(cleanInput) == cleanStored || cleanInput == cleanStored;
   }
 
   /// Limpia delimitadores LaTeX envolventes (`$$...$$` o `$...$`) para

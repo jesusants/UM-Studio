@@ -8,12 +8,15 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/models/curriculum_models.dart';
 import '../../../domain/entities/nota_adjunto_entity.dart';
+import '../../../domain/entities/subject_summary.dart';
 import '../../../domain/entities/tema_estudio_entity.dart';
 import '../../../domain/repositories/i_clase_viva_repository.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/ios_primitives.dart';
 import '../../widgets/katex_formula_card.dart';
+import '../../widgets/reminder_creator_sheet.dart';
 import 'attachment_viewer_page.dart';
 
 /// Pantalla de detalle dinámico de asignatura ("La Clase Viva" & Adjuntos).
@@ -59,9 +62,40 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
   Stream<List<NotaAdjuntoEntity>>? _adjuntosStream;
   IClaseVivaRepository? _boundRepo;
   String? _boundUser;
+  late String _activeTemaKey;
 
   bool _uploading = false;
   String? _uploadingLabel;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeTemaKey = widget.temaId;
+  }
+
+  void _rebindStreams() {
+    final repo = ClaseVivaRepositoryScope.of(context);
+    final currentUser = repo.activeUserId;
+    _boundRepo = repo;
+    _boundUser = currentUser;
+    _temaStream = repo.watchTemaEstudio(_activeTemaKey);
+    _adjuntosStream = repo.watchNotasYAdjuntos(
+      temaId: _activeTemaKey,
+      usuarioId: currentUser,
+    );
+  }
+
+  void _selectTopicNumber(AsignaturaModel asignatura, int topicNum) {
+    final nextKey = topicNum <= 1
+        ? asignatura.codigo
+        : '${asignatura.codigo}_t$topicNum';
+    if (nextKey == _activeTemaKey) return;
+    HapticFeedback.lightImpact();
+    setState(() {
+      _activeTemaKey = nextKey;
+      _rebindStreams();
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -69,13 +103,7 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
     final repo = ClaseVivaRepositoryScope.of(context);
     final currentUser = repo.activeUserId;
     if (_boundRepo != repo || _boundUser != currentUser) {
-      _boundRepo = repo;
-      _boundUser = currentUser;
-      _temaStream = repo.watchTemaEstudio(widget.temaId);
-      _adjuntosStream = repo.watchNotasYAdjuntos(
-        temaId: widget.temaId,
-        usuarioId: currentUser,
-      );
+      _rebindStreams();
     }
   }
 
@@ -97,7 +125,7 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
       final bytes = await picked.readAsBytes();
       if (!mounted) return;
       await ClaseVivaRepositoryScope.of(context).subirArchivoAdjunto(
-        temaId: widget.temaId,
+        temaId: _activeTemaKey,
         tipoArchivo: TipoAdjuntoEstudiante.pdf,
         nombreArchivo: picked.name,
         bytes: bytes,
@@ -235,7 +263,7 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
     });
     try {
       await ClaseVivaRepositoryScope.of(context).subirArchivoAdjunto(
-        temaId: widget.temaId,
+        temaId: _activeTemaKey,
         tipoArchivo: TipoAdjuntoEstudiante.imagen,
         nombreArchivo: fileName,
         bytes: bytes,
@@ -323,6 +351,12 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
                                     : _OfficialTopicSection(
                                         key: ValueKey('topic_${tema.id}'),
                                         tema: tema,
+                                        asignatura: CurriculumScope.maybeOf(
+                                          context,
+                                        )?.database?.findAsignatura(
+                                          widget.temaId,
+                                        ),
+                                        onSelectTopic: _selectTopicNumber,
                                       ),
                               ),
 
@@ -346,7 +380,7 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
                                   }
 
                                   return _IndividualStudyModule(
-                                    temaId: widget.temaId,
+                                    temaId: _activeTemaKey,
                                     archivos: archivos,
                                     initialNoteText:
                                         notaRecord?.contenidoNota ?? '',
@@ -506,18 +540,24 @@ class _AulaStatusPill extends StatelessWidget {
   }
 }
 
-/// C & D. Encabezado Dinámico + 3 Tarjetas Modulares Oficiales (`borderRadius: 18px`).
+/// C & D. Encabezado Dinámico + Selector de Temas + Tarjetas Modulares Oficiales.
 class _OfficialTopicSection extends StatelessWidget {
   const _OfficialTopicSection({
     super.key,
     required this.tema,
+    this.asignatura,
+    this.onSelectTopic,
   });
 
   final TemaEstudioEntity tema;
+  final AsignaturaModel? asignatura;
+  final void Function(AsignaturaModel asignatura, int topicNum)? onSelectTopic;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final session = SessionScope.maybeOf(context);
+    final asig = asignatura;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,11 +571,13 @@ class _OfficialTopicSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ASIGNATURA',
+                    tema.codigoAsignatura.isNotEmpty
+                        ? 'ASIGNATURA • ${tema.codigoAsignatura} • C${tema.cuatrimestre}'
+                        : 'ASIGNATURA',
                     style: mono(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                      letterSpacing: 1.2,
+                      letterSpacing: 1.1,
                       color: p.textSecondary,
                     ),
                   ),
@@ -550,6 +592,17 @@ class _OfficialTopicSection extends StatelessWidget {
                       color: p.textPrimary,
                     ),
                   ),
+                  if (tema.tituloTema.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      tema.tituloTema,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: p.green,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -573,6 +626,55 @@ class _OfficialTopicSection extends StatelessWidget {
             ),
           ],
         ),
+
+        // Selector horizontal de Temas si la asignatura tiene múltiples temas en el .md
+        if (asig != null && asig.temas.length > 1 && onSelectTopic != null) ...[
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                for (final t in asig.temas)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: TapScale(
+                      onTap: () => onSelectTopic!(asig, t.numeroTema),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: t.numeroTema == tema.numeroTema
+                              ? p.green
+                              : p.card,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: t.numeroTema == tema.numeroTema
+                                ? p.green
+                                : p.cardBorder,
+                          ),
+                        ),
+                        child: Text(
+                          'Tema ${t.numeroTema}: ${t.titulo}',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: t.numeroTema == tema.numeroTema
+                                ? Colors.black
+                                : p.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+
         const SizedBox(height: 18),
 
         // D.1 Tarjeta Modular: OBJETIVO (radius: 18px)
@@ -594,6 +696,118 @@ class _OfficialTopicSection extends StatelessWidget {
           label: 'EJEMPLO DE CÁTEDRA',
           body: tema.ejemplo,
         ),
+
+        // D.4 Tarjeta Modular: BLOQUE DE ESTUDIO SUGERIDO (conectado a Calendario y Progreso)
+        if (tema.bloqueSugerido.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          IosCard(
+            radius: 18,
+            padding: const EdgeInsets.all(15),
+            borderColor: p.indigo.o(0.38),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Dot(color: p.indigo, size: 7),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        'BLOQUE SUGERIDO',
+                        style: sectionMicroStyle(p),
+                      ),
+                    ),
+                    if (tema.codigoAsignatura.isNotEmpty && session != null)
+                      Text(
+                        'Avance: ${session.subjectProgress(tema.codigoAsignatura)}%',
+                        style: mono(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: p.green,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  tema.bloqueSugerido,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.4,
+                    color: p.textBody,
+                  ),
+                ),
+                if (session != null) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TapScale(
+                          onTap: () async {
+                            HapticFeedback.lightImpact();
+                            await session.completeStudyBlock(
+                              codigoMateria: tema.codigoAsignatura,
+                            );
+                            if (context.mounted) {
+                              showIosToast(
+                                context,
+                                '+2 Uso Diario y +10% en ${tema.nombreAsignatura}',
+                                accentColor: p.green,
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 9),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: p.indigo,
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: const Text(
+                              'Completar bloque (+10%)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TapScale(
+                        onTap: () => showReminderCreatorSheet(
+                          context,
+                          initialKind: AcademicEventKind.bloque,
+                          preselectedSubject: asig,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 9,
+                          ),
+                          decoration: BoxDecoration(
+                            color: p.elevated,
+                            borderRadius: BorderRadius.circular(11),
+                            border: Border.all(color: p.cardBorder),
+                          ),
+                          child: Text(
+                            '+ Agendar',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: p.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

@@ -1,11 +1,16 @@
-/// Constantes globales y configuración de entorno de UM STUDIO.
+/// Constantes globales y configuración Serverless en GitHub de UM STUDIO.
 abstract final class AppConstants {
   static const String appTitle = 'UM STUDIO';
   static const String universityName = 'Unimagdalena';
+  static const String programName = 'Ingeniería Energética';
+  static const String programCode = '8108';
+  static const String programSnies = '118222';
   static const String programSubtitle = 'Unimagdalena • Ing. Energética';
+  static const String programLockedBadge =
+      'Unimagdalena • Ingeniería Energética (Plan 8108)';
   static const String institutionalDomain = '@unimagdalena.edu.co';
 
-  /// Cupo diario de consultas académicas.
+  /// Cupo diario de consultas y bloques académicos.
   static const int initialDailyUsage = 9;
   static const int warningDailyThreshold = 12;
   static const int maxDailyUsage = 15;
@@ -13,20 +18,29 @@ abstract final class AppConstants {
   /// Dimensiones base del shell móvil iOS.
   static const double maxPhoneViewportWidth = 430.0;
 
-  /// Tiempos de sincronización y debounce.
+  /// Tiempos de sincronización optimista y animaciones táctiles.
   static const Duration noteAutoSaveDebounce = Duration(seconds: 1);
+  static const Duration githubSyncDebounce = Duration(milliseconds: 1200);
   static const Duration tapScaleDuration = Duration(milliseconds: 140);
 
-  /// Configuración de backend (Supabase PostgreSQL + Storage).
-  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  static const String supabaseAnonKey =
-      String.fromEnvironment('SUPABASE_ANON_KEY');
-  static const String defaultStudentEmail = String.fromEnvironment(
-    'UM_USER_EMAIL',
-    defaultValue: 'estudiante.energia@unimagdalena.edu.co',
-  );
-  static const String storageBucket = 'adjuntos_estudio';
+  /// Base de datos maestra (.md con YAML Frontmatter + KaTeX).
+  static const String curriculumAssetPath =
+      'assets/data/ingenieria_energetica.md';
 
-  static bool get isSupabaseConfigured =>
-      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+  /// Repositorio Serverless en GitHub (`jesusants/UM-Studio`).
+  static const String githubOwner = 'jesusants';
+  static const String githubRepo = 'UM-Studio';
+  static const String githubBranch = 'main';
+
+  static const String curriculumRawUrl =
+      'https://raw.githubusercontent.com/$githubOwner/$githubRepo/$githubBranch/db/ingenieria_energetica.md';
+
+  static const String githubApiBase =
+      'https://api.github.com/repos/$githubOwner/$githubRepo/contents';
+
+  /// Token inyectado en compilación (`--dart-define=UM_GH_TOKEN=...` desde GitHub Secrets).
+  static const String envGithubToken = String.fromEnvironment('UM_GH_TOKEN');
+
+  static const String defaultStudentEmail =
+      'estudiante.energia@unimagdalena.edu.co';
 }

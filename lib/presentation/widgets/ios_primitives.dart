@@ -179,7 +179,7 @@ class ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(height);
+    final radius = BorderRadius.circular(999);
     return Container(
       height: height,
       width: double.infinity,

@@ -35,7 +35,9 @@ jobs:
         run: flutter pub get
 
       - name: Build Web with Base Href
-        run: flutter build web --release --base-href "/UM-Studio/"
+        env:
+          UM_GH_TOKEN: ${{ secrets.UM_GH_TOKEN }}
+        run: flutter build web --release --base-href "/UM-Studio/" --dart-define=UM_GH_TOKEN="$UM_GH_TOKEN"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

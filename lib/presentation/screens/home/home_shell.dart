@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/services/github_sync_service.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
@@ -13,7 +14,8 @@ import 'tabs/estudio_tab.dart';
 import 'tabs/resumen_tab.dart';
 
 /// Contenedor principal de UM STUDIO:
-/// Header con identidad institucional `@unimagdalena.edu.co`, uso diario,
+/// Header con perfil de Ingeniería Energética (`@unimagdalena.edu.co`),
+/// estado de sincronización GitHub, barra de Uso Diario (`borderRadius: 999`),
 /// 3 pestañas deslizables a 60/120fps y barra inferior iOS.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -57,28 +59,31 @@ class _HomeShellState extends State<HomeShell> {
     Navigator.of(context).push(ClaseVivaPage.route(subjectId));
   }
 
-  Future<void> _openInstitutionalIdentitySheet() async {
+  Future<void> _openStudentProfileSheet() async {
     final session = SessionScope.maybeOf(context);
     if (session == null) return;
 
     final p = context.palette;
-    final textCtrl = TextEditingController(text: session.email);
-    String? errorMsg;
+    final tokenCtrl = TextEditingController();
+    var showTokenField = false;
 
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: p.card,
       shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         side: BorderSide(color: p.cardBorder),
       ),
       builder: (sheetCtx) {
         return StatefulBuilder(
           builder: (ctx, setModalState) {
             final bottomInset = MediaQuery.viewInsetsOf(ctx).bottom;
+            final user = session.currentUser;
+            final currentCuat = session.cuatrimestreActual;
+
             return SafeArea(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(18, 12, 18, 18 + bottomInset),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -100,90 +105,236 @@ class _HomeShellState extends State<HomeShell> {
                         PulseDot(color: p.green, size: 8),
                         const SizedBox(width: 8),
                         Text(
-                          'CREDENCIAL INSTITUCIONAL',
+                          'PERFIL INGENIERÍA ENERGÉTICA',
                           style: sectionMicroStyle(p),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Text(
-                      'Sincronización AyRe • Moodle',
+                      session.displayName,
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                         color: p.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      session.email,
+                      style: mono(fontSize: 12, color: p.green),
+                    ),
                     const SizedBox(height: 4),
                     Text(
-                      'Acceso exclusivo para cuentas con dominio ${AppConstants.institutionalDomain}.',
-                      style: TextStyle(fontSize: 12, color: p.textSecondary),
+                      'Archivo en GitHub: db/users/${session.username}.json',
+                      style: mono(fontSize: 10.5, color: p.textSecondary),
                     ),
+                    const SizedBox(height: 14),
+                    const IosHairline(),
                     const SizedBox(height: 12),
-                    TextField(
-                      controller: textCtrl,
-                      keyboardType: TextInputType.emailAddress,
-                      autocorrect: false,
-                      style: mono(fontSize: 12.5, color: p.textPrimary),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        filled: true,
-                        fillColor: p.background.o(0.45),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
+
+                    Row(
+                      children: [
+                        Text(
+                          'CUATRIMESTRE ACTIVO',
+                          style: sectionMicroStyle(p),
                         ),
-                        hintText: 'usuario@unimagdalena.edu.co',
-                        hintStyle: mono(fontSize: 12, color: p.textTertiary),
-                        errorText: errorMsg,
-                        errorStyle: TextStyle(fontSize: 11, color: p.orange),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: p.cardBorder),
+                        const Spacer(),
+                        Text(
+                          'Cuatrimestre $currentCuat',
+                          style: mono(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: p.green,
+                          ),
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: p.green),
-                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: List.generate(12, (idx) {
+                          final c = idx + 1;
+                          final selected = c == currentCuat;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: TapScale(
+                              onTap: () async {
+                                await session.setCuatrimestreActual(c);
+                                setModalState(() {});
+                              },
+                              child: Container(
+                                width: 34,
+                                height: 32,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: selected ? p.green : p.elevated,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: selected ? p.green : p.cardBorder,
+                                  ),
+                                ),
+                                child: Text(
+                                  '$c',
+                                  style: mono(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: selected
+                                        ? Colors.black
+                                        : p.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
                       ),
                     ),
                     const SizedBox(height: 14),
-                    TapScale(
-                      onTap: () async {
-                        final validationError = await session
-                            .updateInstitutionalEmail(textCtrl.text);
-                        if (validationError != null) {
-                          setModalState(() => errorMsg = validationError);
-                          return;
-                        }
-                        if (sheetCtx.mounted) {
-                          Navigator.of(sheetCtx).pop();
-                        }
-                        if (mounted) {
-                          showIosToast(
-                            context,
-                            'Sesión verificada: ${session.email}',
-                          );
-                        }
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 11),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: p.green,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'Validar correo institucional',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
+
+                    if (user != null) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TapScale(
+                              onTap: () async {
+                                final ok = await session.syncService.flushNow(
+                                  user,
+                                );
+                                if (sheetCtx.mounted) {
+                                  Navigator.of(sheetCtx).pop();
+                                }
+                                if (mounted) {
+                                  showIosToast(
+                                    context,
+                                    ok
+                                        ? 'Sincronizado con jesusants/UM-Studio'
+                                        : 'Guardado localmente (pendiente token/red)',
+                                    accentColor: ok ? p.green : p.indigo,
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 11,
+                                ),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: p.green,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'Sincronizar con GitHub',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          TapScale(
+                            onTap: () => setModalState(
+                              () => showTokenField = !showTokenField,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 11,
+                              ),
+                              decoration: BoxDecoration(
+                                color: p.elevated,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: p.cardBorder),
+                              ),
+                              child: Icon(
+                                Icons.vpn_key_outlined,
+                                size: 17,
+                                color: p.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
+                    if (showTokenField) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: tokenCtrl,
+                        obscureText: true,
+                        autocorrect: false,
+                        style: mono(fontSize: 12, color: p.textPrimary),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          filled: true,
+                          fillColor: p.background.o(0.45),
+                          hintText: 'Token PAT de GitHub (github_pat_...)',
+                          hintStyle: mono(fontSize: 11.5, color: p.textTertiary),
+                          contentPadding: const EdgeInsets.all(11),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: p.cardBorder),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: p.green),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      TapScale(
+                        onTap: () async {
+                          await session.syncService.setCustomGitHubToken(
+                            tokenCtrl.text,
+                          );
+                          setModalState(() => showTokenField = false);
+                          if (mounted) {
+                            showIosToast(context, 'Token GitHub actualizado');
+                          }
+                        },
+                        child: Text(
+                          'Guardar Token PAT',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: p.green,
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    if (session.isAuthenticated) ...[
+                      const SizedBox(height: 12),
+                      TapScale(
+                        onTap: () async {
+                          Navigator.of(sheetCtx).pop();
+                          await session.logout();
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: p.elevated,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: p.cardBorder),
+                          ),
+                          child: Text(
+                            'Cambiar de cuenta / Cerrar sesión',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: p.orange,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -200,6 +351,7 @@ class _HomeShellState extends State<HomeShell> {
     final isDark = ThemeScope.of(context).isDark;
     final session = SessionScope.maybeOf(context);
     final currentUsage = session?.dailyUsage ?? _fallbackUsage;
+    final maxUsage = session?.maxDailyUsage ?? AppConstants.maxDailyUsage;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final wide = screenWidth > AppConstants.maxPhoneViewportWidth;
 
@@ -221,10 +373,13 @@ class _HomeShellState extends State<HomeShell> {
             child: Column(
               children: [
                 _Header(
+                  initials: session?.initials ?? 'UM',
+                  syncStatus:
+                      session?.syncService.status ?? GitHubSyncStatus.idle,
                   usage: currentUsage,
-                  maxUsage: AppConstants.maxDailyUsage,
+                  maxUsage: maxUsage,
                   onMerit: () => _addUsage(1),
-                  onTapIdentity: _openInstitutionalIdentitySheet,
+                  onTapIdentity: _openStudentProfileSheet,
                 ),
                 Expanded(
                   child: PageView(
@@ -236,7 +391,7 @@ class _HomeShellState extends State<HomeShell> {
                         onOpenClaseViva: _openClaseViva,
                         onCompleteBlock: () => _addUsage(2),
                       ),
-                      const CalendarioTab(),
+                      CalendarioTab(onOpenClaseViva: _openClaseViva),
                       EstudioTab(onOpenClaseViva: _openClaseViva),
                     ],
                   ),
@@ -253,12 +408,16 @@ class _HomeShellState extends State<HomeShell> {
 
 class _Header extends StatelessWidget {
   const _Header({
+    required this.initials,
+    required this.syncStatus,
     required this.usage,
     required this.maxUsage,
     required this.onMerit,
     required this.onTapIdentity,
   });
 
+  final String initials;
+  final GitHubSyncStatus syncStatus;
   final int usage;
   final int maxUsage;
   final VoidCallback onMerit;
@@ -268,6 +427,24 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final top = MediaQuery.paddingOf(context).top;
+
+    late final Color dotColor;
+    late final String badgeText;
+    switch (syncStatus) {
+      case GitHubSyncStatus.syncing:
+        dotColor = p.indigo;
+        badgeText = 'Sync...';
+      case GitHubSyncStatus.synced:
+        dotColor = p.green;
+        badgeText = 'GitHub • Sync';
+      case GitHubSyncStatus.error:
+        dotColor = p.orange;
+        badgeText = 'Local • Retry';
+      case GitHubSyncStatus.localOnly:
+      case GitHubSyncStatus.idle:
+        dotColor = p.green;
+        badgeText = 'Ing. Energética';
+    }
 
     return Container(
       padding: EdgeInsets.fromLTRB(20, 16 + top, 20, 14),
@@ -291,10 +468,10 @@ class _Header extends StatelessWidget {
                     border: Border.all(color: p.strongBorder),
                   ),
                   child: Text(
-                    'UM',
+                    initials,
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: -0.3,
                       color: p.textPrimary,
                     ),
@@ -342,10 +519,10 @@ class _Header extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      PulseDot(color: p.green),
+                      PulseDot(color: dotColor),
                       const SizedBox(width: 6),
                       Text(
-                        'Moodle • AyRe',
+                        badgeText,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,

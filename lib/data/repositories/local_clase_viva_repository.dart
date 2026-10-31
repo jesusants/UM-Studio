@@ -11,18 +11,27 @@ import '../../domain/entities/tema_estudio_entity.dart';
 import '../../domain/repositories/i_clase_viva_repository.dart';
 import '../datasources/academic_seed_data.dart';
 import '../models/nota_adjunto_model.dart';
+import '../services/markdown_curriculum_service.dart';
 
-/// Repositorio reactivo local offline-first que emula las tablas
-/// `temas_estudio` y `notas_adjuntos_estudiante` con streams en tiempo real.
+/// Repositorio reactivo Offline-First conectado a `MarkdownCurriculumService`
+/// (`ingenieria_energetica.md`) y sincronizado con `db/users/{username}.json`.
 class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
   LocalReactiveClaseVivaRepository({
-    this.initialLatency = const Duration(milliseconds: 500),
+    this.initialLatency = const Duration(milliseconds: 220),
     String? userId,
-  }) : _userId = userId ?? AppConstants.defaultStudentEmail;
+    MarkdownCurriculumService? curriculumService,
+    this.onPersonalNoteSynced,
+  })  : _userId = userId ?? AppConstants.defaultStudentEmail,
+        _curriculumService = curriculumService;
 
   static const String _storagePrefix = 'um_studio_notas_adjuntos_v2_';
 
   final Duration initialLatency;
+  final MarkdownCurriculumService? _curriculumService;
+
+  /// Callback opcional para replicar apuntes en `db/users/{username}.json` en GitHub.
+  void Function(String temaId, String contenido)? onPersonalNoteSynced;
+
   String _userId;
 
   final Map<String, StreamController<List<NotaAdjuntoEntity>>> _controllers =
@@ -32,7 +41,7 @@ class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
   int _idSeq = 0;
 
   @override
-  bool get isCloudBackend => false;
+  bool get isCloudBackend => true;
 
   @override
   String get activeUserId => _userId;
@@ -50,13 +59,75 @@ class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
 
   String _key(String temaId, String uid) => '$_storagePrefix${uid}_$temaId';
 
-  @override
-  Stream<TemaEstudioEntity> watchTemaEstudio(String temaId) async* {
-    if (initialLatency > Duration.zero) {
-      await Future<void>.delayed(initialLatency);
-    }
-    yield AcademicSeedData.temasEstudio[temaId] ??
+  TemaEstudioEntity _resolveCurrentTema(String temaId) {
+    final fromMd = _curriculumService?.database?.resolveTemaEstudio(temaId);
+    if (fromMd != null) return fromMd;
+    return AcademicSeedData.temasEstudio[temaId] ??
         AcademicSeedData.temasEstudio['fisica']!;
+  }
+
+  @override
+  Stream<TemaEstudioEntity> watchTemaEstudio(String temaId) {
+    late final StreamController<TemaEstudioEntity> controller;
+    void onCurriculumChanged() {
+      if (!controller.isClosed) {
+        controller.add(_resolveCurrentTema(temaId));
+      }
+    }
+
+    controller = StreamController<TemaEstudioEntity>(
+      onListen: () async {
+        if (initialLatency > Duration.zero) {
+          await Future<void>.delayed(initialLatency);
+        }
+        if (!controller.isClosed) {
+          controller.add(_resolveCurrentTema(temaId));
+        }
+        _curriculumService?.addListener(onCurriculumChanged);
+      },
+      onCancel: () {
+        _curriculumService?.removeListener(onCurriculumChanged);
+      },
+    );
+
+    return controller.stream;
+  }
+
+  /// Hidrata apuntes descargados desde `db/users/{username}.json` en GitHub.
+  Future<void> hydrateNotesFromGitHub({
+    required String institutionalEmail,
+    required Map<String, dynamic> apuntesPersonales,
+  }) async {
+    final uid = institutionalEmail.trim().toLowerCase();
+    for (final entry in apuntesPersonales.entries) {
+      final temaId = entry.key;
+      final value = entry.value;
+      final noteText = value is Map
+          ? (value['nota'] ?? '').toString()
+          : (value ?? '').toString();
+      if (noteText.trim().isEmpty) continue;
+
+      final items = List<NotaAdjuntoModel>.from(await _loadItems(temaId, uid));
+      final existingIdx = items.indexWhere(
+        (e) => e.tipoArchivo == TipoAdjuntoEstudiante.nota,
+      );
+      if (existingIdx == -1) {
+        final now = DateTime.now();
+        _idSeq++;
+        items.add(
+          NotaAdjuntoModel(
+            id: 'nota_gh_${now.microsecondsSinceEpoch}_$_idSeq',
+            temaId: temaId,
+            usuarioId: uid,
+            tipoArchivo: TipoAdjuntoEstudiante.nota,
+            contenidoNota: noteText,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+        await _persistAndEmit(temaId, uid, items);
+      }
+    }
   }
 
   @override
@@ -159,15 +230,15 @@ class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
     _memoryBytes[id] = bytes;
 
     final safeName = Uri.encodeComponent(nombreArchivo);
-    final bucketUrl =
-        'https://storage.unimagdalena.edu.co/${AppConstants.storageBucket}/$uid/$temaId/$id/$safeName';
+    final localRefUrl =
+        'https://github.com/${AppConstants.githubOwner}/${AppConstants.githubRepo}/tree/${AppConstants.githubBranch}/db/users/$uid/$temaId/$safeName';
 
     final nuevo = NotaAdjuntoModel(
       id: id,
       temaId: temaId,
       usuarioId: uid,
       tipoArchivo: tipoArchivo,
-      urlArchivo: bucketUrl,
+      urlArchivo: localRefUrl,
       nombreArchivo: nombreArchivo,
       pesoBytes: bytes.length,
       createdAt: now,
@@ -226,6 +297,7 @@ class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
     }
 
     await _persistAndEmit(temaId, uid, items);
+    onPersonalNoteSynced?.call(temaId, contenido);
     return saved;
   }
 }
