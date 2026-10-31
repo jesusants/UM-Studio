@@ -19,12 +19,13 @@
     "02011807": 1,
     "03011813": 3,
     "01021802": 2,
-    "01021804": 1
+    "01021804": 1,
+    "01021803": 2
   },
   "ultimo_revisado": {
-    "codigo_materia": "02011807",
-    "numero_tema": 1,
-    "actualizado_en": "2026-10-30T23:19:23.060"
+    "codigo_materia": "01021803",
+    "numero_tema": 2,
+    "actualizado_en": "2026-10-31T00:24:29.848"
   },
   "recordatorios_calendario": [],
   "apuntes_personales": {}
