@@ -23,9 +23,11 @@ abstract final class AppConstants {
   static const Duration githubSyncDebounce = Duration(milliseconds: 1200);
   static const Duration tapScaleDuration = Duration(milliseconds: 140);
 
-  /// Base de datos maestra (.md con YAML Frontmatter + KaTeX).
+  /// Base de datos maestra (.md con YAML Frontmatter + KaTeX) y emblema oficial.
   static const String curriculumAssetPath =
       'assets/data/ingenieria_energetica.md';
+  static const String programLogoAsset =
+      'assets/images/logo_ing_energetica.png';
 
   /// Repositorio Serverless en GitHub (`jesusants/UM-Studio`).
   static const String githubOwner = 'jesusants';

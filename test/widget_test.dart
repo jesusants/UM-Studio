@@ -420,7 +420,8 @@ void main() {
           ),
         );
 
-        // Debe iniciar en LoginPage con carrera bloqueada en Ingeniería Energética
+        // Debe iniciar en LoginPage con emblema oficial y carrera bloqueada
+        expect(find.byType(ProgramLogoBadge), findsOneWidget);
         expect(
           find.text('Ingeniería Energética • Unimagdalena'),
           findsOneWidget,
@@ -444,8 +445,9 @@ void main() {
         await tester.pump(const Duration(milliseconds: 350));
         await tester.pump(const Duration(milliseconds: 350));
 
-        // Entró automáticamente a HomeShell
+        // Entró automáticamente a HomeShell con emblema oficial arriba a la izquierda
         expect(find.text('Hola, Camila'), findsOneWidget);
+        expect(find.byType(ProgramLogoBadge), findsOneWidget);
 
         // Navega a la pestaña Estudio y verifica filtro por Cuatrimestre
         await tester.tap(find.text('Estudio'));

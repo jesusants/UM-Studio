@@ -220,27 +220,10 @@ class _LoginPageState extends State<LoginPage> {
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(22, 18, 22, 28),
                   children: [
-                    // Barra superior con marca y selector de tema
+                    // Barra superior con emblema oficial y selector de tema
                     Row(
                       children: [
-                        Container(
-                          width: 34,
-                          height: 34,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: p.card,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: p.green.o(0.6)),
-                          ),
-                          child: Text(
-                            'UM',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: p.green,
-                            ),
-                          ),
-                        ),
+                        const ProgramLogoBadge(size: 38),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(

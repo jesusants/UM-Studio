@@ -283,6 +283,49 @@ class ShimmerBlock extends StatelessWidget {
   }
 }
 
+/// Emblema circular oficial de Ingeniería Energética — Unimagdalena.
+class ProgramLogoBadge extends StatelessWidget {
+  const ProgramLogoBadge({
+    super.key,
+    this.size = 36,
+  });
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.o(0.28),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          AppConstants.programLogoAsset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.high,
+          errorBuilder: (_, __, ___) => Container(
+            color: p.elevated,
+            alignment: Alignment.center,
+            child: Icon(Icons.bolt_rounded, size: size * 0.5, color: p.green),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Botón circular iOS para intercambiar entre tema oscuro OLED y tema claro.
 class ThemeToggleButton extends StatelessWidget {
   const ThemeToggleButton({super.key});

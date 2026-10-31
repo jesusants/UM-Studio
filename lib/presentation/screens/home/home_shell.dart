@@ -102,22 +102,39 @@ class _HomeShellState extends State<HomeShell> {
                     const SizedBox(height: 14),
                     Row(
                       children: [
-                        PulseDot(color: p.green, size: 8),
-                        const SizedBox(width: 8),
-                        Text(
-                          'PERFIL INGENIERÍA ENERGÉTICA',
-                          style: sectionMicroStyle(p),
+                        const ProgramLogoBadge(size: 40),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  PulseDot(color: p.green, size: 7),
+                                  const SizedBox(width: 7),
+                                  Expanded(
+                                    child: Text(
+                                      'PERFIL INGENIERÍA ENERGÉTICA',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: sectionMicroStyle(p),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                session.displayName,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: p.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      session.displayName,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: p.textPrimary,
-                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -373,7 +390,6 @@ class _HomeShellState extends State<HomeShell> {
             child: Column(
               children: [
                 _Header(
-                  initials: session?.initials ?? 'UM',
                   syncStatus:
                       session?.syncService.status ?? GitHubSyncStatus.idle,
                   usage: currentUsage,
@@ -408,7 +424,6 @@ class _HomeShellState extends State<HomeShell> {
 
 class _Header extends StatelessWidget {
   const _Header({
-    required this.initials,
     required this.syncStatus,
     required this.usage,
     required this.maxUsage,
@@ -416,7 +431,6 @@ class _Header extends StatelessWidget {
     required this.onTapIdentity,
   });
 
-  final String initials;
   final GitHubSyncStatus syncStatus;
   final int usage;
   final int maxUsage;
@@ -458,25 +472,7 @@ class _Header extends StatelessWidget {
             children: [
               TapScale(
                 onTap: onTapIdentity,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: p.elevated,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: p.strongBorder),
-                  ),
-                  child: Text(
-                    initials,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
-                      color: p.textPrimary,
-                    ),
-                  ),
-                ),
+                child: const ProgramLogoBadge(size: 36),
               ),
               const SizedBox(width: 10),
               Expanded(
