@@ -6,7 +6,7 @@
   "cuatrimestre_actual": 2,
   "pin_hash": "70a60076d7ddd626362129ea1b4f836d2736af553f2104f016fc05b7a5736c00",
   "uso_diario": {
-    "actual": 11,
+    "actual": 13,
     "maximo": 15,
     "ultima_fecha": "2026-10-30"
   },
@@ -16,7 +16,7 @@
     "01021803": 35,
     "03031818": 35,
     "02031812": 35,
-    "03041820": 10
+    "03041820": 20
   },
   "recordatorios_calendario": [],
   "apuntes_personales": {}
