@@ -164,41 +164,56 @@ class InstitutionalSessionController extends ChangeNotifier {
     await _entraService.runMigrationIfNeeded();
     _userPhotoBytes = await _entraService.loadCachedPhoto();
 
-    // 2. Comprobar si la página cargó con redirección OAuth ?code=...
+    // 2. Comprobar si la página cargó con redirección OAuth ?code=... o ?error=...
+    final initialError = _entraService.checkInitialError();
     final initialCode = _entraService.checkInitialAuthCode();
     final initialState = _entraService.checkInitialState();
-    if (initialCode != null && initialCode.isNotEmpty) {
-      final prefs = await SharedPreferences.getInstance();
-      final savedVerifier =
-          prefs.getString(EntraIdConstants.prefsPkceVerifier) ?? '';
-      final savedState = prefs.getString(EntraIdConstants.prefsPkceState);
-      if (savedVerifier.isNotEmpty &&
-          (savedState == null || savedState == initialState)) {
-        final exchanged = await _entraService.exchangeCodeForTokens(
-          code: initialCode,
-          verifier: savedVerifier,
-          redirectUri: _entraService.effectiveRedirectUri,
-        );
-        if (exchanged.result != null) {
-          final photo =
-              await _entraService.fetchProfilePhoto(exchanged.result!.accessToken);
-          _userPhotoBytes = photo ?? _userPhotoBytes;
-          await _entraService.persistSession(
-            EntraTokenResult(
-              accessToken: exchanged.result!.accessToken,
-              idToken: exchanged.result!.idToken,
-              refreshToken: exchanged.result!.refreshToken,
-              expiresAt: exchanged.result!.expiresAt,
-              claims: exchanged.result!.claims,
-              photoBytes: photo,
-            ),
+    if (initialError != null) {
+      _pendingAuthError = initialError;
+      _entraService.cleanWebUrl();
+    } else if (initialCode != null && initialCode.isNotEmpty) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final savedVerifier =
+            prefs.getString(EntraIdConstants.prefsPkceVerifier) ?? '';
+        final savedState = prefs.getString(EntraIdConstants.prefsPkceState);
+        if (savedVerifier.isEmpty ||
+            (savedState != null && savedState != initialState)) {
+          _pendingAuthError =
+              'La sesión de inicio con Microsoft expiró o no coincide. Inténtalo de nuevo.';
+        } else {
+          final exchanged = await _entraService.exchangeCodeForTokens(
+            code: initialCode,
+            verifier: savedVerifier,
+            redirectUri: _entraService.effectiveRedirectUri,
           );
-          await _linkEntraUserToModel(exchanged.result!);
-          _entraService.cleanWebUrl();
-          _initialized = true;
-          notifyListeners();
-          return;
+          if (exchanged.result != null) {
+            final photo = await _entraService
+                .fetchProfilePhoto(exchanged.result!.accessToken);
+            _userPhotoBytes = photo ?? _userPhotoBytes;
+            await _entraService.persistSession(
+              EntraTokenResult(
+                accessToken: exchanged.result!.accessToken,
+                idToken: exchanged.result!.idToken,
+                refreshToken: exchanged.result!.refreshToken,
+                expiresAt: exchanged.result!.expiresAt,
+                claims: exchanged.result!.claims,
+                photoBytes: photo,
+              ),
+            );
+            await _linkEntraUserToModel(exchanged.result!)
+                .timeout(const Duration(seconds: 25));
+            _entraService.cleanWebUrl();
+            _initialized = true;
+            notifyListeners();
+            return;
+          }
+          _pendingAuthError = exchanged.error ??
+              'No se pudo completar el inicio de sesión con Microsoft.';
         }
+      } catch (e) {
+        _pendingAuthError =
+            'No se pudo completar el inicio de sesión con Microsoft. Inténtalo de nuevo.';
       }
       _entraService.cleanWebUrl();
     }
@@ -305,19 +320,48 @@ class InstitutionalSessionController extends ChangeNotifier {
   }
 
   /// Inicio de sesión institucional oficial con Microsoft Entra ID (OpenID Connect + PKCE).
+  ///
+  /// Devuelve `null` si el inicio fue exitoso (o si la pestaña está siendo
+  /// redirigida a Microsoft); en cualquier otro caso devuelve un mensaje de error
+  /// legible para mostrar al estudiante. Nunca se queda esperando indefinidamente.
   Future<String?> loginWithMicrosoft({String? prompt}) async {
-    final res = await _entraService.loginInteractive(prompt: prompt);
-    if (res.error != null || res.result == null) {
-      return res.error ?? 'No se pudo completar el inicio de sesión institucional.';
-    }
+    try {
+      final res = await _entraService.loginInteractive(prompt: prompt);
+      if (res.error == null && res.result == null) {
+        return null; // Redirección en curso (popup bloqueado en web)
+      }
+      if (res.error != null || res.result == null) {
+        return res.error ??
+            'No se pudo completar el inicio de sesión institucional.';
+      }
 
-    final tokenResult = res.result!;
-    _userPhotoBytes =
-        tokenResult.photoBytes ?? await _entraService.loadCachedPhoto();
-    await _linkEntraUserToModel(tokenResult);
-    _entraService.cleanWebUrl();
-    notifyListeners();
-    return null;
+      final tokenResult = res.result!;
+      _userPhotoBytes =
+          tokenResult.photoBytes ?? await _entraService.loadCachedPhoto();
+      await _linkEntraUserToModel(tokenResult)
+          .timeout(const Duration(seconds: 25));
+      _entraService.cleanWebUrl();
+      _pendingAuthError = null;
+      notifyListeners();
+      return null;
+    } on TimeoutException {
+      return 'Se inició sesión con Microsoft, pero no se pudo cargar tu perfil a tiempo. '
+          'Revisa tu conexión e inténtalo de nuevo.';
+    } catch (e) {
+      return 'No se pudo completar el inicio de sesión institucional: $e';
+    }
+  }
+
+  String? _pendingAuthError;
+
+  /// Error de inicio de sesión ocurrido al volver de Microsoft por redirección.
+  String? get pendingAuthError => _pendingAuthError;
+
+  /// Devuelve y limpia el error pendiente (para mostrarlo una sola vez).
+  String? consumePendingAuthError() {
+    final e = _pendingAuthError;
+    _pendingAuthError = null;
+    return e;
   }
 
   Future<void> _linkEntraUserToModel(EntraTokenResult tokenResult) async {

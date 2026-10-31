@@ -13,18 +13,52 @@
       window.__UM_INITIAL_SEARCH__ = search;
       window.__UM_INITIAL_HASH__ = hash;
 
-      if (isPopup && hasAuth) {
+      if (!hasAuth) return;
+
+      var pendingState = null, authMode = null, returnedState = null;
+      try {
+        pendingState = window.localStorage.getItem('um_entra_pending_state');
+        authMode = window.localStorage.getItem('um_entra_auth_mode');
+      } catch (e) {}
+      try {
+        returnedState = new URLSearchParams(search).get('state');
+      } catch (e) {}
+
+      // Es la ventana emergente si conserva opener, o si hay un intento en modo
+      // popup pendiente con el mismo state (el navegador pudo cortar window.opener).
+      var isAuthPopup = isPopup || (authMode === 'popup' && !!pendingState &&
+        (!returnedState || returnedState === pendingState));
+      if (!isAuthPopup) return; // Redirección en la misma pestaña: Flutter la procesa.
+
+      // Canal 1: localStorage (funciona aunque se pierda window.opener)
+      try { window.localStorage.setItem('um_entra_auth_result', search); } catch (e) {}
+      // Canal 2: postMessage directo a la pestaña principal
+      if (isPopup) {
         try {
           window.opener.postMessage({
             type: 'MS_ENTRA_AUTH_CALLBACK',
             search: search,
             hash: hash
-          }, '*');
+          }, window.location.origin);
         } catch (e) {
           console.error('[UM-Studio] Error en postMessage a window.opener:', e);
         }
-        window.close();
       }
+
+      // Nunca arrancar una segunda copia de Flutter dentro del popup.
+      window.__UM_AUTH_POPUP__ = true;
+      window.close();
+      document.addEventListener('DOMContentLoaded', function() {
+        var isError = search.indexOf('error=') !== -1;
+        document.body.innerHTML =
+          '<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#fff;' +
+          'display:flex;align-items:center;justify-content:center;height:100vh;' +
+          'text-align:center;padding:24px;box-sizing:border-box;">' +
+          '<div><div style="font-size:17px;font-weight:600;margin-bottom:8px;">' +
+          (isError ? 'No se pudo iniciar sesión' : 'Inicio de sesión completado') +
+          '</div><div style="font-size:13px;color:#8E8E93;">' +
+          'Ya puedes cerrar esta ventana y volver a UM Studio.</div></div></div>';
+      });
     })();
   </script>
 
@@ -79,6 +113,14 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // Solo arranca Flutter si esta ventana no es el popup de retorno OAuth.
+    if (!window.__UM_AUTH_POPUP__) {
+      var s = document.createElement('script');
+      s.src = 'flutter_bootstrap.js';
+      s.async = true;
+      document.body.appendChild(s);
+    }
+  </script>
 </body>
 </html>

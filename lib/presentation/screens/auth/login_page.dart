@@ -30,6 +30,20 @@ class _LoginPageState extends State<LoginPage> {
   int _selectedCuatrimestre = 2;
   String? _errorText;
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final pending = SessionScope.maybeOf(context)?.consumePendingAuthError();
+    if (pending != null && mounted) {
+      setState(() => _errorText = pending);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          showIosToast(context, pending, accentColor: context.palette.orange);
+        }
+      });
+    }
+  }
+
   Future<void> _loginWithMicrosoft() async {
     if (_submitting) return;
     FocusScope.of(context).unfocus();
@@ -48,9 +62,13 @@ class _LoginPageState extends State<LoginPage> {
         _submitting = false;
         _errorText = err;
       });
+      showIosToast(context, err, accentColor: context.palette.orange);
     } else {
       HapticFeedback.lightImpact();
-      setState(() => _submitting = false);
+      setState(() {
+        _submitting = false;
+        _errorText = null;
+      });
     }
   }
 
@@ -471,6 +489,43 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                             ),
                           ),
+                          if (_errorText != null && !_showLegacyOptions) ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: p.orange.o(0.12),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: p.orange.o(0.38)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 17,
+                                    color: p.orange,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _errorText!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        height: 1.35,
+                                        fontWeight: FontWeight.w500,
+                                        color: p.orange,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

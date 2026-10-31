@@ -26,6 +26,7 @@ import 'package:um_studio/data/models/student_user_model.dart';
 import 'package:um_studio/data/services/microsoft_entra_auth_service.dart';
 import 'package:um_studio/presentation/widgets/header_morph_avatar.dart';
 import 'package:um_studio/services/download_queue_service.dart';
+import 'package:um_studio/services/oauth_platform/oauth_flow_exception.dart';
 import 'package:um_studio/widgets/minimal_slide_viewer.dart';
 
 void main() {
@@ -647,6 +648,14 @@ void main() {
       );
       expect(user.programa, 'Ingeniería Energética');
     });
+
+    test('OAuthFlowException traduce errores de Microsoft a mensajes claros en español', () {
+      final denied = OAuthFlowException.fromOAuthError('access_denied', 'User cancelled login');
+      expect(denied.message.contains('Cancelaste el inicio de sesión'), isTrue);
+
+      final timeout = OAuthFlowException.fromOAuthError('server_error', null);
+      expect(timeout.message.contains('Microsoft no está disponible'), isTrue);
+    });
   });
 
   group('HeaderMorphAvatar: Alternancia Dinámica y Anti-Tilde', () {
@@ -774,6 +783,50 @@ void main() {
         }
       }
       tester.view.reset();
+    });
+
+    testWidgets('ClaseVivaPage en los 5 niveles de inglés hace scroll completo sin desbordamiento ni errores de stream', (tester) async {
+      final mdContent = File('assets/data/ingenieria_energetica.md').readAsStringSync();
+      final curriculum = MarkdownCurriculumService()
+        ..seedDatabase(CurriculumMarkdownParser.parse(mdContent));
+
+      final repo = LocalReactiveClaseVivaRepository(
+        initialLatency: Duration.zero,
+        userId: 'alumno@unimagdalena.edu.co',
+        curriculumService: curriculum,
+      );
+
+      for (final code in englishCodes) {
+        await tester.pumpWidget(
+          CurriculumScope(
+            service: curriculum,
+            child: ClaseVivaRepositoryScope(
+              repository: repo,
+              child: ThemeScope(
+                controller: ThemeController(),
+                child: MaterialApp(
+                  theme: AppTheme.dark,
+                  home: ClaseVivaPage(temaId: code),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pump(const Duration(milliseconds: 300));
+        for (var i = 0; i < 4; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+
+        final listFinder = find.byType(ListView).first;
+        for (var i = 0; i < 4; i++) {
+          await tester.drag(listFinder, const Offset(0, -500));
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('MIS APUNTES Y ARCHIVOS', skipOffstage: false), findsOneWidget);
+      }
     });
   });
 }

@@ -160,8 +160,12 @@ class MicrosoftEntraAuthService {
       );
 
       if (code == null || code.isEmpty) {
-        // En caso de redirección en misma ventana en Web, la app recargará con ?code=...
-        return (result: null, error: 'Inicio de sesión en proceso o cancelado por el usuario.');
+        // Web sin popup: la pestaña navega a Microsoft y al volver se canjea ?code=...
+        if (kIsWeb) return (result: null, error: null);
+        return (
+          result: null,
+          error: 'Completa el inicio de sesión en el navegador y vuelve a la app.',
+        );
       }
 
       // Canje del código de autorización por tokens
@@ -188,8 +192,15 @@ class MicrosoftEntraAuthService {
 
       await persistSession(fullResult);
       return (result: fullResult, error: null);
+    } on OAuthFlowException catch (e) {
+      return (result: null, error: e.message);
+    } on TimeoutException {
+      return (
+        result: null,
+        error: 'Microsoft no respondió a tiempo. Revisa tu conexión e inténtalo de nuevo.',
+      );
     } catch (e) {
-      return (result: null, error: 'Excepción de autenticación: $e');
+      return (result: null, error: 'No se pudo iniciar sesión con Microsoft: $e');
     }
   }
 
@@ -238,9 +249,25 @@ class MicrosoftEntraAuthService {
       }
 
       final errorBody = res.body;
+      String? oauthError;
+      String? oauthDesc;
+      try {
+        final decoded = jsonDecode(errorBody);
+        if (decoded is Map) {
+          oauthError = decoded['error']?.toString();
+          oauthDesc = decoded['error_description']?.toString();
+        }
+      } catch (_) {}
       return (
         result: null,
-        error: 'Microsoft respondió HTTP ${res.statusCode}: $errorBody',
+        error: oauthError != null
+            ? OAuthFlowException.fromOAuthError(oauthError, oauthDesc).message
+            : 'Microsoft respondió con un error (HTTP ${res.statusCode}). Inténtalo de nuevo.',
+      );
+    } on TimeoutException {
+      return (
+        result: null,
+        error: 'Microsoft no respondió a tiempo. Revisa tu conexión e inténtalo de nuevo.',
       );
     } catch (e) {
       return (result: null, error: 'Error de conexión con Microsoft: $e');
@@ -443,4 +470,7 @@ class MicrosoftEntraAuthService {
   /// Revisa si el navegador cargó inicialmente con un código OAuth en la URL.
   String? checkInitialAuthCode() => _platform.getInitialAuthCode();
   String? checkInitialState() => _platform.getInitialState();
+
+  /// Error OAuth (`?error=...`) devuelto por Microsoft al volver por redirección.
+  String? checkInitialError() => _platform.getInitialError()?.message;
 }

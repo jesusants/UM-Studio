@@ -11,6 +11,11 @@ import 'presentation/screens/home/home_shell.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    return const SizedBox.shrink();
+  };
+
   final themeController = ThemeController();
   await themeController.load();
 

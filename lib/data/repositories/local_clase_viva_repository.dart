@@ -75,7 +75,7 @@ class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
       }
     }
 
-    controller = StreamController<TemaEstudioEntity>(
+    controller = StreamController<TemaEstudioEntity>.broadcast(
       onListen: () async {
         if (initialLatency > Duration.zero) {
           await Future<void>.delayed(initialLatency);
@@ -141,7 +141,8 @@ class LocalReactiveClaseVivaRepository implements IClaseVivaRepository {
       key,
       () => StreamController<List<NotaAdjuntoEntity>>.broadcast(),
     );
-    return _createInitialPlusUpdatesStream(temaId, uid, ctrl);
+    return _createInitialPlusUpdatesStream(temaId, uid, ctrl)
+        .asBroadcastStream();
   }
 
   Stream<List<NotaAdjuntoEntity>> _createInitialPlusUpdatesStream(
