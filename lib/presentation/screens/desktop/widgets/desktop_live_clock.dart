@@ -2,14 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../desktop_theme_tokens.dart';
 
 /// Módulo de Tiempo en Vivo para Desktop con aislamiento de repintado (`RepaintBoundary`)
 /// para garantizar 0% de sobrecarga de CPU en el resto del árbol de widgets.
 ///
 /// Renderiza:
 /// 1. Reloj digital gigante (72px - 84px) con números monoespaciados (`tabularFigures`).
-/// 2. Micro-animación en los dos puntos (`:`) que pulsan suavemente de 1.0 a 0.3 en 500ms.
-/// 3. Día y fecha completa en español en `#8E8E93` (ej. "Sábado, 31 de Octubre de 2026").
+/// 2. Micro-animación en los dos puntos (`:`) que pulsan suavemente de 1.0 a 0.28 en 500ms.
+/// 3. Día y fecha completa en español con tokens duales Dark/Light.
 class DesktopLiveClock extends StatefulWidget {
   const DesktopLiveClock({super.key});
 
@@ -90,6 +91,7 @@ class _DesktopLiveClockState extends State<DesktopLiveClock>
 
   @override
   Widget build(BuildContext context) {
+    final tokens = DesktopThemeTokens.of(context);
     final hh = _formatTwoDigits(_now.hour);
     final mm = _formatTwoDigits(_now.minute);
     final ss = _formatTwoDigits(_now.second);
@@ -107,24 +109,24 @@ class _DesktopLiveClockState extends State<DesktopLiveClock>
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                _TimeDigit(text: hh),
-                _AnimatedColon(opacity: _colonOpacity),
-                _TimeDigit(text: mm),
-                _AnimatedColon(opacity: _colonOpacity),
-                _TimeDigit(text: ss),
+                _TimeDigit(text: hh, color: tokens.textPrimary),
+                _AnimatedColon(opacity: _colonOpacity, color: tokens.textPrimary),
+                _TimeDigit(text: mm, color: tokens.textPrimary),
+                _AnimatedColon(opacity: _colonOpacity, color: tokens.textPrimary),
+                _TimeDigit(text: ss, color: tokens.textPrimary),
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           // Día y Fecha Completa
           Text(
             _fullSpanishDate(_now),
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 16.5,
               fontWeight: FontWeight.w600,
-              letterSpacing: -0.3,
-              color: Color(0xFF8E8E93),
+              letterSpacing: -0.2,
+              color: tokens.textSecondary,
             ),
           ),
         ],
@@ -134,18 +136,22 @@ class _DesktopLiveClockState extends State<DesktopLiveClock>
 }
 
 class _TimeDigit extends StatelessWidget {
-  const _TimeDigit({required this.text});
+  const _TimeDigit({
+    required this.text,
+    required this.color,
+  });
 
   final String text;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
       style: mono(
-        fontSize: 78,
+        fontSize: 74,
         fontWeight: FontWeight.w800,
-        color: Colors.white,
+        color: color,
         letterSpacing: -2.0,
       ),
     );
@@ -153,25 +159,34 @@ class _TimeDigit extends StatelessWidget {
 }
 
 class _AnimatedColon extends StatelessWidget {
-  const _AnimatedColon({required this.opacity});
+  const _AnimatedColon({
+    required this.opacity,
+    required this.color,
+  });
 
   final Animation<double> opacity;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: opacity,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Text(
-          ':',
-          style: mono(
-            fontSize: 72,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF30D158),
+    return AnimatedBuilder(
+      animation: opacity,
+      builder: (context, _) {
+        return Opacity(
+          opacity: opacity.value,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              ':',
+              style: mono(
+                fontSize: 66,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

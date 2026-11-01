@@ -27,6 +27,9 @@ class ThemeScope extends InheritedNotifier<ThemeController> {
 
   static ThemeController of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<ThemeScope>()!.notifier!;
+
+  static ThemeController? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ThemeScope>()?.notifier;
 }
 
 /// Expone [MarkdownCurriculumService] al árbol de widgets.

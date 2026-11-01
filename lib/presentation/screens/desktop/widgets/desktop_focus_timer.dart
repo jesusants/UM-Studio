@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
+import '../desktop_theme_tokens.dart';
 
 /// Modo del temporizador Pomodoro
 enum FocusTimerMode {
@@ -21,7 +22,7 @@ enum FocusTimerMode {
 }
 
 /// Temporizador circular de enfoque ultraliviano para estudiar temas de la base de datos `.md`
-/// directamente en el Dashboard de Escritorio.
+/// directamente en el Dashboard de Escritorio con soporte dual Dark OLED y Light Mode.
 class DesktopFocusTimer extends StatefulWidget {
   const DesktopFocusTimer({
     super.key,
@@ -33,15 +34,17 @@ class DesktopFocusTimer extends StatefulWidget {
   final ValueChanged<String>? onOpenClaseViva;
 
   @override
-  State<DesktopFocusTimer> createState() => _DesktopFocusTimerState();
+  DesktopFocusTimerState createState() => DesktopFocusTimerState();
 }
 
-class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
+class DesktopFocusTimerState extends State<DesktopFocusTimer> {
   FocusTimerMode _mode = FocusTimerMode.focus;
   late int _remainingSeconds;
   Timer? _ticker;
   bool _isRunning = false;
   String? _selectedSubjectCode;
+
+  bool get isRunning => _isRunning;
 
   @override
   void initState() {
@@ -66,7 +69,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
     super.dispose();
   }
 
-  void _switchMode(FocusTimerMode newMode) {
+  void switchMode(FocusTimerMode newMode) {
     if (_mode == newMode) return;
     HapticFeedback.selectionClick();
     _ticker?.cancel();
@@ -77,7 +80,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
     });
   }
 
-  void _togglePlayPause() {
+  void togglePlayPause() {
     HapticFeedback.mediumImpact();
     if (_isRunning) {
       _ticker?.cancel();
@@ -99,7 +102,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
     }
   }
 
-  void _resetTimer() {
+  void resetTimer() {
     HapticFeedback.lightImpact();
     _ticker?.cancel();
     setState(() {
@@ -150,7 +153,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
 
   @override
   Widget build(BuildContext context) {
-    final p = context.palette;
+    final tokens = DesktopThemeTokens.of(context);
     final activeSubject = widget.activeSubjects.firstWhere(
       (s) => s.codigo == _selectedSubjectCode,
       orElse: () => widget.activeSubjects.isNotEmpty
@@ -170,9 +173,16 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xDC0D0E12),
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF1A1D24), width: 1),
+        border: Border.all(color: tokens.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: tokens.shadowColor,
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -202,7 +212,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.8,
-                    color: p.textSecondary,
+                    color: tokens.textSecondary,
                   ),
                 ),
               ),
@@ -211,9 +221,9 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF14161C),
+                  color: tokens.surfaceElevated,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF222630)),
+                  border: Border.all(color: tokens.borderSubtle),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -222,7 +232,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                     return MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: GestureDetector(
-                        onTap: () => _switchMode(mode),
+                        onTap: () => switchMode(mode),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           padding: const EdgeInsets.symmetric(
@@ -238,7 +248,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                             style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
-                              color: isSel ? Colors.white : p.textSecondary,
+                              color: isSel ? Colors.white : tokens.textSecondary,
                             ),
                           ),
                         ),
@@ -249,22 +259,22 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
 
           // Selector de materia asociada al bloque
           if (widget.activeSubjects.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF14161C),
+                color: tokens.surfaceElevated,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF1F2228)),
+                border: Border.all(color: tokens.borderSubtle),
               ),
               child: Row(
                 children: [
                   Text(
                     'Materia:',
-                    style: mono(fontSize: 11, color: p.textTertiary),
+                    style: mono(fontSize: 11, color: tokens.textTertiary),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -273,17 +283,19 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                         value: _selectedSubjectCode,
                         isDense: true,
                         isExpanded: true,
-                        dropdownColor: const Color(0xFF14161C),
+                        dropdownColor: tokens.isDark
+                            ? const Color(0xFF14161C)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: p.textPrimary,
+                          color: tokens.textPrimary,
                         ),
                         icon: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           size: 16,
-                          color: p.textSecondary,
+                          color: tokens.textSecondary,
                         ),
                         items: widget.activeSubjects.map((s) {
                           return DropdownMenuItem<String>(
@@ -314,13 +326,13 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: p.indigo.o(0.15),
+                              color: tokens.accentIndigo.o(0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Icon(
                               Icons.arrow_outward_rounded,
                               size: 13,
-                              color: p.indigo,
+                              color: tokens.accentIndigo,
                             ),
                           ),
                         ),
@@ -350,7 +362,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                       painter: _CircularProgressPainter(
                         progress: _progressRatio,
                         accentColor: _mode.accentColor,
-                        trackColor: const Color(0xFF1A1D24),
+                        trackColor: tokens.border,
                       ),
                     ),
                     Column(
@@ -362,7 +374,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                             fontSize: 32,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -1.0,
-                            color: Colors.white,
+                            color: tokens.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -372,7 +384,9 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.0,
-                            color: _isRunning ? _mode.accentColor : p.textTertiary,
+                            color: _isRunning
+                                ? _mode.accentColor
+                                : tokens.textTertiary,
                           ),
                         ),
                       ],
@@ -380,7 +394,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                   ],
                 ),
               ),
-              const SizedBox(width: 28),
+              const SizedBox(width: 20),
 
               // Controles de Acción Lateral
               Column(
@@ -389,7 +403,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: TapScale(
-                      onTap: _togglePlayPause,
+                      onTap: togglePlayPause,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -397,9 +411,12 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                         ),
                         decoration: BoxDecoration(
                           color: _isRunning
-                              ? const Color(0xFF222630)
+                              ? tokens.surfaceElevated
                               : _mode.accentColor,
                           borderRadius: BorderRadius.circular(14),
+                          border: _isRunning
+                              ? Border.all(color: tokens.border)
+                              : null,
                           boxShadow: _isRunning
                               ? null
                               : [
@@ -418,15 +435,19 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                                   ? Icons.pause_rounded
                                   : Icons.play_arrow_rounded,
                               size: 19,
-                              color: Colors.white,
+                              color: _isRunning
+                                  ? tokens.textPrimary
+                                  : Colors.white,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               _isRunning ? 'Pausar' : 'Comenzar',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: _isRunning
+                                    ? tokens.textPrimary
+                                    : Colors.white,
                               ),
                             ),
                           ],
@@ -440,16 +461,16 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                       MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: TapScale(
-                          onTap: _resetTimer,
+                          onTap: resetTimer,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 10,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF14161C),
+                              color: tokens.surfaceElevated,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF222630)),
+                              border: Border.all(color: tokens.border),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -457,7 +478,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                                 Icon(
                                   Icons.refresh_rounded,
                                   size: 15,
-                                  color: p.textSecondary,
+                                  color: tokens.textSecondary,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
@@ -465,7 +486,7 @@ class _DesktopFocusTimerState extends State<DesktopFocusTimer> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: p.textSecondary,
+                                    color: tokens.textSecondary,
                                   ),
                                 ),
                               ],

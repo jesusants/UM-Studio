@@ -492,7 +492,7 @@ class _HomeShellState extends State<HomeShell> {
           // Si el ancho horizontal >= 1024px: Despliega DesktopDashboardScreen a pantalla completa (100vw × 100vh)
           if (constraints.maxWidth >= 1024) {
             return Scaffold(
-              backgroundColor: const Color(0xFF000000),
+              backgroundColor: p.background,
               body: DesktopDashboardScreen(
                 onOpenStudentProfile: _openStudentProfileSheet,
                 onOpenClaseViva: _openClaseViva,

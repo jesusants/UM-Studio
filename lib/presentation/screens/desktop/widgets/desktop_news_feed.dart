@@ -1,14 +1,15 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../widgets/ios_primitives.dart';
+import '../desktop_theme_tokens.dart';
 
 class NewsItemData {
   const NewsItemData({
     required this.id,
     required this.category,
+    required this.categoryType,
     required this.relativeDate,
     required this.title,
     required this.summary,
@@ -17,13 +18,15 @@ class NewsItemData {
 
   final String id;
   final String category;
+  final String categoryType; // 'facultad', 'academico', 'semillero'
   final String relativeDate;
   final String title;
   final String summary;
   final Color accentColor;
 }
 
-/// Módulo de Noticias y Avisos de Facultad para Desktop con efecto hover y carrusel automático de 15 segundos.
+/// Tablón Institucional & Noticias de Ingeniería para Desktop (28% del ancho)
+/// con filtro por categorías, desplazamiento inercial interno y barra de atajos de teclado.
 class DesktopNewsFeed extends StatefulWidget {
   const DesktopNewsFeed({super.key});
 
@@ -32,10 +35,11 @@ class DesktopNewsFeed extends StatefulWidget {
 }
 
 class _DesktopNewsFeedState extends State<DesktopNewsFeed> {
-  static const List<NewsItemData> _news = [
+  static const List<NewsItemData> _allNews = [
     NewsItemData(
       id: 'news_1',
       category: 'ACADÉMICO',
+      categoryType: 'academico',
       relativeDate: 'Hace 2 horas',
       title: 'Actualización de Moodle: Cierre de segundo corte de notas',
       summary:
@@ -44,7 +48,8 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed> {
     ),
     NewsItemData(
       id: 'news_2',
-      category: 'EVENTO',
+      category: 'FACULTAD',
+      categoryType: 'facultad',
       relativeDate: 'Hoy 09:30 AM',
       title: 'Seminario de Transición Energética e Hidrógeno Verde',
       summary:
@@ -53,216 +58,197 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed> {
     ),
     NewsItemData(
       id: 'news_3',
-      category: 'CONVOCATORIA',
+      category: 'ACADÉMICO',
+      categoryType: 'academico',
       relativeDate: 'Ayer',
-      title: 'Cronograma de inscripciones y habilitaciones de ciencias básicas',
+      title: 'Cronograma de habilitaciones de ciencias básicas',
       summary:
-          'Fechas oficiales para el proceso de validaciones y suficiencias de Física Mecánica, Cálculo Multivariable y Álgebra Lineal.',
+          'Fechas oficiales para validaciones y suficiencias de Física Mecánica, Cálculo Multivariable y Álgebra Lineal.',
       accentColor: Color(0xFFFF9F0A),
     ),
     NewsItemData(
       id: 'news_4',
-      category: 'INVESTIGACIÓN',
+      category: 'SEMILLERO',
+      categoryType: 'semillero',
       relativeDate: 'Hace 3 días',
       title: 'Semillero de Investigación en Energía Solar & Smart Grids',
       summary:
-          'Apertura de cupos para estudiantes de Ingeniería Energética desde 4.° cuatrimestre vinculados al laboratorio de energías renovables.',
+          'Apertura de cupos para estudiantes de Ingeniería Energética vinculados a modelado de microrredes y baterías de litio.',
       accentColor: Color(0xFF0A84FF),
+    ),
+    NewsItemData(
+      id: 'news_5',
+      category: 'FACULTAD',
+      categoryType: 'facultad',
+      relativeDate: 'Hace 5 días',
+      title: 'Nuevo equipamiento para el Laboratorio de Potencia y Máquinas',
+      summary:
+          'Se instalaron 4 bancos didácticos de motores síncronos y convertidores para prácticas del bloque curricular de máquinas térmicas.',
+      accentColor: Color(0xFF30D158),
     ),
   ];
 
-  int _carouselIndex = 0;
-  Timer? _carouselTimer;
-  bool _isRefreshing = false;
+  String _selectedCategory = 'todas';
 
-  @override
-  void initState() {
-    super.initState();
-    _startCarouselTimer();
-  }
-
-  void _startCarouselTimer() {
-    _carouselTimer = Timer.periodic(const Duration(seconds: 15), (_) {
-      if (mounted) {
-        setState(() {
-          _carouselIndex = (_carouselIndex + 1) % _news.length;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _carouselTimer?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _handleRefresh() async {
-    HapticFeedback.lightImpact();
-    setState(() => _isRefreshing = true);
-    await Future<void>.delayed(const Duration(milliseconds: 650));
-    if (mounted) {
-      setState(() => _isRefreshing = false);
-      showIosToast(
-        context,
-        'Noticias de Facultad actualizadas',
-        accentColor: const Color(0xFF30D158),
-      );
-    }
+  List<NewsItemData> get _filteredNews {
+    if (_selectedCategory == 'todas') return _allNews;
+    return _allNews.where((n) => n.categoryType == _selectedCategory).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final p = context.palette;
-    final featured = _news[_carouselIndex];
+    final tokens = DesktopThemeTokens.of(context);
+    final newsList = _filteredNews;
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xDC0D0E12),
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF1A1D24), width: 1),
+        border: Border.all(color: tokens.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: tokens.shadowColor,
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Encabezado del Feed
+          // 1. Cabecera con Micro-tipografía
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF30D158).o(0.14),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.campaign_rounded,
-                  size: 16,
-                  color: Color(0xFF30D158),
-                ),
-              ),
-              const SizedBox(width: 9),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      'NOTICIAS & CÁTEDRA',
-                      style: mono(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.0,
-                        color: p.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Facultad de Ingeniería • Unimagdalena',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w500,
-                        color: p.textSecondary,
+                    Dot(color: tokens.accentGreen, size: 6.5),
+                    const SizedBox(width: 7),
+                    Flexible(
+                      child: Text(
+                        'NOTICIAS & EVENTOS',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: mono(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.1,
+                          color: tokens.textSecondary,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: _isRefreshing ? null : _handleRefresh,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF14161C),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF222630)),
-                    ),
-                    child: _isRefreshing
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFF30D158),
-                            ),
-                          )
-                        : Icon(
-                            Icons.refresh_rounded,
-                            size: 14,
-                            color: p.textSecondary,
-                          ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: tokens.accentGreen.o(0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'Facultad',
+                  style: mono(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    color: tokens.accentGreen,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
-          // Carrusel de Titular Destacado (Transición cada 15 segundos)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-            decoration: BoxDecoration(
-              color: const Color(0xFF13161F),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF1E222C)),
-            ),
+          // 2. Selector de Categorías (Todas, Facultad, Académico, Semillero)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             child: Row(
               children: [
-                PulseDot(color: featured.accentColor, size: 7),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 380),
-                    transitionBuilder: (child, anim) {
-                      return FadeTransition(
-                        opacity: anim,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0.0, 0.25),
-                            end: Offset.zero,
-                          ).animate(anim),
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: Text(
-                      featured.title,
-                      key: ValueKey('featured_${featured.id}'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: p.textPrimary,
-                      ),
-                    ),
-                  ),
+                _CategoryPill(
+                  label: 'Todas',
+                  id: 'todas',
+                  selectedId: _selectedCategory,
+                  tokens: tokens,
+                  onSelect: (id) => setState(() => _selectedCategory = id),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '${_carouselIndex + 1}/${_news.length}',
-                  style: mono(fontSize: 10, color: p.textTertiary),
+                const SizedBox(width: 6),
+                _CategoryPill(
+                  label: 'Facultad',
+                  id: 'facultad',
+                  selectedId: _selectedCategory,
+                  tokens: tokens,
+                  onSelect: (id) => setState(() => _selectedCategory = id),
+                ),
+                const SizedBox(width: 6),
+                _CategoryPill(
+                  label: 'Académico',
+                  id: 'academico',
+                  selectedId: _selectedCategory,
+                  tokens: tokens,
+                  onSelect: (id) => setState(() => _selectedCategory = id),
+                ),
+                const SizedBox(width: 6),
+                _CategoryPill(
+                  label: 'Semillero',
+                  id: 'semillero',
+                  selectedId: _selectedCategory,
+                  tokens: tokens,
+                  onSelect: (id) => setState(() => _selectedCategory = id),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 14),
 
-          // Lista de Noticias con Scroll Inercial Limpio
+          // 3. Feed de Noticias con Desplazamiento Interno Inercial
           Expanded(
-            child: ScrollConfiguration(
-              behavior: ScrollConfiguration.of(context).copyWith(
-                scrollbars: false,
-              ),
-              child: ListView.separated(
-                physics: const BouncingScrollPhysics(),
-                itemCount: _news.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 11),
-                itemBuilder: (context, index) {
-                  return _DesktopNewsCard(item: _news[index]);
-                },
-              ),
+            child: newsList.isEmpty
+                ? Center(
+                    child: Text(
+                      'No hay publicaciones en esta categoría',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: tokens.textSecondary,
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: newsList.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      return _NewsCard(
+                        item: newsList[index],
+                        tokens: tokens,
+                      );
+                    },
+                  ),
+          ),
+          const SizedBox(height: 12),
+
+          // 4. Barra Inferior de Atajos de Teclado
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: tokens.surfaceElevated,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: tokens.border),
+            ),
+            child: Wrap(
+              alignment: WrapAlignment.spaceAround,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                _KeyShortcutBadge(keyText: 'T', label: 'Tema', tokens: tokens),
+                _KeyShortcutBadge(keyText: 'F', label: 'Pantalla', tokens: tokens),
+                _KeyShortcutBadge(keyText: 'Espacio', label: 'Timer', tokens: tokens),
+                _KeyShortcutBadge(keyText: 'Esc', label: 'Volver', tokens: tokens),
+              ],
             ),
           ),
         ],
@@ -271,45 +257,100 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed> {
   }
 }
 
-class _DesktopNewsCard extends StatefulWidget {
-  const _DesktopNewsCard({required this.item});
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({
+    required this.label,
+    required this.id,
+    required this.selectedId,
+    required this.tokens,
+    required this.onSelect,
+  });
 
-  final NewsItemData item;
+  final String label;
+  final String id;
+  final String selectedId;
+  final DesktopThemeTokens tokens;
+  final ValueChanged<String> onSelect;
 
   @override
-  State<_DesktopNewsCard> createState() => _DesktopNewsCardState();
+  Widget build(BuildContext context) {
+    final isSelected = id == selectedId;
+    return TapScale(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onSelect(id);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+        decoration: BoxDecoration(
+          color: isSelected ? tokens.accentGreen : tokens.surfaceElevated,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? tokens.accentGreen : tokens.border,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: mono(
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected
+                ? (tokens.isDark ? Colors.black : Colors.white)
+                : tokens.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _DesktopNewsCardState extends State<_DesktopNewsCard> {
+class _NewsCard extends StatefulWidget {
+  const _NewsCard({
+    required this.item,
+    required this.tokens,
+  });
+
+  final NewsItemData item;
+  final DesktopThemeTokens tokens;
+
+  @override
+  State<_NewsCard> createState() => _NewsCardState();
+}
+
+class _NewsCardState extends State<_NewsCard> {
   bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final p = context.palette;
+    final t = widget.tokens;
     final item = widget.item;
 
+    final borderColor = _isHovered ? t.accentGreen : t.border;
+    final bgColor = _isHovered ? t.surfaceElevated : t.surface;
+
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(0, _isHovered ? -2.0 : 0.0, 0),
-        padding: const EdgeInsets.all(14),
+        duration: const Duration(milliseconds: 160),
+        transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: _isHovered ? const Color(0xFF141720) : const Color(0xFF0F1116),
-          borderRadius: BorderRadius.circular(16),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: _isHovered ? const Color(0xFF30D158) : const Color(0xFF1C1F28),
+            color: borderColor,
             width: _isHovered ? 1.2 : 1.0,
           ),
           boxShadow: _isHovered
               ? [
                   BoxShadow(
-                    color: const Color(0xFF30D158).o(0.12),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
+                    color: t.accentGreen.o(0.10),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
                   ),
                 ]
               : null,
@@ -319,15 +360,11 @@ class _DesktopNewsCardState extends State<_DesktopNewsCard> {
           children: [
             Row(
               children: [
-                // Categoría en píldora
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 7,
-                    vertical: 2.5,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: item.accentColor.o(0.12),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(5),
                     border: Border.all(
                       color: item.accentColor.o(0.35),
                       width: 1,
@@ -336,9 +373,9 @@ class _DesktopNewsCardState extends State<_DesktopNewsCard> {
                   child: Text(
                     item.category,
                     style: mono(
-                      fontSize: 9.5,
+                      fontSize: 8.5,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
+                      letterSpacing: 0.6,
                       color: item.accentColor,
                     ),
                   ),
@@ -346,41 +383,82 @@ class _DesktopNewsCardState extends State<_DesktopNewsCard> {
                 const Spacer(),
                 Text(
                   item.relativeDate,
-                  style: mono(fontSize: 10, color: p.textTertiary),
+                  style: mono(fontSize: 9.5, color: t.textTertiary),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-
-            // Titular
+            const SizedBox(height: 7),
             Text(
               item.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.2,
-                height: 1.3,
-                color: _isHovered ? const Color(0xFF30D158) : p.textPrimary,
+                height: 1.25,
+                color: _isHovered ? t.accentGreen : t.textPrimary,
               ),
             ),
-            const SizedBox(height: 5),
-
-            // Resumen
+            const SizedBox(height: 4),
             Text(
               item.summary,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 11.5,
-                height: 1.4,
-                color: p.textSecondary,
+                fontSize: 11,
+                height: 1.35,
+                color: t.textSecondary,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _KeyShortcutBadge extends StatelessWidget {
+  const _KeyShortcutBadge({
+    required this.keyText,
+    required this.label,
+    required this.tokens,
+  });
+
+  final String keyText;
+  final String label;
+  final DesktopThemeTokens tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: tokens.surface,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: tokens.borderSubtle),
+          ),
+          child: Text(
+            keyText,
+            style: mono(
+              fontSize: 8.5,
+              fontWeight: FontWeight.w700,
+              color: tokens.textSecondary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9.5,
+            color: tokens.textTertiary,
+          ),
+        ),
+      ],
     );
   }
 }

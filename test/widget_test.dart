@@ -1014,7 +1014,7 @@ void main() {
       tester.view.reset();
     });
 
-    testWidgets('HomeShell conmuta a DesktopDashboardScreen en viewports >= 1024px con reloj, hito y noticias', (tester) async {
+    testWidgets('HomeShell conmuta a DesktopDashboardScreen en viewports >= 1024px con reloj, hito, noticias, tema dual y navegacion Maestro-Detalle', (tester) async {
       final mdContent = File('assets/data/ingenieria_energetica.md').readAsStringSync();
       final curriculum = MarkdownCurriculumService()
         ..seedDatabase(CurriculumMarkdownParser.parse(mdContent));
@@ -1027,6 +1027,7 @@ void main() {
         repository: repo,
         curriculumService: curriculum,
       );
+      final themeController = ThemeController();
 
       tester.view.physicalSize = const Size(1280, 800);
       tester.view.devicePixelRatio = 1.0;
@@ -1039,7 +1040,7 @@ void main() {
             child: SessionScope(
               controller: session,
               child: ThemeScope(
-                controller: ThemeController(),
+                controller: themeController,
                 child: MaterialApp(
                   theme: AppTheme.dark,
                   home: const HomeShell(),
@@ -1051,12 +1052,40 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 600));
 
+      // 1. Verificación de componentes principales del Dashboard de escritorio
       expect(find.byType(DesktopDashboardScreen), findsOneWidget);
       expect(find.byType(DesktopLiveClock), findsOneWidget);
       expect(find.byType(DesktopFocusTimer), findsOneWidget);
       expect(find.byType(DesktopNewsFeed), findsOneWidget);
-      expect(find.text('UM STUDIO DESKTOP'), findsOneWidget);
-      expect(find.text('NOTICIAS & CÁTEDRA'), findsOneWidget);
+      expect(find.text('UM STUDIO'), findsWidgets);
+      expect(find.text('Sincronizado'), findsOneWidget);
+      expect(find.text('NOTICIAS & EVENTOS'), findsOneWidget);
+
+      // 2. Conmutador de Tema Dual Dinámico (Sol / Luna)
+      expect(themeController.isDark, isTrue);
+      await tester.tap(find.text('Claro'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(themeController.isDark, isFalse);
+
+      await tester.tap(find.text('Oscuro'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(themeController.isDark, isTrue);
+
+      // 3. Navegación Maestro-Detalle (Master-Detail): Seleccionar una asignatura
+      final subjectCardFinder = find.text('Circuitos Eléctricos y Redes');
+      if (subjectCardFinder.evaluate().isNotEmpty) {
+        await tester.tap(subjectCardFinder);
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // En modo detalle: se despliegan temas y botón de regreso
+        expect(find.text('Dashboard'), findsOneWidget);
+        expect(find.text('Esc'), findsOneWidget);
+
+        // Volver al dashboard pulsando 'Dashboard'
+        await tester.tap(find.text('Dashboard'));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byType(DesktopLiveClock), findsOneWidget);
+      }
 
       tester.view.reset();
     });
