@@ -707,6 +707,7 @@ class _Header extends StatelessWidget {
                       Text(
                         AppConstants.appTitle,
                         maxLines: 1,
+                        softWrap: false,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
@@ -722,6 +723,7 @@ class _Header extends StatelessWidget {
                             ? 'C${session!.cuatrimestreActivo} • ${session.materiasMatriculadas.length} materias'
                             : AppConstants.programSubtitle,
                         maxLines: 1,
+                        softWrap: false,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 10, color: p.textSecondary),
                       ),

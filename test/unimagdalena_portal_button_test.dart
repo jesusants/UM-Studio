@@ -9,8 +9,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
 
-  group('UnimagdalenaPortalButton - Widget y Micro-interacciones', () {
-    testWidgets('Estado de reposo renderiza forma compacta (36px) con tooltip y opacidad 0', (tester) async {
+  group('UnimagdalenaPortalButton - Widget, Flotabilidad y Cero Layout Shift', () {
+    testWidgets('Estado de reposo renderiza forma compacta (36x36) con tooltip y sin texto expandido', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
@@ -27,17 +27,18 @@ void main() {
       expect(find.byType(Tooltip), findsOneWidget);
 
       final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
-      expect(tooltip.message, 'Módulo de Estudiantes Unimagdalena (AyRe)');
+      expect(tooltip.message, 'Portal Estudiantes Unimagdalena (AyRe)');
 
-      // En reposo (sin hover), el ancho del AnimatedContainer debe ser 36
-      final animContainer = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
-      expect(animContainer.constraints?.maxWidth, 36.0);
+      // La huella en el layout tree debe ser exactamente 36x36
+      final outerSize = tester.getSize(find.byType(UnimagdalenaPortalButton));
+      expect(outerSize.width, 36.0);
+      expect(outerSize.height, 36.0);
 
-      final animOpacity = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
-      expect(animOpacity.opacity, 0.0);
+      // En reposo no debe haber texto de 'Portal Estudiantes'
+      expect(find.text('Portal Estudiantes'), findsNothing);
     });
 
-    testWidgets('Hover expande suavemente el ancho a 162px y revela "Portal Estudiantes ↗" con opacidad 1.0', (tester) async {
+    testWidgets('Hover expande flotando hacia 160px mientras la huella en el Row permanece fija en 36px', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
@@ -59,11 +60,14 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
 
-      final animContainerExpanded = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
-      expect(animContainerExpanded.constraints?.maxWidth, 162.0);
+      // La huella del widget UnimagdalenaPortalButton permanece estrictamente en 36x36 px
+      final outerSize = tester.getSize(find.byType(UnimagdalenaPortalButton));
+      expect(outerSize.width, 36.0);
+      expect(outerSize.height, 36.0);
 
-      final animOpacityExpanded = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
-      expect(animOpacityExpanded.opacity, 1.0);
+      // El AnimatedContainer interno flotante expande a 160 px
+      final animContainer = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
+      expect(animContainer.constraints?.maxWidth, 160.0);
       expect(find.text('Portal Estudiantes'), findsOneWidget);
       expect(find.byIcon(Icons.north_east_rounded), findsOneWidget);
 
@@ -74,9 +78,7 @@ void main() {
 
       final animContainerExit = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
       expect(animContainerExit.constraints?.maxWidth, 36.0);
-
-      final animOpacityExit = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
-      expect(animOpacityExit.opacity, 0.0);
+      expect(find.text('Portal Estudiantes'), findsNothing);
     });
 
     testWidgets('Tap ejecuta callback de navegación', (tester) async {
@@ -123,12 +125,57 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
 
-      // Debe permanecer con ancho 36.0 y opacidad 0.0
       final animContainer = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
       expect(animContainer.constraints?.maxWidth, 36.0);
+      expect(find.text('Portal Estudiantes'), findsNothing);
+    });
 
-      final animOpacity = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
-      expect(animOpacity.opacity, 0.0);
+    testWidgets('Dentro de un Row estrecho (280px), el hover NUNCA desplaza a "UM STUDIO"', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: const Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 280,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'UM STUDIO',
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    UnimagdalenaPortalButton(),
+                    SizedBox(width: 6),
+                    Text('🌙 Oscuro'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final titleRectBefore = tester.getRect(find.text('UM STUDIO'));
+
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      addTearDown(gesture.removePointer);
+
+      await gesture.moveTo(tester.getCenter(find.byType(UnimagdalenaPortalButton)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+
+      final titleRectAfter = tester.getRect(find.text('UM STUDIO'));
+
+      // Las coordenadas y tamaño de 'UM STUDIO' deben ser 100% idénticas
+      expect(titleRectAfter, equals(titleRectBefore));
+      expect(tester.takeException(), isNull);
     });
   });
 }

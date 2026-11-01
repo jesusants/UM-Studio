@@ -116,6 +116,9 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                   children: [
                     Text(
                       'UM STUDIO',
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
@@ -133,6 +136,7 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                           child: Text(
                             'Sincronizado',
                             maxLines: 1,
+                            softWrap: false,
                             overflow: TextOverflow.ellipsis,
                             style: mono(
                               fontSize: 9.5,

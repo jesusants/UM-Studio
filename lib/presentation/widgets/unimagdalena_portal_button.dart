@@ -8,9 +8,10 @@ import '../../core/theme/app_theme.dart';
 /// por encima (`onHover`), expande suavemente su ancho revelando el título
 /// "Portal Estudiantes" con el indicador externo `↗` para abrir AyRe/Admisiones.
 ///
-/// Implementa un anclaje inmutable (34x34 fijo para el logo) y ancho explícito
-/// en el [AnimatedContainer] con [HitTestBehavior.opaque] para evitar bucles
-/// de oscilación de hit-test ("palpitar" o layout shift loop).
+/// Ocupa un espacio reservado estricto de 36 x 36 px dentro del [Row] padre,
+/// desplegando la vista expandida (160 px) como una capa flotante por encima
+/// mediante [Stack] con [Clip.none], eliminando al 100% el layout shift y
+/// garantizando que los elementos contiguos permanezcan inmóviles.
 class UnimagdalenaPortalButton extends StatefulWidget {
   const UnimagdalenaPortalButton({
     super.key,
@@ -54,98 +55,103 @@ class _UnimagdalenaPortalButtonState extends State<UnimagdalenaPortalButton> {
     final canExpand = widget.expandOnHover;
     final isExpanded = canExpand && _isHovered;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      hitTestBehavior: HitTestBehavior.opaque,
-      onEnter: (_) {
-        if (canExpand && !_isHovered && mounted) {
-          setState(() => _isHovered = true);
-        }
-      },
-      onExit: (_) {
-        if (canExpand && _isHovered && mounted) {
-          setState(() => _isHovered = false);
-        }
-      },
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: _abrirPortal,
-        child: Tooltip(
-          message: 'Módulo de Estudiantes Unimagdalena (AyRe)',
-          waitDuration: const Duration(milliseconds: 500),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            height: 36,
-            width: isExpanded ? 162 : 36, // Ancho fijo explícito para evitar layout shift
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? (isExpanded
-                      ? const Color(0xFF16181D)
-                      : const Color(0xFF0F1014).o(0.85))
-                  : (isExpanded
-                      ? const Color(0xFFE5E5EA)
-                      : Colors.white.o(0.95)),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: isExpanded
-                    ? const Color(0xFF30D158)
-                    : (isDark
-                        ? const Color(0xFF1E2128)
-                        : const Color(0xFFE5E5EA)),
-                width: 1,
-              ),
-              boxShadow: isExpanded
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFF30D158).o(0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Logo fijo siempre de 34x34 centrado (anclaje inmutable)
-                SizedBox(
-                  width: 34,
-                  height: 34,
-                  child: Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        'https://cdn.unimagdalena.edu.co/images/escudo/bg_dark/default.png',
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.school_outlined,
-                          size: 18,
-                          color: Color(0xFF30D158),
-                        ),
-                      ),
+    // Caja fija de 36x36 para que el Row NUNCA cambie de tamaño ni empuje a UM STUDIO
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.centerLeft,
+        children: [
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            hitTestBehavior: HitTestBehavior.opaque,
+            onEnter: (_) {
+              if (canExpand && !_isHovered && mounted) {
+                setState(() => _isHovered = true);
+              }
+            },
+            onExit: (_) {
+              if (canExpand && _isHovered && mounted) {
+                setState(() => _isHovered = false);
+              }
+            },
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _abrirPortal,
+              child: Tooltip(
+                message: 'Portal Estudiantes Unimagdalena (AyRe)',
+                waitDuration: const Duration(milliseconds: 500),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  height: 36,
+                  // Si no hay hover mide 36px, si hay hover flota hacia la derecha a 160px
+                  width: isExpanded ? 160 : 36,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? (isExpanded
+                            ? const Color(0xFF1C1E24)
+                            : const Color(0xFF121418))
+                        : (isExpanded
+                            ? Colors.white
+                            : const Color(0xFFF2F2F7)),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isExpanded
+                          ? const Color(0xFF30D158)
+                          : (isDark
+                              ? const Color(0xFF262930)
+                              : const Color(0xFFE5E5EA)),
+                      width: 1,
                     ),
+                    boxShadow: isExpanded
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.o(isDark ? 0.40 : 0.12),
+                              blurRadius: 12,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]
+                        : null,
                   ),
-                ),
-                // Texto revelado que se desliza sin empujar el logo
-                Expanded(
-                  child: ClipRect(
-                    child: OverflowBox(
-                      minWidth: 0,
-                      maxWidth: 260,
-                      alignment: Alignment.centerLeft,
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 180),
-                        opacity: isExpanded ? 1.0 : 0.0,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: SizedBox(
+                      height: 34,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Escudo oficial siempre fijo en 34x34 centrado
+                          SizedBox(
+                            width: 34,
+                            height: 34,
+                            child: Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  'https://cdn.unimagdalena.edu.co/images/escudo/bg_dark/default.png',
+                                  width: 20,
+                                  height: 20,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.school_outlined,
+                                    size: 18,
+                                    color: Color(0xFF30D158),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Texto que se revela flotando suavemente
+                          if (isExpanded) ...[
+                            const SizedBox(width: 4),
                             Text(
                               'Portal Estudiantes',
                               maxLines: 1,
+                              softWrap: false,
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w600,
@@ -153,7 +159,7 @@ class _UnimagdalenaPortalButtonState extends State<UnimagdalenaPortalButton> {
                                 color: isDark ? Colors.white : Colors.black87,
                               ),
                             ),
-                            const SizedBox(width: 3),
+                            const SizedBox(width: 4),
                             Icon(
                               Icons.north_east_rounded,
                               size: 11,
@@ -161,16 +167,17 @@ class _UnimagdalenaPortalButtonState extends State<UnimagdalenaPortalButton> {
                                   ? const Color(0xFF8E8E93)
                                   : const Color(0xFF636366),
                             ),
+                            const SizedBox(width: 8),
                           ],
-                        ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
