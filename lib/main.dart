@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/local_clase_viva_repository.dart';
 import 'data/services/markdown_curriculum_service.dart';
+import 'data/services/unimagdalena_realtime_news_service.dart';
 import 'domain/repositories/i_clase_viva_repository.dart';
 import 'presentation/providers/app_scopes.dart';
 import 'presentation/screens/auth/login_page.dart';
@@ -31,6 +32,9 @@ Future<void> main() async {
     curriculumService: curriculumService,
   );
   await sessionController.load();
+
+  // Inicializar servicio de noticias en tiempo real
+  UnimagdalenaRealtimeNewsService.instance.init();
 
   runApp(
     UmStudioApp(

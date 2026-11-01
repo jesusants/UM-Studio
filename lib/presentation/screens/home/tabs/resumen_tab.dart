@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../../data/models/student_user_model.dart';
 import '../../../../data/services/markdown_curriculum_service.dart';
+import '../../../../data/services/unimagdalena_realtime_news_service.dart';
 import '../../../../domain/entities/subject_summary.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
@@ -139,10 +141,17 @@ class ResumenTab extends StatelessWidget {
         ? globalLast.temaKey
         : leadCode;
 
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 26),
-      children: [
+    return RefreshIndicator(
+      color: p.green,
+      backgroundColor: p.card,
+      onRefresh: () =>
+          UnimagdalenaRealtimeNewsService.instance.refreshNews(force: true),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+        children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
@@ -462,7 +471,241 @@ class ResumenTab extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 20),
+
+        // 4. Noticias en Tiempo Real desde el Portal Unimagdalena
+        _UnimagdalenaMobileNewsCarousel(p: p),
       ],
+    ),
+    );
+  }
+}
+
+/// Carrusel horizontal iOS de noticias oficiales de Unimagdalena con badge En Vivo
+class _UnimagdalenaMobileNewsCarousel extends StatelessWidget {
+  const _UnimagdalenaMobileNewsCarousel({required this.p});
+
+  final AppPalette p;
+
+  Color _categoryColor(String category, AppPalette p) {
+    final cat = category.toUpperCase();
+    if (cat.contains('FACULTAD')) return p.green;
+    if (cat.contains('ACADÉMICO') || cat.contains('ACADEMICO')) {
+      return p.orange;
+    }
+    if (cat.contains('INVESTIGA') || cat.contains('SEMILLERO')) {
+      return p.indigo;
+    }
+    return const Color(0xFF0A84FF);
+  }
+
+  Future<void> _openNews(String url) async {
+    if (url.isEmpty) return;
+    try {
+      final uri = Uri.parse(url);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final service = UnimagdalenaRealtimeNewsService.instance;
+
+    return ListenableBuilder(
+      listenable: service,
+      builder: (context, _) {
+        final news = service.news;
+        final isLoading = service.isLoading;
+
+        if (news.isEmpty && !isLoading) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Dot(color: p.green, size: 7),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'NOTICIAS UNIMAGDALENA',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: mono(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.9,
+                      color: p.textSecondary,
+                    ),
+                  ),
+                ),
+                if (isLoading)
+                  SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.8,
+                      color: p.green,
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: p.green.o(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'En vivo',
+                      style: mono(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        color: p.green,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 188,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: news.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final item = news[index];
+                  final accent = _categoryColor(item.category, p);
+
+                  return TapScale(
+                    onTap: () => _openNews(item.url),
+                    child: Container(
+                      width: 260,
+                      padding: const EdgeInsets.all(13),
+                      decoration: BoxDecoration(
+                        color: p.card,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: item.isRecent
+                              ? p.green.o(0.55)
+                              : p.cardBorder,
+                          width: item.isRecent ? 1.3 : 1.0,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: accent.o(0.12),
+                                  borderRadius: BorderRadius.circular(5),
+                                  border: Border.all(
+                                    color: accent.o(0.35),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  item.category.toUpperCase(),
+                                  style: mono(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: accent,
+                                  ),
+                                ),
+                              ),
+                              if (item.isRecent) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 1.5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: p.green.o(0.20),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    'NUEVO',
+                                    style: mono(
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w800,
+                                      color: p.green,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              const Spacer(),
+                              Text(
+                                item.dateText,
+                                style: mono(
+                                  fontSize: 9.5,
+                                  color: p.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            item.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                              height: 1.25,
+                              color: p.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Expanded(
+                            child: Text(
+                              item.summary,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                height: 1.35,
+                                color: p.textSecondary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Ver publicación ↗',
+                                style: mono(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w600,
+                                  color: p.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
