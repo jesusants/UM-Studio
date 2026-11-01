@@ -10,7 +10,7 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = false;
 
   group('UnimagdalenaPortalButton - Widget y Micro-interacciones', () {
-    testWidgets('Estado de reposo renderiza forma compacta con tooltip e icono', (tester) async {
+    testWidgets('Estado de reposo renderiza forma compacta (36px) con tooltip y opacidad 0', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
@@ -29,12 +29,15 @@ void main() {
       final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
       expect(tooltip.message, 'Módulo de Estudiantes Unimagdalena (AyRe)');
 
-      // En reposo (sin hover), no debe mostrarse el segundo hijo del crossfade
-      final crossFade = tester.widget<AnimatedCrossFade>(find.byType(AnimatedCrossFade));
-      expect(crossFade.crossFadeState, CrossFadeState.showFirst);
+      // En reposo (sin hover), el ancho del AnimatedContainer debe ser 36
+      final animContainer = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
+      expect(animContainer.constraints?.maxWidth, 36.0);
+
+      final animOpacity = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
+      expect(animOpacity.opacity, 0.0);
     });
 
-    testWidgets('Hover expande suavemente el ancho y revela "Portal Estudiantes ↗"', (tester) async {
+    testWidgets('Hover expande suavemente el ancho a 162px y revela "Portal Estudiantes ↗" con opacidad 1.0', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
@@ -56,8 +59,11 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
 
-      final crossFade = tester.widget<AnimatedCrossFade>(find.byType(AnimatedCrossFade));
-      expect(crossFade.crossFadeState, CrossFadeState.showSecond);
+      final animContainerExpanded = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
+      expect(animContainerExpanded.constraints?.maxWidth, 162.0);
+
+      final animOpacityExpanded = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
+      expect(animOpacityExpanded.opacity, 1.0);
       expect(find.text('Portal Estudiantes'), findsOneWidget);
       expect(find.byIcon(Icons.north_east_rounded), findsOneWidget);
 
@@ -66,8 +72,11 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
 
-      final crossFadeExit = tester.widget<AnimatedCrossFade>(find.byType(AnimatedCrossFade));
-      expect(crossFadeExit.crossFadeState, CrossFadeState.showFirst);
+      final animContainerExit = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
+      expect(animContainerExit.constraints?.maxWidth, 36.0);
+
+      final animOpacityExit = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
+      expect(animOpacityExit.opacity, 0.0);
     });
 
     testWidgets('Tap ejecuta callback de navegación', (tester) async {
@@ -93,7 +102,7 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('expandOnHover = false mantiene botón compacto fijo en hover', (tester) async {
+    testWidgets('expandOnHover = false mantiene botón compacto fijo en 36px en hover', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
@@ -114,9 +123,12 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
 
-      // No debe contener AnimatedCrossFade al estar deshabilitada la expansión
-      expect(find.byType(AnimatedCrossFade), findsNothing);
-      expect(find.text('Portal Estudiantes'), findsNothing);
+      // Debe permanecer con ancho 36.0 y opacidad 0.0
+      final animContainer = tester.widget<AnimatedContainer>(find.byType(AnimatedContainer));
+      expect(animContainer.constraints?.maxWidth, 36.0);
+
+      final animOpacity = tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
+      expect(animOpacity.opacity, 0.0);
     });
   });
 }
