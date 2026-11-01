@@ -12,6 +12,7 @@ import '../../widgets/header_morph_avatar.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
 import '../clases/asignatura_temario_page.dart';
+import '../desktop/desktop_dashboard_screen.dart';
 import 'tabs/calendario_tab.dart';
 import 'tabs/clases_tab.dart';
 import 'tabs/estudio_tab.dart';
@@ -483,52 +484,69 @@ class _HomeShellState extends State<HomeShell> {
     final p = context.palette;
     final isDark = ThemeScope.of(context).isDark;
     final session = SessionScope.maybeOf(context);
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final wide = screenWidth > AppConstants.maxPhoneViewportWidth;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-      child: Scaffold(
-        backgroundColor: p.background,
-        body: Center(
-          child: Container(
-            width: math.min(screenWidth, AppConstants.maxPhoneViewportWidth),
-            decoration: BoxDecoration(
-              color: p.background,
-              border: wide
-                  ? Border.symmetric(
-                      vertical: BorderSide(color: p.cardBorder.o(0.9)),
-                    )
-                  : null,
-            ),
-            child: Column(
-              children: [
-                _Header(
-                  syncStatus:
-                      session?.syncService.status ?? GitHubSyncStatus.idle,
-                  onTapIdentity: _openStudentProfileSheet,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Si el ancho horizontal >= 1024px: Despliega DesktopDashboardScreen a pantalla completa (100vw × 100vh)
+          if (constraints.maxWidth >= 1024) {
+            return Scaffold(
+              backgroundColor: const Color(0xFF000000),
+              body: DesktopDashboardScreen(
+                onOpenStudentProfile: _openStudentProfileSheet,
+                onOpenClaseViva: _openClaseViva,
+                onOpenTemario: _openTemario,
+              ),
+            );
+          }
+
+          final screenWidth = constraints.maxWidth;
+          final wide = screenWidth > AppConstants.maxPhoneViewportWidth;
+
+          return Scaffold(
+            backgroundColor: p.background,
+            body: Center(
+              child: Container(
+                width: math.min(screenWidth, AppConstants.maxPhoneViewportWidth),
+                decoration: BoxDecoration(
+                  color: p.background,
+                  border: wide
+                      ? Border.symmetric(
+                          vertical: BorderSide(color: p.cardBorder.o(0.9)),
+                        )
+                      : null,
                 ),
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    physics: const BouncingScrollPhysics(),
-                    onPageChanged: (i) => setState(() => _tab = i),
-                    children: [
-                      ResumenTab(onOpenClaseViva: _openClaseViva),
-                      CalendarioTab(onOpenClaseViva: _openClaseViva),
-                      const ClasesTab(),
-                      EstudioTab(
-                        onOpenClaseViva: _openClaseViva,
-                        onOpenTemario: _openTemario,
+                child: Column(
+                  children: [
+                    _Header(
+                      syncStatus:
+                          session?.syncService.status ?? GitHubSyncStatus.idle,
+                      onTapIdentity: _openStudentProfileSheet,
+                    ),
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const BouncingScrollPhysics(),
+                        onPageChanged: (i) => setState(() => _tab = i),
+                        children: [
+                          ResumenTab(onOpenClaseViva: _openClaseViva),
+                          CalendarioTab(onOpenClaseViva: _openClaseViva),
+                          const ClasesTab(),
+                          EstudioTab(
+                            onOpenClaseViva: _openClaseViva,
+                            onOpenTemario: _openTemario,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    _BottomNav(current: _tab, onSelect: _goToTab),
+                  ],
                 ),
-                _BottomNav(current: _tab, onSelect: _goToTab),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

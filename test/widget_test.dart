@@ -25,6 +25,11 @@ import 'package:um_studio/main.dart';
 import 'package:um_studio/presentation/providers/app_scopes.dart';
 import 'package:um_studio/presentation/screens/auth/login_page.dart';
 import 'package:um_studio/presentation/screens/clase_viva/clase_viva_page.dart';
+import 'package:um_studio/presentation/screens/desktop/desktop_dashboard_screen.dart';
+import 'package:um_studio/presentation/screens/desktop/widgets/desktop_focus_timer.dart';
+import 'package:um_studio/presentation/screens/desktop/widgets/desktop_live_clock.dart';
+import 'package:um_studio/presentation/screens/desktop/widgets/desktop_news_feed.dart';
+import 'package:um_studio/presentation/screens/home/home_shell.dart';
 import 'package:um_studio/core/utils/user_payload_cipher.dart';
 import 'package:um_studio/data/models/student_user_model.dart';
 import 'package:um_studio/data/services/download_queue_service.dart';
@@ -962,6 +967,132 @@ void main() {
         expect(tester.takeException(), isNull);
         expect(find.text('MIS APUNTES Y ARCHIVOS', skipOffstage: false), findsOneWidget);
       }
+    });
+  });
+
+  group('Vista de Escritorio Fullscreen & Desktop Dashboard (>= 1024px)', () {
+    testWidgets('HomeShell despliega modo movil en viewports < 1024px', (tester) async {
+      final mdContent = File('assets/data/ingenieria_energetica.md').readAsStringSync();
+      final curriculum = MarkdownCurriculumService()
+        ..seedDatabase(CurriculumMarkdownParser.parse(mdContent));
+      final repo = LocalReactiveClaseVivaRepository(
+        initialLatency: Duration.zero,
+        userId: 'alumno@unimagdalena.edu.co',
+        curriculumService: curriculum,
+      );
+      final session = InstitutionalSessionController(
+        repository: repo,
+        curriculumService: curriculum,
+      );
+
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+
+      await tester.pumpWidget(
+        CurriculumScope(
+          service: curriculum,
+          child: ClaseVivaRepositoryScope(
+            repository: repo,
+            child: SessionScope(
+              controller: session,
+              child: ThemeScope(
+                controller: ThemeController(),
+                child: MaterialApp(
+                  theme: AppTheme.dark,
+                  home: const HomeShell(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(DesktopDashboardScreen), findsNothing);
+      expect(find.byType(PageView), findsOneWidget);
+
+      tester.view.reset();
+    });
+
+    testWidgets('HomeShell conmuta a DesktopDashboardScreen en viewports >= 1024px con reloj, hito y noticias', (tester) async {
+      final mdContent = File('assets/data/ingenieria_energetica.md').readAsStringSync();
+      final curriculum = MarkdownCurriculumService()
+        ..seedDatabase(CurriculumMarkdownParser.parse(mdContent));
+      final repo = LocalReactiveClaseVivaRepository(
+        initialLatency: Duration.zero,
+        userId: 'alumno@unimagdalena.edu.co',
+        curriculumService: curriculum,
+      );
+      final session = InstitutionalSessionController(
+        repository: repo,
+        curriculumService: curriculum,
+      );
+
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+
+      await tester.pumpWidget(
+        CurriculumScope(
+          service: curriculum,
+          child: ClaseVivaRepositoryScope(
+            repository: repo,
+            child: SessionScope(
+              controller: session,
+              child: ThemeScope(
+                controller: ThemeController(),
+                child: MaterialApp(
+                  theme: AppTheme.dark,
+                  home: const HomeShell(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 600));
+
+      expect(find.byType(DesktopDashboardScreen), findsOneWidget);
+      expect(find.byType(DesktopLiveClock), findsOneWidget);
+      expect(find.byType(DesktopFocusTimer), findsOneWidget);
+      expect(find.byType(DesktopNewsFeed), findsOneWidget);
+      expect(find.text('UM STUDIO DESKTOP'), findsOneWidget);
+      expect(find.text('NOTICIAS & CÁTEDRA'), findsOneWidget);
+
+      tester.view.reset();
+    });
+
+    testWidgets('DesktopFocusTimer alterna modos e inicia temporizador correctamente', (tester) async {
+      final mdContent = File('assets/data/ingenieria_energetica.md').readAsStringSync();
+      final database = CurriculumMarkdownParser.parse(mdContent);
+      final subjects = database.byCuatrimestre(2);
+
+      await tester.pumpWidget(
+        ThemeScope(
+          controller: ThemeController(),
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: Scaffold(
+              body: DesktopFocusTimer(
+                activeSubjects: subjects,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('25:00'), findsOneWidget);
+      expect(find.text('Comenzar'), findsOneWidget);
+
+      // Iniciar el temporizador
+      await tester.tap(find.text('Comenzar'));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Pausar'), findsOneWidget);
+
+      // Cambiar a pausa corta
+      await tester.tap(find.text('Pausa corta'));
+      await tester.pump();
+      expect(find.text('05:00'), findsOneWidget);
     });
   });
 }
