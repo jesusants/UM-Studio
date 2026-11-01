@@ -105,6 +105,7 @@ class _LoginPageState extends State<LoginPage> {
         _submittingMicrosoft = false;
         _errorText = err;
       });
+      showIosToast(context, err, accentColor: context.palette.orange);
     } else {
       HapticFeedback.lightImpact();
       setState(() {
@@ -251,6 +252,43 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                  if (_errorText != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      key: const Key('login_microsoft_error_banner'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: p.orange.o(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: p.orange.o(0.42), width: 1),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 18,
+                            color: p.orange,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorText!,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                height: 1.4,
+                                color: p.orange,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
 
                   // Separador
