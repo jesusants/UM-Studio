@@ -13,6 +13,7 @@ import '../../data/models/student_user_model.dart';
 import '../../data/repositories/local_clase_viva_repository.dart';
 import '../../data/services/github_sync_service.dart';
 import '../../data/services/markdown_curriculum_service.dart';
+import '../../data/services/microsoft_entra_auth_service.dart';
 import '../../domain/entities/subject_summary.dart';
 import '../../domain/repositories/i_clase_viva_repository.dart';
 
@@ -76,9 +77,11 @@ class InstitutionalSessionController extends ChangeNotifier {
     required IClaseVivaRepository repository,
     GitHubSyncService? syncService,
     MarkdownCurriculumService? curriculumService,
+    MicrosoftEntraAuthService? entraAuthService,
   })  : _repository = repository,
         _syncService = syncService ?? GitHubSyncService(),
-        _curriculumService = curriculumService {
+        _curriculumService = curriculumService,
+        _entraAuthService = entraAuthService ?? MicrosoftEntraAuthService() {
     _syncService.addListener(notifyListeners);
     final repo = _repository;
     if (repo is LocalReactiveClaseVivaRepository) {
@@ -93,6 +96,7 @@ class InstitutionalSessionController extends ChangeNotifier {
   final IClaseVivaRepository _repository;
   final GitHubSyncService _syncService;
   final MarkdownCurriculumService? _curriculumService;
+  final MicrosoftEntraAuthService _entraAuthService;
 
   Uint8List? _userPhotoBytes;
   StudentUserModel? _currentUser;
@@ -100,11 +104,14 @@ class InstitutionalSessionController extends ChangeNotifier {
   final Map<String, int> _fallbackReviewed = {};
   LastReviewedTopicModel? _fallbackGlobalLast;
   bool _initialized = false;
+  String? _initialOAuthError;
 
   bool get isInitialized => _initialized;
   bool get isAuthenticated => _currentUser != null;
   StudentUserModel? get currentUser => _currentUser;
   GitHubSyncService get syncService => _syncService;
+  MicrosoftEntraAuthService get entraAuthService => _entraAuthService;
+  String? get initialOAuthError => _initialOAuthError;
 
   Uint8List? get userPhotoBytes => _userPhotoBytes;
   String? get userOid => _currentUser?.oid;
@@ -154,7 +161,18 @@ class InstitutionalSessionController extends ChangeNotifier {
   /// Carga la sesión persistente ("Recordar mis datos" activo por defecto)
   /// y sincroniza silenciosamente con GitHub en segundo plano.
   Future<void> load({bool syncRemoteOnStartup = true}) async {
-    // Restaurar modelo de usuario persistido (db/users/{username}.json)
+    // 1. Revisar si hay error de redirección OAuth inicial
+    _initialOAuthError = _entraAuthService.checkInitialError();
+
+    // 2. Restaurar sesión de Entra ID si existe y cargar foto
+    final entraSession = await _entraAuthService.restorePersistedSession();
+    if (entraSession != null) {
+      _userPhotoBytes = entraSession.photoBytes;
+    } else {
+      _userPhotoBytes = await _entraAuthService.loadCachedPhoto();
+    }
+
+    // 3. Restaurar modelo de usuario persistido (db/users/{username}.json)
     final persisted = await _syncService.loadPersistedSession();
     if (persisted != null) {
       await _activateUser(persisted);
@@ -255,10 +273,66 @@ class InstitutionalSessionController extends ChangeNotifier {
     return null;
   }
 
+  /// Inicio de sesión oficial con Microsoft Entra ID (cuenta institucional @unimagdalena.edu.co).
+  Future<String?> loginWithMicrosoft({String? prompt}) async {
+    final res = await _entraAuthService.loginInteractive(prompt: prompt);
+    if (res.error != null) {
+      return res.error;
+    }
+    if (res.result == null) {
+      // Redirección en curso en la misma pestaña
+      return null;
+    }
+    final entra = res.result!;
+    _userPhotoBytes = entra.photoBytes;
+
+    final rawEmail = entra.email ?? '${entra.immutableKey}@unimagdalena.edu.co';
+    final parsed = InstitutionalValidator.parseInstitutionalUser(rawEmail);
+    final username = parsed.identity?.username ?? entra.immutableKey;
+    final fullName = entra.name ?? username;
+
+    // Migración / Reasignación de datos locales al OID
+    await _entraAuthService.migrateLocalDataToOid(
+      immutableKey: entra.immutableKey,
+      legacyUsername: username,
+    );
+
+    // Cargar o crear el modelo StudentUserModel con oid y tid
+    final remoteRes = await _syncService.fetchRemoteUser(username);
+    final StudentUserModel student;
+    if (remoteRes.user != null) {
+      student = remoteRes.user!.copyWith(
+        nombre: fullName,
+        email: rawEmail,
+        oid: entra.oid,
+        tid: entra.tid,
+      );
+    } else {
+      final starterCodes = _starterCodesForCuatrimestre(2);
+      student = StudentUserModel.createNew(
+        username: username,
+        nombre: fullName,
+        email: rawEmail,
+        pinHash: InstitutionalValidator.hashPin('0000'),
+        cuatrimestreActual: 2,
+        starterSubjectCodes: starterCodes,
+      ).copyWith(
+        oid: entra.oid,
+        tid: entra.tid,
+      );
+    }
+
+    await _syncService.saveOptimisticAndSync(student);
+    await _activateUser(student);
+    notifyListeners();
+    return null;
+  }
+
   /// Cierra la sesión actual para cambiar de estudiante.
   Future<void> logout() async {
     _currentUser = null;
     _userPhotoBytes = null;
+    await _entraAuthService.logout();
     await _syncService.clearActiveSession();
     notifyListeners();
   }

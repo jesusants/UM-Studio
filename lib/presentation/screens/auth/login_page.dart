@@ -25,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isRegister = false;
   bool _obscurePin = true;
   bool _submitting = false;
+  bool _submittingMicrosoft = false;
   int _selectedCuatrimestre = 2;
   String? _errorText;
 
@@ -83,6 +84,32 @@ class _LoginPageState extends State<LoginPage> {
       });
     } else {
       HapticFeedback.lightImpact();
+    }
+  }
+
+  Future<void> _submitMicrosoft() async {
+    if (_submitting || _submittingMicrosoft) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _submittingMicrosoft = true;
+      _errorText = null;
+    });
+
+    final session = SessionScope.of(context);
+    final err = await session.loginWithMicrosoft();
+
+    if (!mounted) return;
+    if (err != null) {
+      HapticFeedback.mediumImpact();
+      setState(() {
+        _submittingMicrosoft = false;
+        _errorText = err;
+      });
+    } else {
+      HapticFeedback.lightImpact();
+      setState(() {
+        _submittingMicrosoft = false;
+      });
     }
   }
 
@@ -158,6 +185,92 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 22),
+
+                  // Botón Principal: Microsoft Entra ID Institucional
+                  TapScale(
+                    onTap: (_submitting || _submittingMicrosoft)
+                        ? null
+                        : _submitMicrosoft,
+                    child: Container(
+                      key: const Key('login_microsoft_button'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 13,
+                      ),
+                      decoration: BoxDecoration(
+                        color: p.elevated,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: p.cardBorder, width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.o(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_submittingMicrosoft) ...[
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation(p.green),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Conectando con Microsoft...',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                color: p.textPrimary,
+                              ),
+                            ),
+                          ] else ...[
+                            const _MicrosoftLogoIcon(),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Text(
+                                'Iniciar sesión con Microsoft',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: -0.2,
+                                  color: p.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Separador
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: p.cardBorder, height: 1)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'O con PIN local',
+                          style: mono(
+                            fontSize: 10.5,
+                            color: p.textTertiary,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: p.cardBorder, height: 1)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
                   // Selector segmentado iOS: Iniciar Sesión / Crear Cuenta
                   Container(
@@ -521,6 +634,41 @@ class _ModeSegmentButton extends StatelessWidget {
             color: selected ? p.textPrimary : p.textSecondary,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MicrosoftLogoIcon extends StatelessWidget {
+  const _MicrosoftLogoIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 17,
+      height: 17,
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(child: Container(color: const Color(0xFFF25022))),
+                const SizedBox(width: 1.5),
+                Expanded(child: Container(color: const Color(0xFF7FBA00))),
+              ],
+            ),
+          ),
+          const SizedBox(height: 1.5),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(child: Container(color: const Color(0xFF00A4EF))),
+                const SizedBox(width: 1.5),
+                Expanded(child: Container(color: const Color(0xFFFFB900))),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

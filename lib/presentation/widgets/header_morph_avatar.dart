@@ -201,13 +201,13 @@ class _HeaderMorphAvatarState extends State<HeaderMorphAvatar> {
           height: widget.size,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 450),
-            switchInCurve: Curves.easeOutBack,
-            switchOutCurve: Curves.easeInCubic,
+            switchInCurve: Curves.easeInOutCubic,
+            switchOutCurve: Curves.easeInOutCubic,
             transitionBuilder: (child, animation) {
               return FadeTransition(
                 opacity: animation,
                 child: ScaleTransition(
-                  scale: Tween<double>(begin: 0.88, end: 1.0).animate(animation),
+                  scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation),
                   child: child,
                 ),
               );

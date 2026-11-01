@@ -24,6 +24,20 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Intent-filter para retorno OAuth 2.0 PKCE con Microsoft Entra ID -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="msauth"
+                    android:host="co.edu.unimagdalena.um_studio"
+                    android:pathPrefix="/auth"/>
+                <data
+                    android:scheme="msauth"
+                    android:host="com.example.um_studio"
+                    android:pathPrefix="/auth"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

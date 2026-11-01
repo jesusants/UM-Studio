@@ -10,6 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:um_studio/core/constants/entra_id_constants.dart';
+import 'package:um_studio/data/services/microsoft_entra_auth_service.dart';
 import 'package:um_studio/core/theme/app_theme.dart';
 import 'package:um_studio/core/utils/institutional_validator.dart';
 import 'package:um_studio/data/models/nota_adjunto_model.dart';
@@ -21,6 +23,7 @@ import 'package:um_studio/domain/entities/nota_adjunto_entity.dart';
 import 'package:um_studio/domain/entities/subject_summary.dart';
 import 'package:um_studio/main.dart';
 import 'package:um_studio/presentation/providers/app_scopes.dart';
+import 'package:um_studio/presentation/screens/auth/login_page.dart';
 import 'package:um_studio/presentation/screens/clase_viva/clase_viva_page.dart';
 import 'package:um_studio/core/utils/user_payload_cipher.dart';
 import 'package:um_studio/data/models/student_user_model.dart';
@@ -657,6 +660,136 @@ void main() {
 
       final res2 = InstitutionalValidator.parseInstitutionalUser('  jasierras#%  ');
       expect(res2.identity?.username, 'jasierras');
+    });
+  });
+
+  group('Microsoft Entra ID: Flujo PKCE, Claims (oid + tid), Graph API y Migración', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('genera code_verifier y code_challenge conforme a RFC 7636 (S256)', () {
+      final auth = MicrosoftEntraAuthService();
+      final verifier = auth.generateCodeVerifier();
+      expect(verifier.length, 64);
+
+      final challenge = auth.generateCodeChallenge(verifier);
+      expect(challenge.isNotEmpty, isTrue);
+      expect(challenge.contains('='), isFalse); // base64url sin padding
+    });
+
+    test('decodifica id_token JWT y construye la llave inmutable \${tid}_\${oid}', () {
+      final payload = {
+        'oid': '00000000-0000-0000-0000-000000000001',
+        'tid': 'b6b897f5-08ad-4ed7-8ed6-55207495fad0',
+        'preferred_username': 'jasierra@unimagdalena.edu.co',
+        'name': 'Jesús Sierra',
+      };
+      final headerB64 = base64Url.encode(utf8.encode('{"alg":"none"}')).replaceAll('=', '');
+      final payloadB64 = base64Url.encode(utf8.encode(jsonEncode(payload))).replaceAll('=', '');
+      final dummyJwt = '$headerB64.$payloadB64.signature';
+
+      final claims = MicrosoftEntraAuthService.decodeIdToken(dummyJwt);
+      expect(claims['oid'], '00000000-0000-0000-0000-000000000001');
+      expect(claims['tid'], 'b6b897f5-08ad-4ed7-8ed6-55207495fad0');
+
+      final tokenResult = EntraTokenResult(
+        accessToken: 'mock_access',
+        idToken: dummyJwt,
+        expiresAt: DateTime.now().add(const Duration(hours: 1)),
+        claims: claims,
+      );
+      expect(
+        tokenResult.immutableKey,
+        'b6b897f5-08ad-4ed7-8ed6-55207495fad0_00000000-0000-0000-0000-000000000001',
+      );
+    });
+
+    test('obtiene foto de perfil 200 y maneja graciosamente el 404 (sin foto)', () async {
+      final mockPhotoBytes = Uint8List.fromList([1, 2, 3, 4, 5]);
+
+      final mockHttp = MockClient((request) async {
+        if (request.url.path.endsWith('/photo/\$value')) {
+          if (request.headers['Authorization'] == 'Bearer token_con_foto') {
+            return http.Response.bytes(mockPhotoBytes, 200);
+          }
+          if (request.headers['Authorization'] == 'Bearer token_sin_foto') {
+            return http.Response('Not Found', 404);
+          }
+        }
+        return http.Response('Bad Request', 400);
+      });
+
+      final auth = MicrosoftEntraAuthService(httpClient: mockHttp);
+
+      final photo = await auth.fetchProfilePhoto('token_con_foto');
+      expect(photo, isNotNull);
+      expect(photo, equals(mockPhotoBytes));
+
+      final noPhoto = await auth.fetchProfilePhoto('token_sin_foto');
+      expect(noPhoto, isNull);
+    });
+
+    test('purgeStaleTokens limpia credenciales temporales y migrateLocalDataToOid preserva datos', () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(EntraIdConstants.prefsAccessToken, 'stale_token');
+      await prefs.setString('um_studio_notas_adjuntos_v2_jasierra_02021810', '{"test": 1}');
+
+      final auth = MicrosoftEntraAuthService();
+      await auth.purgeStaleTokens();
+
+      expect(prefs.getString(EntraIdConstants.prefsAccessToken), isNull);
+      expect(
+        prefs.getString('um_studio_notas_adjuntos_v2_jasierra_02021810'),
+        '{"test": 1}',
+      );
+
+      // Migración hacia OID inmutable
+      await auth.migrateLocalDataToOid(
+        immutableKey: 'tid123_oid456',
+        legacyUsername: 'jasierra',
+      );
+      expect(
+        prefs.getString('um_studio_notas_adjuntos_v2_tid123_oid456_02021810'),
+        '{"test": 1}',
+      );
+    });
+
+    testWidgets('LoginPage muestra botón oficial de Microsoft y selector alterno', (tester) async {
+      final mdContent = File('assets/data/ingenieria_energetica.md').readAsStringSync();
+      final curriculum = MarkdownCurriculumService()
+        ..seedDatabase(CurriculumMarkdownParser.parse(mdContent));
+
+      final repo = LocalReactiveClaseVivaRepository(
+        initialLatency: Duration.zero,
+        curriculumService: curriculum,
+      );
+      final session = InstitutionalSessionController(
+        repository: repo,
+        curriculumService: curriculum,
+      );
+
+      await tester.pumpWidget(
+        CurriculumScope(
+          service: curriculum,
+          child: ClaseVivaRepositoryScope(
+            repository: repo,
+            child: SessionScope(
+              controller: session,
+              child: ThemeScope(
+                controller: ThemeController(),
+                child: MaterialApp(
+                  theme: AppTheme.dark,
+                  home: const LoginPage(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('login_microsoft_button')), findsOneWidget);
+      expect(find.text('Iniciar sesión con Microsoft'), findsOneWidget);
+      expect(find.text('O con PIN local'), findsOneWidget);
     });
   });
 
