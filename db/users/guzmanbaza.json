@@ -1,0 +1,20 @@
+{
+  "username": "guzmanbaza",
+  "nombre": "Jorge Baza",
+  "email": "guzmanbaza@unimagdalena.edu.co",
+  "programa": "Ingeniería Energética",
+  "cuatrimestre_activo": 3,
+  "cuatrimestre_actual": 3,
+  "materias_matriculadas": [
+    "02011808",
+    "02021811",
+    "03041820",
+    "03021815",
+    "01021804"
+  ],
+  "pin_hash": "9ede0d3ec69e01774ba81995d5a129571c6257e57147935101c7f6e1928491d6",
+  "progreso_materias": "enc:v1:sjZgIpTM6oBWyHnKLMSwNUtRvOnTJFspCpYYq6cEH5h4oe3EX0nsRCGTj8wsb6FcMVhy1fwTku7dutAbrkqjATvpZmUSiCObLNCp3RQmFtxVdsgWWVhl5KDpStbF7e+ju0v/tynbUg==",
+  "ultimos_temas_revisados": {},
+  "recordatorios_calendario": "enc:v1:/N1egeE0ZgGSJXhhd6W8QnwywAorA+loXKruZd9Ed3+iCA==",
+  "apuntes_personales": "enc:v1:7ODY7xvlnX8fDfuLoVP0z1XXKHF3JFaIXba65JJ1fbt20A=="
+}
