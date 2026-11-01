@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
+import '../../../widgets/clase_magistral_adjuntos_widget.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/katex_formula_card.dart';
 import '../../../widgets/minimal_slide_viewer.dart';
@@ -30,7 +31,9 @@ class DesktopSubjectDetailView extends StatefulWidget {
 }
 
 class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
+  String _activeSection = 'temario';
   int _selectedTopicNumber = 1;
+  int _selectedMagistralNumber = 1;
   String _activeEnglishBranch = 'general';
 
   @override
@@ -56,6 +59,12 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
     } else {
       _selectedTopicNumber = 1;
     }
+    if (widget.subject.clasesMagistrales.isNotEmpty) {
+      _selectedMagistralNumber =
+          widget.subject.clasesMagistrales.first.numeroTema;
+    } else {
+      _selectedMagistralNumber = 1;
+    }
   }
 
   TemaClaseVivaModel? get _currentTema {
@@ -65,10 +74,24 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
     try {
       return temas.firstWhere(
         (t) => t.numeroTema == _selectedTopicNumber,
-        orElse: () => temas.isNotEmpty ? temas.first : widget.subject.primerTema,
+        orElse: () =>
+            temas.isNotEmpty ? temas.first : widget.subject.primerTema,
       );
     } catch (_) {
       return widget.subject.primerTema;
+    }
+  }
+
+  TemaClaseVivaModel? get _currentMagistral {
+    final magistrales = widget.subject.clasesMagistrales;
+    if (magistrales.isEmpty) return null;
+    try {
+      return magistrales.firstWhere(
+        (m) => m.numeroTema == _selectedMagistralNumber,
+        orElse: () => magistrales.first,
+      );
+    } catch (_) {
+      return magistrales.first;
     }
   }
 
@@ -83,6 +106,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
         ? subject.temasPorModalidad(_activeEnglishBranch)
         : subject.temas;
     final currentTema = _currentTema;
+    final currentMagistral = _currentMagistral;
     final progress = session?.subjectProgress(subject.codigo) ?? 0;
 
     return Container(
@@ -218,6 +242,85 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
           ),
           const SizedBox(height: 12),
 
+          // Switcher de Sección: Temario Oficial vs Clases Magistrales
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoSlidingSegmentedControl<String>(
+              backgroundColor: tokens.surfaceElevated,
+              thumbColor: tokens.surface,
+              groupValue: _activeSection,
+              onValueChanged: (section) {
+                if (section == null || section == _activeSection) return;
+                HapticFeedback.selectionClick();
+                setState(() => _activeSection = section);
+              },
+              children: {
+                'temario': Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.menu_book_rounded,
+                        size: 13,
+                        color: _activeSection == 'temario'
+                            ? tokens.accentGreen
+                            : tokens.textSecondary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Temario Oficial (${subject.temas.length})',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: _activeSection == 'temario'
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: _activeSection == 'temario'
+                              ? tokens.accentGreen
+                              : tokens.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                'magistrales': Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.school_rounded,
+                        size: 13,
+                        color: _activeSection == 'magistrales'
+                            ? tokens.accentIndigo
+                            : tokens.textSecondary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        subject.tieneClasesMagistrales
+                            ? 'Clases Magistrales (${subject.clasesMagistrales.length})'
+                            : 'Clases Magistrales',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: _activeSection == 'magistrales'
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: _activeSection == 'magistrales'
+                              ? tokens.accentIndigo
+                              : tokens.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          if (_activeSection == 'temario') ...[
           // 3. Selector Cupertino si es Asignatura de Inglés
           if (isIngles) ...[
             SizedBox(
@@ -563,9 +666,319 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                     ),
                   ),
           ),
+        ] else ...[
+          // MODO CLASES MAGISTRALES EN ESCRITORIO
+          if (subject.clasesMagistrales.isEmpty)
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: tokens.border),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: tokens.accentIndigo.o(0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.school_outlined,
+                              size: 36,
+                              color: tokens.accentIndigo,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Aún no hay cátedras magistrales registradas',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Esta asignatura no cuenta con láminas de cátedra predefinidas por el cuerpo docente. Sin embargo, puedes adjuntar tus fotos de tablero, talleres en PDF y notas personales a continuación:',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.4,
+                              color: tokens.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ClaseMagistralAdjuntosWidget(
+                      temaKey: '${subject.codigo}_magistrales',
+                      tituloClase: '${subject.nombre} - Cátedras',
+                      accentColor: tokens.accentIndigo,
+                      isDesktop: true,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            // Selector Horizontal de Cátedras Magistrales
+            SizedBox(
+              height: 32,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: subject.clasesMagistrales.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final m = subject.clasesMagistrales[index];
+                  final isSelected = m.numeroTema == _selectedMagistralNumber;
+                  final accent = tokens.accentIndigo;
+
+                  return TapScale(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedMagistralNumber = m.numeroTema);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isSelected ? accent : tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(
+                          color: isSelected ? accent : tokens.border,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        'C${m.corte} • Cátedra ${m.numeroTema}',
+                        style: mono(
+                          fontSize: 11,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : tokens.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Contenido de la Cátedra Magistral Seleccionada
+            Expanded(
+              child: currentMagistral == null
+                  ? Center(
+                      child: Text(
+                        'Selecciona una cátedra magistral',
+                        style: TextStyle(color: tokens.textSecondary),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Cabecera de la Cátedra
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: tokens.surfaceElevated,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: tokens.border),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: tokens.accentIndigo.o(0.14),
+                                        borderRadius: BorderRadius.circular(7),
+                                      ),
+                                      child: Text(
+                                        'CORTE ${currentMagistral.corte} • CÁTEDRA ${currentMagistral.numeroTema}',
+                                        style: mono(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: tokens.accentIndigo,
+                                        ),
+                                      ),
+                                    ),
+                                    if (currentMagistral.slides.isNotEmpty) ...[
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 7,
+                                          vertical: 2.5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: tokens.accentGreen.o(0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(7),
+                                        ),
+                                        child: Text(
+                                          '${currentMagistral.slides.length} diapositivas',
+                                          style: mono(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: tokens.accentGreen,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    const Spacer(),
+                                    TapScale(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        widget.onOpenClaseViva(
+                                          '${subject.codigo}_magistral_${currentMagistral.numeroTema}',
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: tokens.accentIndigo,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.slideshow_rounded,
+                                              size: 13,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              'Modo Inmersivo',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            SizedBox(width: 3),
+                                            Icon(
+                                              Icons.arrow_outward_rounded,
+                                              size: 11,
+                                              color: Colors.white70,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  currentMagistral.titulo,
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.2,
+                                    color: tokens.textPrimary,
+                                  ),
+                                ),
+                                if (currentMagistral.objetivo.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    currentMagistral.objetivo,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      height: 1.4,
+                                      color: tokens.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Visor de Slides (si tiene)
+                          if (currentMagistral.slides.isNotEmpty) ...[
+                            MinimalSlideViewer(
+                              temaId:
+                                  '${subject.codigo}_magistral_${currentMagistral.numeroTema}',
+                              codigoAsignatura: subject.codigo,
+                              nombreAsignatura: subject.nombre,
+                              numeroTema: currentMagistral.numeroTema,
+                              tituloTema: currentMagistral.titulo,
+                              slides: currentMagistral.slides,
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // Tarjeta de Fórmulas KaTeX (si tiene)
+                          if (currentMagistral.conceptoClaveLatex.isNotEmpty) ...[
+                            KatexFormulaCard(
+                              latex: currentMagistral.conceptoClaveLatex,
+                              label: 'FORMULACIÓN Y CONCEPTOS CLAVE (KaTeX)',
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // Ejercicios resueltos / Notas de cátedra
+                          if (currentMagistral.ejemplo.isNotEmpty) ...[
+                            _ModularTopicCard(
+                              label:
+                                  'EJERCICIO RESUELTO / NOTAS DE CÁTEDRA',
+                              body: currentMagistral.ejemplo,
+                              tokens: tokens,
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // Recomendaciones de estudio
+                          if (currentMagistral.bloqueSugerido.isNotEmpty) ...[
+                            _ModularTopicCard(
+                              label: 'RECOMENDACIONES DE ESTUDIO',
+                              body: currentMagistral.bloqueSugerido,
+                              tokens: tokens,
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+
+                          // Módulo de Apuntes y Archivos Integrado
+                          ClaseMagistralAdjuntosWidget(
+                            temaKey:
+                                '${subject.codigo}_magistral_${currentMagistral.numeroTema}',
+                            tituloClase: currentMagistral.titulo,
+                            accentColor: tokens.accentIndigo,
+                            isDesktop: true,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+            ),
+          ],
         ],
-      ),
-    );
+      ],
+    ),
+  );
   }
 }
 

@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/institutional_validator.dart';
 import '../../../data/models/curriculum_models.dart';
 import '../../providers/app_scopes.dart';
+import '../../widgets/clase_magistral_adjuntos_widget.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
 
@@ -62,8 +63,11 @@ class AsignaturaTemarioPage extends StatefulWidget {
 }
 
 class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
+  String _activeSection = 'temario';
   String _englishModalidad = 'general';
   int _selectedCorte = 0;
+  int _selectedMagistralCorte = 0;
+  final Set<int> _expandedMagistralAdjuntos = {};
 
   AsignaturaModel get asignatura => widget.asignatura;
 
@@ -98,6 +102,9 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
     final visibleTemas = asignatura.temasPorCorte(
       _selectedCorte,
       modalidad: asignatura.esIngles ? _englishModalidad : null,
+    );
+    final visibleMagistrales = asignatura.clasesMagistralesPorCorte(
+      _selectedMagistralCorte,
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -155,7 +162,9 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                           ),
                         ),
                         Text(
-                          'TEMARIO',
+                          _activeSection == 'magistrales'
+                              ? 'CÁTEDRAS MAGISTRALES'
+                              : 'TEMARIO',
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
@@ -283,7 +292,7 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                           ),
                         ),
 
-                        // Intercambiador Interno (Segmented Switcher) exclusivo para los 5 niveles de Inglés
+                        // Segmented Switcher: Temario vs Clases Magistrales (o 3 opciones en Inglés)
                         if (asignatura.esIngles) ...[
                           const SizedBox(height: 14),
                           SizedBox(
@@ -292,34 +301,43 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                               key: const Key('temario_english_switcher'),
                               backgroundColor: p.card,
                               thumbColor: p.elevated,
-                              groupValue: _englishModalidad,
+                              groupValue: _activeSection == 'magistrales'
+                                  ? 'magistrales'
+                                  : _englishModalidad,
                               onValueChanged: (value) {
                                 if (value == null) return;
                                 HapticFeedback.lightImpact();
                                 setState(() {
-                                  _englishModalidad = value;
+                                  if (value == 'magistrales') {
+                                    _activeSection = 'magistrales';
+                                  } else {
+                                    _activeSection = 'temario';
+                                    _englishModalidad = value;
+                                  }
                                   _selectedCorte = 0;
+                                  _selectedMagistralCorte = 0;
                                 });
                               },
                               children: {
                                 'general': Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 8,
-                                    horizontal: 6,
+                                    horizontal: 4,
                                   ),
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      'Inglés General (Slides)',
+                                      'General (Slides)',
                                       maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 11.5,
-                                        fontWeight: _englishModalidad == 'general'
+                                        fontWeight: (_activeSection == 'temario' &&
+                                                _englishModalidad == 'general')
                                             ? FontWeight.w700
                                             : FontWeight.w500,
-                                        color: _englishModalidad == 'general'
+                                        color: (_activeSection == 'temario' &&
+                                                _englishModalidad == 'general')
                                             ? p.green
                                             : p.textSecondary,
                                       ),
@@ -329,26 +347,166 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                                 'notacion_ingenieria': Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 8,
-                                    horizontal: 6,
+                                    horizontal: 4,
                                   ),
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      'Notación de Ingeniería (KaTeX)',
+                                      'Notación (KaTeX)',
                                       maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 11.5,
-                                        fontWeight: _englishModalidad ==
-                                                'notacion_ingenieria'
+                                        fontWeight: (_activeSection == 'temario' &&
+                                                _englishModalidad ==
+                                                    'notacion_ingenieria')
                                             ? FontWeight.w700
                                             : FontWeight.w500,
-                                        color: _englishModalidad ==
-                                                'notacion_ingenieria'
+                                        color: (_activeSection == 'temario' &&
+                                                _englishModalidad ==
+                                                    'notacion_ingenieria')
                                             ? p.indigo
                                             : p.textSecondary,
                                       ),
+                                    ),
+                                  ),
+                                ),
+                                'magistrales': Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 4,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.school_rounded,
+                                          size: 13,
+                                          color: _activeSection == 'magistrales'
+                                              ? p.indigo
+                                              : p.textSecondary,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          asignatura.tieneClasesMagistrales
+                                              ? 'Cátedras (${asignatura.clasesMagistrales.length})'
+                                              : 'Cátedras',
+                                          maxLines: 1,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight:
+                                                _activeSection == 'magistrales'
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                            color:
+                                                _activeSection == 'magistrales'
+                                                    ? p.indigo
+                                                    : p.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              },
+                            ),
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: CupertinoSlidingSegmentedControl<String>(
+                              key: const Key('temario_section_switcher'),
+                              backgroundColor: p.card,
+                              thumbColor: p.elevated,
+                              groupValue: _activeSection,
+                              onValueChanged: (value) {
+                                if (value == null) return;
+                                HapticFeedback.lightImpact();
+                                setState(() {
+                                  _activeSection = value;
+                                  _selectedCorte = 0;
+                                  _selectedMagistralCorte = 0;
+                                });
+                              },
+                              children: {
+                                'temario': Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 8,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.menu_book_rounded,
+                                          size: 14,
+                                          color: _activeSection == 'temario'
+                                              ? accent
+                                              : p.textSecondary,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Temario Oficial (${asignatura.temas.length})',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: _activeSection == 'temario'
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                            color: _activeSection == 'temario'
+                                                ? accent
+                                                : p.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                'magistrales': Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 8,
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.school_rounded,
+                                          size: 14,
+                                          color: _activeSection == 'magistrales'
+                                              ? p.indigo
+                                              : p.textSecondary,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          asignatura.tieneClasesMagistrales
+                                              ? 'Clases Magistrales (${asignatura.clasesMagistrales.length})'
+                                              : 'Clases Magistrales',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight:
+                                                _activeSection == 'magistrales'
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                            color:
+                                                _activeSection == 'magistrales'
+                                                    ? p.indigo
+                                                    : p.textSecondary,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -357,102 +515,267 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                           ),
                         ],
 
-                        const SizedBox(height: 14),
+                        if (_activeSection == 'temario') ...[
+                          const SizedBox(height: 14),
 
-                        // Filtro rápido por Cortes Académicos (Corte 1 - 30%, Corte 2 - 30%, Corte 3 - 40%)
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            children: [
-                              for (final entry in const [
-                                (0, 'Todos'),
-                                (1, 'Corte 1 • 30%'),
-                                (2, 'Corte 2 • 30%'),
-                                (3, 'Corte 3 • 40%'),
-                              ])
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: TapScale(
-                                    onTap: () {
-                                      HapticFeedback.lightImpact();
-                                      setState(
-                                        () => _selectedCorte = entry.$1,
-                                      );
-                                    },
-                                    child: AnimatedContainer(
-                                      duration:
-                                          const Duration(milliseconds: 180),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 11,
-                                        vertical: 5.5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: _selectedCorte == entry.$1
-                                            ? accent.o(0.18)
-                                            : p.card,
-                                        borderRadius:
-                                            BorderRadius.circular(999),
-                                        border: Border.all(
-                                          color: _selectedCorte == entry.$1
-                                              ? accent
-                                              : p.cardBorder,
+                          // Filtro rápido por Cortes Académicos (Corte 1 - 30%, Corte 2 - 30%, Corte 3 - 40%)
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: [
+                                for (final entry in const [
+                                  (0, 'Todos'),
+                                  (1, 'Corte 1 • 30%'),
+                                  (2, 'Corte 2 • 30%'),
+                                  (3, 'Corte 3 • 40%'),
+                                ])
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: TapScale(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        setState(
+                                          () => _selectedCorte = entry.$1,
+                                        );
+                                      },
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 180),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 11,
+                                          vertical: 5.5,
                                         ),
-                                      ),
-                                      child: Text(
-                                        entry.$2,
-                                        style: mono(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w600,
+                                        decoration: BoxDecoration(
                                           color: _selectedCorte == entry.$1
-                                              ? accent
-                                              : p.textSecondary,
+                                              ? accent.o(0.18)
+                                              : p.card,
+                                          borderRadius:
+                                              BorderRadius.circular(999),
+                                          border: Border.all(
+                                            color: _selectedCorte == entry.$1
+                                                ? accent
+                                                : p.cardBorder,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          entry.$2,
+                                          style: mono(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: _selectedCorte == entry.$1
+                                                ? accent
+                                                : p.textSecondary,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  asignatura.esIngles
+                                      ? (_englishModalidad == 'general'
+                                          ? 'INGLÉS GENERAL • SLIDES'
+                                          : 'NOTACIÓN TÉCNICA • KATEX')
+                                      : 'TEMAS DISPONIBLES',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: sectionMicroStyle(p),
                                 ),
+                              ),
+                              Text(
+                                '${visibleTemas.length} temas',
+                                style: mono(
+                                  fontSize: 11,
+                                  color: p.textTertiary,
+                                ),
+                              ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 10),
 
-                        const SizedBox(height: 16),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                asignatura.esIngles
-                                    ? (_englishModalidad == 'general'
-                                        ? 'INGLÉS GENERAL • SLIDES'
-                                        : 'NOTACIÓN TÉCNICA • KATEX')
-                                    : 'TEMAS DISPONIBLES',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: sectionMicroStyle(p),
-                              ),
+                          for (final tema in visibleTemas) ...[
+                            _TemarioTopicCard(
+                              tema: tema,
+                              accentColor: asignatura.esIngles
+                                  ? (tema.esInglesGeneral ? p.green : p.indigo)
+                                  : accent,
+                              isLastReviewed: lastReviewedNum == tema.numeroTema,
+                              onTap: () => _openTopic(context, session, tema),
                             ),
-                            Text(
-                              '${visibleTemas.length} temas',
-                              style: mono(
-                                fontSize: 11,
-                                color: p.textTertiary,
-                              ),
-                            ),
+                            const SizedBox(height: 12),
                           ],
-                        ),
-                        const SizedBox(height: 10),
+                        ] else ...[
+                          // Sección: Clases Magistrales
+                          const SizedBox(height: 14),
 
-                        for (final tema in visibleTemas) ...[
-                          _TemarioTopicCard(
-                            tema: tema,
-                            accentColor: asignatura.esIngles
-                                ? (tema.esInglesGeneral ? p.green : p.indigo)
-                                : accent,
-                            isLastReviewed: lastReviewedNum == tema.numeroTema,
-                            onTap: () => _openTopic(context, session, tema),
-                          ),
-                          const SizedBox(height: 12),
+                          if (asignatura.clasesMagistrales.isEmpty) ...[
+                            IosCard(
+                              radius: 20,
+                              padding: const EdgeInsets.all(20),
+                              borderColor: p.indigo.o(0.25),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: p.indigo.o(0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.school_outlined,
+                                      size: 32,
+                                      color: p.indigo,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Text(
+                                    'Aún no hay cátedras magistrales registradas',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 15.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: p.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Esta materia no cuenta con láminas de cátedra predefinidas por el cuerpo docente. Sin embargo, puedes adjuntar tus fotos de tablero, guías, talleres en PDF o apuntes personales aquí abajo:',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      height: 1.45,
+                                      color: p.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ClaseMagistralAdjuntosWidget(
+                              temaKey: '${asignatura.codigo}_magistrales',
+                              tituloClase: '${asignatura.nombre} - Cátedras',
+                              accentColor: p.indigo,
+                            ),
+                          ] else ...[
+                            // Filtro por Cortes para Clases Magistrales
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: [
+                                  for (final entry in const [
+                                    (0, 'Todas'),
+                                    (1, 'Corte 1'),
+                                    (2, 'Corte 2'),
+                                    (3, 'Corte 3'),
+                                  ])
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: TapScale(
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          setState(
+                                            () => _selectedMagistralCorte = entry.$1,
+                                          );
+                                        },
+                                        child: AnimatedContainer(
+                                          duration:
+                                              const Duration(milliseconds: 180),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 11,
+                                            vertical: 5.5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _selectedMagistralCorte == entry.$1
+                                                ? p.indigo.o(0.18)
+                                                : p.card,
+                                            borderRadius:
+                                                BorderRadius.circular(999),
+                                            border: Border.all(
+                                              color: _selectedMagistralCorte == entry.$1
+                                                  ? p.indigo
+                                                  : p.cardBorder,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            entry.$2,
+                                            style: mono(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: _selectedMagistralCorte == entry.$1
+                                                  ? p.indigo
+                                                  : p.textSecondary,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'CÁTEDRAS MAGISTRALES',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: sectionMicroStyle(p),
+                                  ),
+                                ),
+                                Text(
+                                  '${visibleMagistrales.length} cátedras',
+                                  style: mono(
+                                    fontSize: 11,
+                                    color: p.textTertiary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+
+                            for (final magistral in visibleMagistrales) ...[
+                              _MagistralCard(
+                                magistral: magistral,
+                                codigoAsignatura: asignatura.codigo,
+                                isExpanded: _expandedMagistralAdjuntos
+                                    .contains(magistral.numeroTema),
+                                onToggleExpand: () {
+                                  HapticFeedback.lightImpact();
+                                  setState(() {
+                                    if (_expandedMagistralAdjuntos
+                                        .contains(magistral.numeroTema)) {
+                                      _expandedMagistralAdjuntos
+                                          .remove(magistral.numeroTema);
+                                    } else {
+                                      _expandedMagistralAdjuntos
+                                          .add(magistral.numeroTema);
+                                    }
+                                  });
+                                },
+                                onOpenClaseViva: () {
+                                  HapticFeedback.lightImpact();
+                                  final topicKey =
+                                      '${asignatura.codigo}_magistral_${magistral.numeroTema}';
+                                  Navigator.of(context)
+                                      .push(ClaseVivaPage.route(topicKey));
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          ],
                         ],
                       ],
                     ),
@@ -669,6 +992,264 @@ class _TemarioTopicCard extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MagistralCard extends StatelessWidget {
+  const _MagistralCard({
+    required this.magistral,
+    required this.codigoAsignatura,
+    required this.isExpanded,
+    required this.onToggleExpand,
+    required this.onOpenClaseViva,
+  });
+
+  final TemaClaseVivaModel magistral;
+  final String codigoAsignatura;
+  final bool isExpanded;
+  final VoidCallback onToggleExpand;
+  final VoidCallback onOpenClaseViva;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final accent = p.indigo;
+    final cleanLatex = InstitutionalValidator.sanitizeLatex(
+      magistral.conceptoClaveLatex,
+    );
+    final temaKey = '${codigoAsignatura}_magistral_${magistral.numeroTema}';
+
+    return IosCard(
+      radius: 18,
+      padding: const EdgeInsets.all(15),
+      borderColor: accent.o(0.28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 9,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: accent.o(0.14),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Cátedra ${magistral.numeroTema}',
+                  style: mono(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: accent,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 7,
+                  vertical: 2.5,
+                ),
+                decoration: BoxDecoration(
+                  color: p.elevated,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: p.cardBorder),
+                ),
+                child: Text(
+                  'Corte ${magistral.corte}',
+                  style: mono(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: p.textSecondary,
+                  ),
+                ),
+              ),
+              if (magistral.slides.isNotEmpty) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: p.green.o(0.12),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: p.green.o(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.slideshow_rounded, size: 11, color: p.green),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${magistral.slides.length} diapositivas',
+                        style: mono(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
+                          color: p.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 9),
+          Text(
+            magistral.titulo,
+            style: TextStyle(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
+              height: 1.25,
+              color: p.textPrimary,
+            ),
+          ),
+          if (magistral.objetivo.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              magistral.objetivo,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.4,
+                color: p.textSecondary,
+              ),
+            ),
+          ],
+          if (cleanLatex.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 11,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: p.background.o(0.42),
+                borderRadius: BorderRadius.circular(11),
+                border: Border.all(color: p.cardBorder),
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Math.tex(
+                  cleanLatex,
+                  mathStyle: MathStyle.text,
+                  textStyle: TextStyle(
+                    fontSize: 13.5,
+                    color: p.textPrimary,
+                  ),
+                  onErrorFallback: (_) => Text(
+                    cleanLatex,
+                    style: mono(fontSize: 12, color: p.textPrimary),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TapScale(
+                  onTap: onOpenClaseViva,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8.5),
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.slideshow_rounded,
+                          size: 15,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Ver Clase Viva / Slides',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_outward_rounded,
+                          size: 13,
+                          color: Colors.white70,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              TapScale(
+                onTap: onToggleExpand,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8.5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isExpanded ? accent.o(0.15) : p.elevated,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isExpanded ? accent : p.cardBorder,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.attach_file_rounded,
+                        size: 14,
+                        color: isExpanded ? accent : p.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Adjuntos',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: isExpanded ? accent : p.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(
+                        isExpanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        size: 16,
+                        color: isExpanded ? accent : p.textSecondary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (isExpanded) ...[
+            const SizedBox(height: 12),
+            ClaseMagistralAdjuntosWidget(
+              temaKey: temaKey,
+              tituloClase: magistral.titulo,
+              accentColor: accent,
+            ),
+          ],
+        ],
       ),
     );
   }

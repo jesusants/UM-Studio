@@ -149,10 +149,14 @@ class TemaClaseVivaModel {
     required String nombreAsignatura,
     required int cuatrimestre,
     required int creditos,
+    String? customId,
   }) {
-    final topicKey = numeroTema <= 1
-        ? codigoAsignatura
-        : '${codigoAsignatura}_t$numeroTema';
+    final topicKey = customId ??
+        (modalidad == 'magistral'
+            ? '${codigoAsignatura}_magistral_$numeroTema'
+            : (numeroTema <= 1
+                ? codigoAsignatura
+                : '${codigoAsignatura}_t$numeroTema'));
     return TemaEstudioModel(
       id: topicKey,
       nombreAsignatura: nombreAsignatura,
@@ -185,6 +189,7 @@ class AsignaturaModel {
     required this.categoria,
     required this.colorHex,
     required this.temas,
+    this.clasesMagistrales = const [],
   });
 
   final String codigo;
@@ -195,6 +200,16 @@ class AsignaturaModel {
   final String categoria;
   final String colorHex;
   final List<TemaClaseVivaModel> temas;
+  final List<TemaClaseVivaModel> clasesMagistrales;
+
+  bool get tieneClasesMagistrales => clasesMagistrales.isNotEmpty;
+
+  List<TemaClaseVivaModel> clasesMagistralesPorCorte(int corte) {
+    if (corte <= 0) return clasesMagistrales;
+    return clasesMagistrales
+        .where((t) => t.corte == corte)
+        .toList(growable: false);
+  }
 
   Color get accentColor => parseHexColor(colorHex);
 
@@ -273,6 +288,20 @@ class AsignaturaModel {
       }
     }
 
+    final rawMagistrales = map['clases_magistrales'];
+    final parsedMagistrales = <TemaClaseVivaModel>[];
+    if (rawMagistrales is Iterable) {
+      for (final item in rawMagistrales) {
+        if (item is Map) {
+          parsedMagistrales.add(
+            TemaClaseVivaModel.fromMap(
+              item.map((k, v) => MapEntry(k.toString(), v)),
+            ),
+          );
+        }
+      }
+    }
+
     return AsignaturaModel(
       codigo: (map['codigo'] ?? '').toString(),
       nombre: (map['nombre'] ?? '').toString(),
@@ -283,6 +312,7 @@ class AsignaturaModel {
       colorHex:
           (map['color_acento'] ?? map['color'] ?? '#30D158').toString(),
       temas: List.unmodifiable(parsedTemas),
+      clasesMagistrales: List.unmodifiable(parsedMagistrales),
     );
   }
 
@@ -351,6 +381,11 @@ class CurriculumDatabaseModel {
       return _byCodigo[aliased];
     }
 
+    if (clean.contains('_magistral_')) {
+      final baseCode = clean.split('_magistral_').first;
+      if (_byCodigo.containsKey(baseCode)) return _byCodigo[baseCode];
+    }
+
     if (clean.contains('_t')) {
       final baseCode = clean.split('_t').first;
       if (_byCodigo.containsKey(baseCode)) return _byCodigo[baseCode];
@@ -358,10 +393,33 @@ class CurriculumDatabaseModel {
     return null;
   }
 
-  /// Resuelve un `TemaEstudioModel` específico (ej. `02021810` o `02021810_t2`).
+  /// Resuelve un `TemaEstudioModel` específico (ej. `02021810`, `02021810_t2` o `03041820_magistral_1`).
   TemaEstudioModel? resolveTemaEstudio(String temaKey) {
     final asignatura = findAsignatura(temaKey);
     if (asignatura == null) return null;
+
+    if (temaKey.contains('_magistral_')) {
+      final numStr = temaKey.split('_magistral_').last;
+      final magistralNum = int.tryParse(numStr) ?? 1;
+      for (final m in asignatura.clasesMagistrales) {
+        if (m.numeroTema == magistralNum) {
+          return m.toTemaEstudioModel(
+            codigoAsignatura: asignatura.codigo,
+            nombreAsignatura: asignatura.nombre,
+            cuatrimestre: asignatura.cuatrimestre,
+            creditos: asignatura.creditos,
+          );
+        }
+      }
+      if (asignatura.clasesMagistrales.isNotEmpty) {
+        return asignatura.clasesMagistrales.first.toTemaEstudioModel(
+          codigoAsignatura: asignatura.codigo,
+          nombreAsignatura: asignatura.nombre,
+          cuatrimestre: asignatura.cuatrimestre,
+          creditos: asignatura.creditos,
+        );
+      }
+    }
 
     var topicNumber = 1;
     if (temaKey.contains('_t')) {

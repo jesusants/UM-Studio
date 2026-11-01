@@ -11148,6 +11148,1746 @@ malla_curricular:
               Problema 2: Si el potencial de toque calculado en el borde exterior de la cerca perimetral es E_t = 480 V, ¿es segura la instalación?
               Paso 1: Como E_t = 480 V < E_contacto,tolerable = 625.4 V, la instalación garantiza la seguridad de la vida humana y no provocará fibrilación ventricular durante la falla.
             bloque_sugerido: "Seguridad en Subestaciones 40 min • Diseño computacional de mallas de puesta a tierra con norma IEEE 80"
+        clases_magistrales:
+          - numero_tema: 1
+            corte: 1
+            modalidad: "magistral"
+            titulo: "Dispositivos de Almacenamiento: Capacitores, Inductores y Condiciones Iniciales"
+            objetivo: "Analizar el comportamiento físico y circuital de capacitores e inductores, sus relaciones tensión-corriente, almacenamiento de energía en campos eléctrico y magnético, y leyes de continuidad en la conmutación."
+            concepto_clave_latex: "i_C(t) = C \\frac{dv_C}{dt} \\quad ; \\quad v_L(t) = L \\frac{di_L}{dt} \\quad ; \\quad w_C = \\frac{1}{2}Cv_C^2 \\quad ; \\quad w_L = \\frac{1}{2}Li_L^2 \\quad ; \\quad v_C(0^-) = v_C(0^+) \\; , \\; i_L(0^-) = i_L(0^+)"
+            ejemplo: |
+              Problema 1 (Capacitor dinámico): Un capacitor de C = 1 mF (10⁻³ F) está sometido a una tensión en función a trozos: v(t) = 0 para t <= 0; v(t) = 10t V para 0 < t <= 1; v(t) = 20 - 10t V para 1 < t <= 2; v(t) = 0 para t > 2. Calcule la corriente i(t) y la energía máxima almacenada.
+              Paso 1: Aplicar i(t) = C dv(t)/dt.
+              - Para t < 0: dv/dt = 0 => i(t) = 0 A.
+              - Para 0 < t < 1: dv/dt = 10 V/s => i(t) = (10⁻³ F)(10 V/s) = 10⁻² A = 10 mA.
+              - Para 1 < t < 2: dv/dt = -10 V/s => i(t) = (10⁻³ F)(-10 V/s) = -10⁻² A = -10 mA.
+              - Para t > 2: dv/dt = 0 => i(t) = 0 A.
+              Paso 2: Tensión máxima en t = 1 s: v_max = 10 V.
+              Energía máxima almacenada: w_C,max = (1/2) C (v_max)² = (1/2)(10⁻³)(100) = 0.05 J = 50 mJ.
+              
+              Problema 2 (Condiciones iniciales y conmutación): Un circuito contiene una fuente de 24 V, R1 = 6 Ω, R2 = 12 Ω, un inductor L = 2 H y un capacitor C = 0.5 F. El interruptor ha estado cerrado durante mucho tiempo y se abre bruscamente en t = 0. Calcule v_C(0⁻), i_L(0⁻), v_C(0⁺), i_L(0⁺).
+              Paso 1: En t = 0⁻ (régimen permanente DC), el inductor actúa como cortocircuito (v_L = 0) y el capacitor actúa como circuito abierto (i_C = 0).
+              Paso 2: Corriente del inductor por divisor de corriente: i_L(0⁻) = 24 V / (6 + 12) = 24 / 18 = 1.333 A.
+              Paso 3: Tensión en el capacitor en paralelo con R2: v_C(0⁻) = i_L(0⁻) × 12 Ω = (1.333)(12) = 16 V.
+              Paso 4: Por principio de conservación de carga y flujo magnético (leyes de continuidad):
+              v_C(0⁺) = v_C(0⁻) = 16 V.
+              i_L(0⁺) = i_L(0⁻) = 1.333 A.
+            bloque_sugerido: "Cátedra Magistral 50 min • Elementos dinámicos de almacenamiento y condiciones iniciales"
+            slides:
+              - numero: 1
+                seccion: "ALMACENAMIENTO"
+                titulo: "# 1_1_Dispositivos_Almacenamiento.md"
+                puntos:
+                  - "# 1_1_Dispositivos_Almacenamiento.md"
+              - numero: 2
+                seccion: "ALMACENAMIENTO"
+                titulo: "DISPOSITIVOS DE"
+                puntos:
+                  - "ALMACENAMIENTO"
+                  - "Capacitores, inductores y condiciones iniciales en circuitos con"
+                  - "interruptor"
+                  - "Fundamentos de Electricidad II"
+              - numero: 3
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ruta de aprendizaje"
+                puntos:
+                  - "De la física del almacenamiento a la solución de circuitos"
+                  - "1. Capacitores"
+                  - "Carga, voltaje,"
+                  - "corriente, energía y"
+                  - "continuidad."
+              - numero: 4
+                seccion: "ALMACENAMIENTO"
+                titulo: "Capacitor: construcción y capacitancia"
+                puntos:
+                  - "Dos placas conductoras separadas por un dieléctrico"
+                  - "C aumenta con la permitividad ε."
+                  - "C aumenta con el área A de las placas."
+                  - "C disminuye al aumentar la separación d."
+                  - "Unidad: faradio (F)."
+              - numero: 5
+                seccion: "ALMACENAMIENTO"
+                titulo: "Dos formas de almacenar energía"
+                puntos:
+                  - "El campo eléctrico y el campo magnético son los protagonistas"
+                  - "Capacitor C"
+                  - "Almacena energía en un campo eléctrico."
+                  - "La variable continua es el voltaje VC(t)."
+                  - "En corriente continua y estado estable se comporta"
+              - numero: 6
+                seccion: "ALMACENAMIENTO"
+                titulo: "Relaciones fundamentales del capacitor"
+                puntos:
+                  - "La derivada conecta corriente y variación de voltaje"
+                  - "Carga almacenada"
+                  - "Relación corriente–tensión"
+                  - "Relación tensión–corriente"
+                  - "Lectura física"
+              - numero: 7
+                seccion: "ALMACENAMIENTO"
+                titulo: "Propiedades del capacitor ideal"
+                puntos:
+                  - "Modelo no ideal: resistencia de fuga en paralelo"
+                  - "CD en estado estable"
+                  - "i = 0 → circuito abierto."
+                  - "Continuidad"
+                  - "Vc(0⁺) = Vc(0⁻)."
+              - numero: 8
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.1 – 1: De voltaje a corriente"
+                puntos:
+                  - "Encuentre la corriente para un capacitor C=1mF cuando el voltaje a través del capacitor se representa por la señal que se"
+                  - "muestra en la siguiente figura:"
+                  - "Voltaje aplicado al capacitor Voltaje en función a trozos"
+              - numero: 9
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.1-1 · De voltaje a corriente"
+                puntos:
+                  - "C = 1mF"
+                  - "Corriente resultante"
+                  - "Gráfica de la corriente resultante"
+                  - "Interpretación: la corriente es constante en cada tramo porque la pendiente del voltaje es constante; cambia de signo cuando"
+                  - "cambia la pendiente."
+              - numero: 10
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.1 - 2 · De corriente a voltaje"
+                puntos:
+                  - "Encuentre el voltaje v(t) para un condensador C=1/2 F , cuando la Corriente es como se muestra en la siguiente figura y"
+                  - "v(0)=0."
+                  - "Corriente por tramos Corriente por tramos"
+              - numero: 11
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.1 - 2 · De corriente a voltaje"
+                puntos:
+                  - "C=1/2 F y v(0)=0."
+                  - "Voltaje obtenido por integración Voltaje obtenido por integración"
+              - numero: 12
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.1 - 2 · De corriente a voltaje"
+                puntos:
+                  - "C=1/2 F y v(0)=0."
+                  - "Voltaje obtenido por integración Gráfica del voltaje obtenido por integración"
+              - numero: 13
+                seccion: "ALMACENAMIENTO"
+                titulo: "Energía y continuidad en el capacitor"
+                puntos:
+                  - "Potencia instantánea"
+                  - "Energía almacenada"
+                  - "Condición de continuidad"
+                  - "Al abrir el interruptor, el voltaje inicial se conserva"
+                  - "Lectura energética"
+              - numero: 14
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.2-1 · Energía almacenada"
+                puntos:
+                  - "Se carga un condensador de 10 mF a 100 V , como se muestra en la siguiente figura. Encuentre la energía almacenada por el"
+                  - "condensador y el voltaje del condensador en t = 0+ luego de haber abierto el interruptor."
+                  - "Circuito de carga del capacitor"
+                  - "Resultado"
+              - numero: 15
+                seccion: "ALMACENAMIENTO"
+                titulo: "Capacitores en serie y en paralelo"
+                puntos:
+                  - "Capacitores en paralelo"
+                  - "Capacitores en serie"
+                  - "Paralelo"
+                  - "Serie"
+                  - "Regla de comprobación"
+              - numero: 16
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.3-1 · Capacitancia equivalente"
+                puntos:
+                  - "Red serie-paralelo entre a y b"
+              - numero: 17
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.3-1 · Capacitancia equivalente"
+                puntos:
+                  - "Red serie-paralelo entre a y b"
+                  - "Paso 1"
+                  - "20 μF en serie con 5 μF → 4 μF ."
+                  - "Paso 2"
+                  - "4 μF en paralelo con 6 μF y 20 μF → 30 μF ."
+              - numero: 18
+                seccion: "ALMACENAMIENTO"
+                titulo: "Inductor: construcción e inductancia"
+                puntos:
+                  - "Bobina alrededor de un núcleo magnético"
+                  - "L aumenta con la permeabilidad μ."
+                  - "L aumenta con el cuadrado del número de vueltas N."
+                  - "L aumenta con el área transversal A."
+                  - "L disminuye al aumentar la longitud ℓ."
+              - numero: 19
+                seccion: "ALMACENAMIENTO"
+                titulo: "Relaciones fundamentales del inductor"
+                puntos:
+                  - "La derivada conecta voltaje y variación de corriente"
+                  - "Relación tensión–corriente"
+                  - "Relación corriente–tensión"
+                  - "Lectura física"
+                  - "Si iL cambia rápidamente, aparece un voltaje"
+              - numero: 20
+                seccion: "ALMACENAMIENTO"
+                titulo: "Propiedades del inductor ideal"
+                puntos:
+                  - "CD en estado estable"
+                  - "vL = 0 → cortocircuito."
+                  - "Continuidad"
+                  - "iL(0⁺) = iL(0⁻)."
+                  - "Cambio instantáneo"
+              - numero: 21
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.4 – 1: Corriente en rampa"
+                puntos:
+                  - "Considere el voltaje de un inductor cuando la Corriente cambia en t=0 de cero a una corriente que se incrementa de"
+                  - "manera constante y que finalmente rebase los niveles, como se muestra en la siguiente figura. Determinemos el voltaje del"
+                  - "inductor"
+                  - "Corriente: crece linealmente hasta 10 A Corriente: crece linealmente hasta 10 A"
+              - numero: 22
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.4 – 1: Corriente en rampa"
+                puntos:
+                  - "Voltaje"
+                  - "Voltaje: pulso constante durante la rampa"
+                  - "Consideremos un inductor de 0.1H y encontremos la forma de onda del voltaje. Dado que v=L(di/dt), tenemos(en voltios)"
+              - numero: 23
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.4 – 2: Corriente exponencial"
+                puntos:
+                  - "Encuentre el voltaje a través de un inductor L = 0.1H, cuando la corriente en el inductor es"
+                  - "Para t > 0 e i(0) = 0"
+              - numero: 24
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.4 – 2: Corriente exponencial"
+                puntos:
+                  - "Encuentre el voltaje a través de un inductor L = 0.1H, cuando la corriente en el inductor es"
+                  - "Para t > 0 e i(0) = 0"
+              - numero: 25
+                seccion: "ALMACENAMIENTO"
+                titulo: "Energía almacenada en el inductor"
+                puntos:
+                  - "Potencia instantánea"
+                  - "Energía magnética"
+                  - "Cuando absorbe energía"
+                  - "p > 0: aumenta la magnitud de la corriente y crece"
+                  - "el campo magnético."
+              - numero: 26
+                seccion: "ALMACENAMIENTO"
+                titulo: "Inductores en serie y en paralelo"
+                puntos:
+                  - "Inductores en serie"
+                  - "Inductores en paralelo"
+                  - "Serie"
+                  - "Paralelo"
+                  - "Regla de comprobación"
+              - numero: 27
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.6-1 · Inductancia equivalente"
+                puntos:
+                  - "Red serie-paralelo de inductores"
+              - numero: 28
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.6-1 · Inductancia equivalente"
+                puntos:
+                  - "Red serie-paralelo de inductores"
+                  - "Paso 1"
+                  - "10 H + 12 H + 20 H = 42 H."
+                  - "Paso 2"
+                  - "42 H en paralelo con 7 H → 6 H."
+              - numero: 29
+                seccion: "ALMACENAMIENTO"
+                titulo: "Capacitor vs. inductor"
+                puntos:
+                  - "Tabla de referencia para análisis rápido"
+                  - "Una sola pregunta guía"
+                  - "¿Qué variable no puede cambiar bruscamente?"
+              - numero: 30
+                seccion: "ALMACENAMIENTO"
+                titulo: "Método para circuitos con interruptor"
+                puntos:
+                  - "Separar el análisis en 0⁻y 0⁺evita errores"
+                  - "Analice t < 0"
+                  - "Si hubo largo"
+                  - "tiempo en CD: C"
+                  - "abierto, L corto."
+              - numero: 31
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.8-1 · Circuito con inductor"
+                puntos:
+                  - "Considere un circuito con inductor como se muestra a continuación."
+                  - "Calcular la Corriente en el inductor para t = 0+ (inmediatamente después de cerrar el interruptor)."
+                  - "Para R1 = R2 = 1 Ohm."
+                  - "Circuito antes y después de la conmutación"
+              - numero: 32
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.8-1 · Circuito con inductor"
+                puntos:
+                  - "Circuito antes y después de la conmutación"
+                  - "Conclusión"
+                  - "La corriente del inductor se conserva. Las corrientes de"
+                  - "las ramas resistivas sí pueden reajustarse"
+                  - "instantáneamente."
+              - numero: 33
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.8-2 · Circuito con capacitor"
+                puntos:
+                  - "Circuito con capacitor y conmutación"
+                  - "Considere ahora el circuito con el capacitor que aparece en la figura a continuación. Donde R₁ = R₂ = 1 Ω, V₁ = 10 V ."
+                  - "Hallar el voltaje en el capacitor para t=0+."
+              - numero: 34
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejemplo 1.8-2 · Circuito con capacitor"
+                puntos:
+                  - "Considere ahora el circuito con el capacitor que aparece en la figura a continuación. Donde R₁ = R₂ = 1 Ω, V₁ = 10 V ."
+                  - "Hallar el voltaje en el capacitor para t=0+."
+                  - "Circuito con capacitor y conmutación"
+                  - "Conclusión"
+                  - "Al retirar la fuente mediante el interruptor, el"
+              - numero: 35
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejercicios de comprobación"
+                puntos:
+                  - "Resuelva primero y revele después la respuesta"
+                  - "Reto A"
+                  - "Un capacitor de 20 μF tiene dv/dt = 3 kV/s. Halle iC."
+                  - "Reto B"
+                  - "Un inductor de 50 mH tiene di/dt = −40 A/s. Halle vL."
+              - numero: 36
+                seccion: "ALMACENAMIENTO"
+                titulo: "Ejercicios de comprobación"
+                puntos:
+                  - "Resuelva primero y revele después la respuesta"
+                  - "Reto A"
+                  - "Un capacitor de 20 μF tiene dv/dt = 3 kV/s. Halle iC."
+                  - "Respuesta: 60 mA"
+                  - "Reto B"
+              - numero: 37
+                seccion: "ALMACENAMIENTO"
+                titulo: "Cierre de la clase"
+                puntos:
+                  - "Cuatro ideas que deben quedar instaladas"
+                  - "C y L almacenan"
+                  - "energía"
+                  - "Campos eléctrico y"
+                  - "magnético."
+          - numero_tema: 2
+            corte: 1
+            modalidad: "magistral"
+            titulo: "Respuesta Transitoria de Primer Orden: Circuitos RC y RL (Natural y Escalón)"
+            objetivo: "Formular y resolver las ecuaciones diferenciales de primer orden para circuitos RC y RL excitados por condiciones iniciales y fuentes escalón mediante el método sistemático de los tres pasos."
+            concepto_clave_latex: "x(t) = x(\\infty) + [x(0^+) - x(\\infty)]e^{-t/\\tau} \\quad ; \\quad \\tau_{\\text{RC}} = R_{\\text{th}}C \\quad ; \\quad \\tau_{\\text{RL}} = \\frac{L}{R_{\\text{th}}} \\quad ; \\quad 5\\tau \\implies 99.3\\%"
+            ejemplo: |
+              Problema 1 (Respuesta natural RC): Un capacitor C = 20 μF tiene una tensión inicial v(0) = 45 V y en t = 0 se conecta a una resistencia R = 50 kΩ. Calcule la constante de tiempo τ, la tensión v(t), la corriente i(t), el tiempo para que v decaiga a 10 V y la energía total disipada en R.
+              Paso 1: Constante de tiempo: τ = RC = (50 × 10³ Ω)(20 × 10⁻⁶ F) = 1.0 s.
+              Paso 2: Expresión de tensión para t >= 0: v(t) = V_0 e^(-t/τ) = 45 e^(-t) V.
+              Paso 3: Corriente por el resistor: i(t) = v(t)/R = (45/50,000) e^(-t) = 0.9 e^(-t) mA.
+              Paso 4: Tiempo para v(t) = 10 V: 10 = 45 e^(-t) => e^(-t) = 10/45 = 0.222 => -t = ln(0.222) = -1.504 => t = 1.50 s.
+              Paso 5: Energía total disipada en el resistor:
+              W_R = ∫₀^∞ p_R(t) dt = (1/2) C V_0² = (1/2)(20 × 10⁻⁶)(45)² = 0.02025 J = 20.25 mJ.
+              
+              Problema 2 (Respuesta escalón RL - Tres pasos): En un circuito con fuente V_s = 30 V, R1 = 10 Ω, R2 = 20 Ω y L = 0.4 H, un interruptor conmuta en t = 0.
+              1) Valor inicial: i_L(0⁺) = i_L(0⁻) = 0 A.
+              2) Valor final (t -> ∞): L es cortocircuito => i_L(∞) = 30 V / (10 + 20) = 1.0 A.
+              3) Resistencia de Thévenin vista por el inductor: R_th = 10 + 20 = 30 Ω.
+              Constante de tiempo: τ = L / R_th = 0.4 H / 30 Ω = 0.0133 s = 13.33 ms.
+              Solución completa: i_L(t) = 1.0 + (0 - 1.0) e^(-t / 0.0133) = 1 - e^(-75t) A (para t >= 0).
+            bloque_sugerido: "Cátedra Magistral 50 min • Transitorios de primer orden y constante de tiempo tau"
+            slides:
+              - numero: 1
+                seccion: "TRANSITORIOS"
+                titulo: "# 1_2_Respuesta_RC_RL.md"
+                puntos:
+                  - "# 1_2_Respuesta_RC_RL.md"
+              - numero: 2
+                seccion: "TRANSITORIOS"
+                titulo: "RESPUESTA NATURAL"
+                puntos:
+                  - "Y AL ESCALÓN"
+                  - "Circuitos RC y RL"
+                  - "Respuesta Natural y Completa de Circuitos RC y RL"
+                  - "Fundamentos de Electricidad II"
+              - numero: 3
+                seccion: "TRANSITORIOS"
+                titulo: "Resultados de aprendizaje"
+                puntos:
+                  - "Distinguir"
+                  - "Respuesta natural frente a"
+                  - "respuesta completa producida"
+                  - "por un escalón."
+                  - "Calcular"
+              - numero: 4
+                seccion: "TRANSITORIOS"
+                titulo: "Mapa de la unidad"
+                puntos:
+                  - "Dos respuestas naturales y dos respuestas al escalón"
+                  - "RC natural"
+                  - "Descarga del capacitor"
+                  - "RL natural"
+                  - "Descarga del inductor"
+              - numero: 5
+                seccion: "TRANSITORIOS"
+                titulo: "1. Respuesta natural RC"
+                puntos:
+                  - "Un capacitor previamente cargado queda conectado a una resistencia y la fuente se retira. La energía inicial del capacitor"
+                  - "produce una corriente de descarga. Conforme disminuye su tensión, también disminuye esa corriente y la energía se"
+                  - "transforma en calor en la resistencia"
+              - numero: 6
+                seccion: "TRANSITORIOS"
+                titulo: "1. Respuesta natural RC"
+                puntos:
+                  - "Un capacitor previamente cargado queda conectado a una resistencia y la fuente se retira. La energía inicial del capacitor"
+                  - "produce una corriente de descarga. Conforme disminuye su tensión, también disminuye esa corriente y la energía se"
+                  - "transforma en calor en la resistencia"
+                  - "Lazo de descarga posterior a la conmutación"
+                  - "𝑣𝐶(0+) = 𝑣𝐶(0−) = 𝑉0"
+              - numero: 7
+                seccion: "TRANSITORIOS"
+                titulo: "1. Respuesta natural RC"
+                puntos:
+                  - "La constante de tiempo τ indica la rapidez de la descarga. Con R en ohmios y C en faradios se obtiene τ en segundos. En τ"
+                  - "queda el 36,79 % de la tensión inicial; en 2τ, el 13,53 %; en 5τ, aproximadamente el 0,67 %. Por eso se considera"
+                  - "prácticamente descargado después de 5τ, aunque el modelo no llega exactamente a cero en tiempo finito."
+                  - "Tiempo Porcentaje"
+                  - "τ 36.79%"
+              - numero: 8
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC natural 1 · Descarga básica"
+                puntos:
+                  - "Un capacitor de 100 µF está cargado a 12 V . En t = 0 queda conectado únicamente a una resistencia de 1 kΩ. Calcular τ, la"
+                  - "tensión y la corriente de descarga en τ, y el tiempo aproximado de descarga."
+              - numero: 9
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC natural 1 · Descarga básica"
+                puntos:
+                  - "Un capacitor de 100 µF está cargado a 12 V . En t = 0 queda conectado únicamente a una resistencia de 1 kΩ. Calcular τ, la"
+                  - "tensión y la corriente de descarga en τ, y el tiempo aproximado de descarga."
+                  - "𝜏 = (1000)(100×10−6) = 0,10𝑠 = 100𝑚𝑠"
+                  - "𝑣𝐶(𝑡) = 12𝑒−𝑡/0,10 𝑉"
+                  - "𝑣𝐶(𝜏) = 12𝑒−1 = 4,415𝑉"
+              - numero: 10
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC natural 1 · Descarga básica"
+                puntos:
+                  - "Momento Tensión del capacitor Corriente de descarga"
+                  - "Inicio 12 V 12 mA"
+                  - "En τ 4,415 V 4,415 mA"
+                  - "En 5τ 0,08086 V 0,08086 mA"
+                  - "Valor final 0 V 0 mA"
+              - numero: 11
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC natural 2 · Dos resistencias"
+                puntos:
+                  - "Un capacitor de 220 µF tiene 10 V iniciales y se descarga a través de dos resistencias de 1 kΩ en serie. Hallar la tensión y la"
+                  - "corriente a los 0,88 s."
+              - numero: 12
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC natural 2 · Dos resistencias"
+                puntos:
+                  - "𝑅 = 1000+1000 = 2000𝛺"
+                  - "𝜏 = (2000)(220×10−6) = 0,44𝑠"
+                  - "𝜏 = 0,88"
+                  - "0,44 = 2; 𝑣𝐶(0,88) = 10𝑒−2 = 1,353𝑉"
+                  - "Resultado clave"
+              - numero: 13
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC natural 2 · Dos resistencias"
+                puntos:
+                  - "Momento Tensión del capacitor Corriente de descarga"
+                  - "Inicio 10 V 5 mA"
+                  - "En τ 3,679 V 1,839 mA"
+                  - "En 5τ 0,06738 V 0,03369 mA"
+                  - "Valor final 0 V 0 mA"
+              - numero: 14
+                seccion: "TRANSITORIOS"
+                titulo: "2. Respuesta natural RL"
+                puntos:
+                  - "Una bobina que ya conduce corriente queda en un lazo cerrado con una resistencia, sin la fuente. Su campo magnético"
+                  - "entrega energía a la resistencia y mantiene la corriente en el mismo sentido mientras esta disminuye gradualmente."
+              - numero: 15
+                seccion: "TRANSITORIOS"
+                titulo: "2. Respuesta natural RL"
+                puntos:
+                  - "Lazo RL posterior a retirar la fuente"
+                  - "𝑖𝐿(0+) = 𝑖𝐿(0−) = 𝐼0"
+                  - "𝜏 = 𝐿"
+                  - "𝑖𝐿(𝑡) = 𝐼0𝑒−𝑡/𝜏"
+                  - "𝑣𝐿(𝑡) = −𝑅𝑖𝐿(𝑡)"
+              - numero: 16
+                seccion: "TRANSITORIOS"
+                titulo: "1. Respuesta natural RL"
+                puntos:
+                  - "La constante de tiempo τ indica la rapidez de la descarga. Con R en ohmios y C en faradios se obtiene τ en segundos. En τ"
+                  - "queda el 36,79 % de la tensión inicial; en 2τ, el 13,53 %; en 5τ, aproximadamente el 0,67 %. Por eso se considera"
+                  - "prácticamente descargado después de 5τ, aunque el modelo no llega exactamente a cero en tiempo finito."
+                  - "Tiempo Porcentaje"
+                  - "τ 36.79%"
+              - numero: 17
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL natural 1 · Disminución de corriente"
+                puntos:
+                  - "Un inductor ideal de 0,5 H conduce 2 A. En t = 0 queda formando un lazo cerrado con una resistencia de 10 Ω y sin fuente."
+                  - "Calcular τ, la corriente en τ y la tensión de la bobina con la referencia positiva en el terminal de entrada de la corriente."
+              - numero: 18
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL natural 1 · Disminución de corriente"
+                puntos:
+                  - "𝜏 = 0,5"
+                  - "10 = 0,05𝑠 = 50𝑚𝑠"
+                  - "𝑖𝐿(𝑡) = 2𝑒−𝑡/0,05 𝐴"
+                  - "𝑖𝐿(𝜏) = 2𝑒−1 = 0,736𝐴"
+                  - "Resultado clave"
+              - numero: 19
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL natural 1 · Disminución de corriente"
+                puntos:
+                  - "Momento Corriente del inductor Tensión del inductor"
+                  - "Inicio 2 A -20 V"
+                  - "En τ 0,7358 A -7,358 V"
+                  - "En 5τ 0,01348 A -0,1348 V"
+                  - "Valor final 0 A 0 V"
+              - numero: 20
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL natural 2 · Corriente inicial"
+                puntos:
+                  - "Antes del cambio, una fuente de 12 V alimenta durante mucho tiempo una bobina ideal de 0,2 H y una resistencia de 6 Ω en"
+                  - "serie. En t = 0 se retiran la fuente y esa resistencia; un conmutador ideal deja la bobina en un lazo cerrado con otra"
+                  - "resistencia de 4 Ω. Hallar la corriente a los 100 ms."
+              - numero: 21
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL natural 2 · Corriente inicial"
+                puntos:
+                  - "𝐼0 = 12"
+                  - "6 = 2𝐴"
+                  - "𝜏 = 0,2"
+                  - "4 = 0,05𝑠"
+                  - "𝑖𝐿(0,10) = 2𝑒−0,10/0,05 = 2𝑒−2 = 0,271𝐴"
+              - numero: 22
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL natural 2 · Corriente inicial"
+                puntos:
+                  - "Momento Corriente del inductor Tensión del inductor"
+                  - "Inicio 2 A -8 V"
+                  - "En τ 0,7358 A -2,943 V"
+                  - "En 5τ 0,01348 A -0,0539 V"
+                  - "Valor final 0 A 0 V"
+              - numero: 23
+                seccion: "TRANSITORIOS"
+                titulo: "3. Respuesta RC a un escalón"
+                puntos:
+                  - "Una función forzante es una entrada externa aplicada al circuito. Aquí será un escalón de tensión: la fuente cambia de un"
+                  - "valor constante a otro y mantiene el nuevo valor. La tensión del capacitor realiza una transición gradual desde su valor"
+                  - "inicial hasta el valor de la fuente."
+                  - "RC serie después del cambio"
+                  - "𝜏 = 𝑅𝐶"
+              - numero: 24
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC al escalón 1 · Carga desde cero"
+                puntos:
+                  - "Un capacitor inicialmente descargado de 100 µF se conecta a una fuente de 10 V mediante una resistencia de 1 kΩ."
+                  - "Calcular τ, la tensión y la corriente en τ, y comprobar el resultado en 5τ."
+              - numero: 25
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC al escalón 1 · Carga desde cero"
+                puntos:
+                  - "𝜏 = (1000)(100×10−6) = 0,10𝑠"
+                  - "𝑣𝐶(𝑡) = 10(1−𝑒−𝑡/0,10)𝑉"
+                  - "𝑣𝐶(𝜏) = 10(1−𝑒−1) = 6,321𝑉"
+                  - "Resultado clave"
+                  - "La tensión sube, pero la corriente baja. En 5τ: vC ≈ 9,933 V ."
+              - numero: 26
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC al escalón 1 · Carga desde cero"
+                puntos:
+                  - "Momento Tensión del capacitor Corriente"
+                  - "Inicio 0 V 10 mA"
+                  - "En τ 6,321 V 3,679 mA"
+                  - "En 5τ 9,933 V 0,06738 mA"
+                  - "Valor final 10 V 0 mA"
+              - numero: 27
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC al escalón 2 · Tensión inicial"
+                puntos:
+                  - "Un capacitor de 100 µF tiene 4 V antes de conectarse a una fuente de 12 V mediante 2 kΩ. La polaridad inicial coincide con"
+                  - "la fuente. Hallar la tensión y la corriente después de 0,20 s."
+              - numero: 28
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC al escalón 2 · Tensión inicial"
+                puntos:
+                  - "𝜏 = (2000)(100×10−6) = 0,20𝑠"
+                  - "𝑣𝐶(𝑡) = 12+(4−12)𝑒−𝑡/0,20 = 12−8𝑒−𝑡/0,20 𝑉"
+                  - "𝑣𝐶(0,20) = 12−8𝑒−1 = 9,057𝑉"
+                  - "Resultado clave"
+                  - "En τ se completa el 63,2 % del cambio de 8 V . La corriente"
+              - numero: 29
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RC al escalón 2 · Tensión inicial"
+                puntos:
+                  - "Momento Tensión del capacitor Corriente"
+                  - "Inicio 4 V 4 mA"
+                  - "En τ 9,057 V 1,472 mA"
+                  - "En 5τ 11,95 V 0,02695 mA"
+                  - "Valor final 12 V 0 mA"
+              - numero: 30
+                seccion: "TRANSITORIOS"
+                titulo: "4. Respuesta RL a un escalón"
+                puntos:
+                  - "Al conectar una fuente constante a un lazo RL, la corriente se aproxima gradualmente a su valor final. La bobina conserva"
+                  - "inicialmente la corriente que tenía antes del cambio; la fuente y la resistencia fijan el valor hacia el que evoluciona."
+                  - "RL serie después del escalón"
+                  - "𝐼𝑓 = 𝑉𝑠"
+                  - "𝑅 ; 𝜏 = 𝐿"
+              - numero: 31
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL al escalón 1 · Bobina sin corriente"
+                puntos:
+                  - "Una fuente de 12 V se conecta a una resistencia de 6 Ω y una bobina ideal de 0,3 H en serie. La corriente inicial es cero."
+                  - "Hallar τ, la corriente y la tensión de la bobina en τ."
+              - numero: 32
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL al escalón 1 · Bobina sin corriente"
+                puntos:
+                  - "Una fuente de 12 V se conecta a una resistencia de 6 Ω y una bobina ideal de 0,3 H en serie. La corriente inicial es cero."
+                  - "Hallar τ, la corriente y la tensión de la bobina en τ."
+                  - "𝐼𝑓 = 12"
+                  - "6 = 2𝐴; 𝜏 = 0,3"
+                  - "6 = 0,05𝑠"
+              - numero: 33
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL al escalón 1 · Bobina sin corriente"
+                puntos:
+                  - "Momento Corriente del inductor Tensión del inductor"
+                  - "Inicio 0 A 12 V"
+                  - "En τ 1,264 A 4,415 V"
+                  - "En 5τ 1,987 A 0,08086 V"
+                  - "Valor final 2 A 0 V"
+              - numero: 34
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL al escalón 2 · Corriente previa"
+                puntos:
+                  - "Una bobina ideal de 0,2 H está en serie con 4 Ω. Antes de t = 0, una fuente de 2 V ha actuado durante mucho tiempo. En t ="
+                  - "0 la fuente cambia a 6 V , manteniendo la misma polaridad y el circuito cerrado. Hallar la corriente y la tensión de la bobinaa"
+                  - "los 100 ms."
+              - numero: 35
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL al escalón 2 · Corriente previa"
+                puntos:
+                  - "Una bobina ideal de 0,2 H está en serie con 4 Ω. Antes de t = 0, una fuente de 2 V ha actuado durante mucho tiempo. En t ="
+                  - "0 la fuente cambia a 6 V , manteniendo la misma polaridad y el circuito cerrado. Hallar la corriente y la tensión de la bobinaa"
+                  - "los 100 ms."
+                  - "𝐼0 = 2"
+                  - "4 = 0,5𝐴; 𝐼𝑓 = 6"
+              - numero: 36
+                seccion: "TRANSITORIOS"
+                titulo: "Ejemplo RL al escalón 2 · Corriente previa"
+                puntos:
+                  - "Momento Corriente del inductor Tensión del inductor"
+                  - "Inicio 0,5 A 4 V"
+                  - "En τ 1,132 A 1,472 V"
+                  - "En 5τ 1,493 A 0,02695 V"
+                  - "Valor final 1,5 A 0 V"
+              - numero: 37
+                seccion: "TRANSITORIOS"
+                titulo: "Una fórmula unificadora"
+                puntos:
+                  - "Toda respuesta de primer orden sigue el mismo patrón"
+                  - "Caso x(t) x(0⁺) x(∞) τ"
+                  - "RC natural vC V₀ 0 RC"
+                  - "RL natural iL I₀ 0 L/R"
+                  - "RC escalón vC V₀ Vs RC"
+              - numero: 38
+                seccion: "TRANSITORIOS"
+                titulo: "Resumen"
+                puntos:
+                  - "Elemento Variable continua CD en estado estable Constante de tiempo"
+                  - "Capacitor vC(0⁺)=vC(0⁻) Circuito abierto τ = RC"
+                  - "Inductor iL(0⁺)=iL(0⁻) Cortocircuito τ = L/R"
+                  - "Unidades"
+                  - "R en Ω, C en F , L en H y t en s."
+              - numero: 39
+                seccion: "TRANSITORIOS"
+                titulo: "Método de solución en cinco pasos"
+                puntos:
+                  - "Determine 0⁺"
+                  - "Use continuidad."
+                  - "Determine ∞"
+                  - "C abierto; L corto."
+                  - "Calcule τ"
+              - numero: 40
+                seccion: "TRANSITORIOS"
+                titulo: "Errores frecuentes y cómo evitarlos"
+                puntos:
+                  - "Usar μF o mH sin convertir"
+                  - "Convierta a F y H antes de calcular τ."
+                  - "Elegir la resistencia equivocada"
+                  - "Use la resistencia vista por el almacenador después del cambio."
+                  - "Aplicar 63,2 % al valor final"
+              - numero: 41
+                seccion: "TRANSITORIOS"
+                titulo: "Actividad de cierre"
+                puntos:
+                  - "Clasifique, prediga y calcule"
+                  - "1. Clasifique"
+                  - "Para cada circuito, indique si la respuesta"
+                  - "es natural o al escalón y si la variable de"
+                  - "estado es vC o iL."
+          - numero_tema: 3
+            corte: 1
+            modalidad: "magistral"
+            titulo: "Señales Senoidales en Régimen Permanente: Características, Fase y Valor Eficaz"
+            objetivo: "Caracterizar señales senoidales en corriente alterna determinando amplitud, frecuencia angular, periodo, relaciones trigonométricas de fase y valor eficaz (RMS)."
+            concepto_clave_latex: "v(t) = V_m \\cos(\\omega t + \\phi) \\quad ; \\quad \\omega = 2\\pi f = \\frac{2\\pi}{T} \\quad ; \\quad V_{\\text{rms}} = \\frac{V_m}{\\sqrt{2}} \\approx 0.7071\\,V_m"
+            ejemplo: |
+              Problema 1 (Características de la senoide): Dada la tensión v(t) = 50 cos(30t + 10°) V:
+              1) Amplitud: V_m = 50 V.
+              2) Frecuencia angular: ω = 30 rad/s.
+              3) Periodo: T = 2π / ω = 2π / 30 = 0.2094 s ≈ 209.4 ms.
+              4) Frecuencia cíclica: f = 1 / T = ω / (2π) = 30 / 6.2832 = 4.775 Hz.
+              5) Valor en t = 10 ms (0.010 s):
+              Argumento: 30(0.010) rad = 0.3 rad = 0.3 × (180° / π) = 17.189°.
+              Ángulo total: 17.189° + 10° = 27.189°.
+              v(10 ms) = 50 cos(27.189°) = 50(0.8895) = 44.47 V.
+              
+              Problema 2 (Ángulo de desfase y adelanto/atraso): Dadas v1(t) = 45 sen(ωt + 30°) y v2(t) = 50 cos(ωt - 30°):
+              Paso 1: Convertir v1 a coseno usando sen(θ) = cos(θ - 90°):
+              v1(t) = 45 cos(ωt + 30° - 90°) = 45 cos(ωt - 60°).
+              Paso 2: Comparar fases:
+              Fase de v1: θ1 = -60°.
+              Fase de v2: θ2 = -30°.
+              Paso 3: Ángulo de fase: Δϕ = θ2 - θ1 = -30° - (-60°) = +30°.
+              Conclusión: v2 adelanta a v1 en 30° (o equivalentemente, v1 se retrasa 30° respecto a v2).
+            bloque_sugerido: "Cátedra Magistral 45 min • Ondas senoidales, desfase angular y valor eficaz (RMS)"
+            slides:
+              - numero: 1
+                seccion: "SENOIDES"
+                titulo: "# 2_1_senoides.md"
+                puntos:
+                  - "# 2_1_senoides.md"
+              - numero: 2
+                seccion: "SENOIDES"
+                titulo: "Unidad 2. Senoides y Fasores"
+                puntos:
+                  - "1. Introducción"
+                  - "Hasta ahora el análisis se ha limitado en su mayoría a circuitos de cd: los circuitos excitados por"
+                  - "fuentes constantes o invariables en el tiempo. Se ha restringido la función de forzamiento a fuentes"
+                  - "cd por simplicidad y razones pedagógicas."
+                  - "Sin embargo, otra fuente forzada muy común es la forma de onda senoidal, que describe la tensión"
+              - numero: 3
+                seccion: "SENOIDES"
+                titulo: "La derivada y la integral de una senoide son ellas mismas senoides."
+                puntos:
+                  - "d(sen(t))"
+                  - "dt =cos(t) ; d(cos(t))"
+                  - "dt =−sen(t)"
+                  - "sen(t)dt=−cos(t) +C;"
+                  - "cos(t)dt=sen(t) +C"
+              - numero: 4
+                seccion: "SENOIDES"
+                titulo: "ωT= 2π"
+                puntos:
+                  - "Por lo tanto,"
+                  - "T= 2π"
+                  - "ω (2)"
+                  - "El hecho de quev(t) se repita cada T segundos se demuestra reemplazandotport+Ten la ecuación"
+                  - "(1):"
+              - numero: 5
+                seccion: "SENOIDES"
+                titulo: "Mientras queωestá medida en radianes por segundo (rad/s),festá en Hertz (Hz)."
+                puntos:
+                  - "3. Retraso y adelanto"
+                  - "Considere una expresión más general de la senoide:"
+                  - "v(t) =V msen(ωt+ϕ) (7)"
+                  - "donde (ωt+ϕ) es el argumento yϕes lafaseoángulo de fase. Tanto el argumento como la fase"
+                  - "pueden estar en radianes o grados."
+              - numero: 6
+                seccion: "SENOIDES"
+                titulo: "1. Escribirse como ondas seno o como ondas coseno, ambas."
+                puntos:
+                  - "2. Expresarse con magnitudes positivas."
+                  - "3. Tener cada una la misma frecuencia angular (radián)."
+                  - "Ejemplo"
+                  - "Determinar el ángulo mediante el cualv1 está retrasada respecto ai1:"
+                  - "v1 = 120cos(120πt−40 °) V"
+              - numero: 7
+                seccion: "SENOIDES"
+                titulo: "Figura 3: Método gráfico para relacionar coseno y seno."
+                puntos:
+                  - "(a)cos(ωt−90 °) =sen(ωt)."
+                  - "(b)sen(ωt+ 180 °) =−sen(ωt)"
+                  - "Por ejemplo, en la Figura 3(a) se observa que restar 90 ° al argumento decos(ωt) dasen(ωt), o"
+                  - "cos(ωt−90 °) =sen(ωt). De igual manera, sumar 180 ° al argumento desen(ωt) da−sen(ωt), o"
+                  - "sen(ωt+ 180 °) =−sen(ω), como se muestra en la Figura 3(b)."
+              - numero: 8
+                seccion: "SENOIDES"
+                titulo: "Figura 4: Suma deA cos(ωt) yB sen(ωt)"
+                puntos:
+                  - "Ejemplo. Se pueden sumar:"
+                  - "3 cos(ωt) y−4 sen(ωt)"
+                  - "Solución"
+                  - "Sumando las senoides tenemos,"
+                  - "3 cos(ωt)−4 sen(ωt) =Ccos(ωt−θ)"
+              - numero: 9
+                seccion: "SENOIDES"
+                titulo: "4. Ejercicios"
+                puntos:
+                  - "Ejercicio 1. Halle la amplitud, fase, periodo y frecuencia de la senoide:"
+                  - "v(t) = 12cos(50t+ 10 °)"
+                  - "Solución"
+                  - "La amplitudV m = 12 V."
+                  - "La fase esϕ= 10 °"
+              - numero: 10
+                seccion: "SENOIDES"
+                titulo: "y"
+                puntos:
+                  - "v2 = 12sen(ωt−10 °) = 12cos(ωt−10 ° −90 °)"
+                  - "v2 = 12cos(ωt−100 °)"
+                  - "Si hallamos el desfase entrev 1 yv 2, tenemos"
+                  - "ϕ=ϕ v1 −ϕ v2 =−130−(−100) =−130 + 100 =−30"
+                  - "Quiere decir eso, quev 1 se encuentra retrasado dev 2 en 30°, ó quev2 se adelanta av 1 en 30°."
+              - numero: 11
+                seccion: "SENOIDES"
+                titulo: "Figura 6: Respuesta para el ejemplo"
+                puntos:
+                  - "Ejercicio propuesto: Halle el ángulo de fase entre:"
+                  - "i1 =−4sen(377t+ 55 °) ei 2 = 5cos(377t−65 °)"
+                  - "¿i1 se adelanta o se atrasa dei 2?"
+                  - "Respuesta: 210°,i 1 se adelanta ai 2."
+                  - "Referencias"
+          - numero_tema: 4
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Transformada Fasorial, Números Complejos e Impedancia en Frecuencia"
+            objetivo: "Aplicar la identidad de Euler para transformar ecuaciones íntegro-diferenciales del dominio del tiempo al dominio fasorial algebraico, definiendo los conceptos de impedancia y admitancia complejas."
+            concepto_clave_latex: "\\mathbf{V} = V_m\\angle\\phi = V_m e^{j\\phi} \\quad ; \\quad \\mathbf{Z}_R = R \\quad ; \\quad \\mathbf{Z}_L = j\\omega L \\quad ; \\quad \\mathbf{Z}_C = \\frac{1}{j\\omega C} = -j\\frac{1}{\\omega C} \\quad ; \\quad \\mathbf{Z} = R + jX"
+            ejemplo: |
+              Problema 1 (Operaciones fasoriales complejas): Dados A = 3 + j4 y B = 10 ∠ 30°:
+              Paso 1: Convertir A a forma polar:
+              |A| = √(3² + 4²) = 5; θ_A = arctan(4/3) = 53.13° => A = 5 ∠ 53.13°.
+              Paso 2: Convertir B a forma rectangular:
+              B = 10 cos(30°) + j 10 sen(30°) = 8.66 + j 5.0.
+              Paso 3: Suma A + B = (3 + 8.66) + j(4 + 5) = 11.66 + j 9.0 = 14.73 ∠ 37.67°.
+              Paso 4: Producto A × B = (5 ∠ 53.13°)(10 ∠ 30°) = 50 ∠ 83.13°.
+              Paso 5: Cociente B / A = (10 ∠ 30°) / (5 ∠ 53.13°) = 2 ∠ (30° - 53.13°) = 2 ∠ -23.13°.
+              
+              Problema 2 (Ecuación integrodiferencial en el dominio fasorial): Un circuito RLC serie se describe por: 4 i(t) + 8 ∫ i dt + 3 di/dt = 50 cos(2t + 75°) V.
+              Halle la corriente en estado estable i(t).
+              Paso 1: Identificar ω = 2 rad/s. Fasor de excitación: V = 50 ∠ 75° V.
+              Paso 2: Reemplazar derivadas e integrales por operadores fasoriales:
+              di/dt -> jω I = j2 I.
+              ∫ i dt -> I / (jω) = I / (j2) = -j0.5 I.
+              Paso 3: Sustituir en la ecuación:
+              [4 + 8(-j0.5) + 3(j2)] I = [4 - j4 + j6] I = (4 + j2) I = 50 ∠ 75°.
+              Paso 4: Impedancia equivalente: Z = 4 + j2 = √(16 + 4) ∠ arctan(2/4) = 4.472 ∠ 26.57° Ω.
+              Paso 5: Fasor de corriente:
+              I = (50 ∠ 75°) / (4.472 ∠ 26.57°) = 11.18 ∠ (75° - 26.57°) = 11.18 ∠ 48.43° A.
+              Paso 6: Volver al dominio del tiempo:
+              i(t) = 11.18 cos(2t + 48.43°) A.
+            bloque_sugerido: "Cátedra Magistral 50 min • Álgebra fasorial, números complejos e impedancia/admitancia"
+            slides:
+              - numero: 1
+                seccion: "FASORES"
+                titulo: "# 2_2_fasores.md"
+                puntos:
+                  - "# 2_2_fasores.md"
+              - numero: 2
+                seccion: "FASORES"
+                titulo: "FASORES"
+                puntos:
+                  - "Del Dominio del Tiempo al Dominio Fasorial"
+                  - "Fasor, Números Complejos, Relaciones Fasoriales, Impedancia y Admitancia"
+                  - "Fundamentos de Electricidad II"
+              - numero: 3
+                seccion: "FASORES"
+                titulo: "Resultados de aprendizaje"
+                puntos:
+                  - "Asociar"
+                  - "Es útil asociar un número"
+                  - "compuesto con uno senoidal."
+                  - "Esto nos permite definir fasores e"
+                  - "impedancias."
+              - numero: 4
+                seccion: "FASORES"
+                titulo: "Mapa de la unidad"
+                puntos:
+                  - "Representación Fasorial"
+                  - "Fasores"
+                  - "Transformación del"
+                  - "dominio del tiempo al"
+                  - "dominio de la frecuencia."
+              - numero: 5
+                seccion: "FASORES"
+                titulo: "Fasores"
+                puntos:
+                  - "Las senoides se expresan fácilmente en términos de fasores, con los que es más cómodo trabajar que con las funciones"
+                  - "seno y coseno."
+                  - "Un fasor es un número complejo que representa la amplitud y la fase de una senoide."
+                  - "Los fasores brindan un medio sencillo para analizar circuitos lineales excitados por fuentes senoidales; las soluciones de"
+                  - "tales circuitos serían impracticables de otra manera. La noción de resolver circuitos de ca usando fasores la propuso"
+              - numero: 6
+                seccion: "FASORES"
+                titulo: "Formas de un Número Complejo"
+                puntos:
+                  - "Un número complejo 𝑧puede escribirse en forma rectangular como:"
+                  - "𝑧 = 𝑥 +𝑗𝑦"
+                  - "Donde"
+                  - "𝑗 = −1."
+                  - "𝑥es la parte real de 𝑧."
+              - numero: 7
+                seccion: "FASORES"
+                titulo: "Formas de un Número Complejo"
+                puntos:
+                  - "El número complejo z también puede escribirse en forma polar o exponencial,"
+                  - "como"
+                  - "𝑧 = 𝑟∠𝜙 = 𝑟𝑒𝑗𝜙"
+                  - "Donde"
+                  - "𝑟es la magnitud de 𝑧."
+              - numero: 8
+                seccion: "FASORES"
+                titulo: "Formas de un Número Complejo"
+                puntos:
+                  - "Por otro lado, si se conoce 𝑟y 𝜙se puede obtener x y y como"
+                  - "𝑥 = 𝑟𝑐𝑜𝑠 𝜙 , 𝑦 = 𝑟𝑠𝑒𝑛 𝜙"
+                  - "Así, z puede escribirse como"
+                  - "𝑧 = 𝑥 +𝑗𝑦 = 𝑟∠𝜙 = 𝑟𝑒𝑗𝜙 = 𝑟 𝑐𝑜𝑠 𝜙 +𝑗𝑠𝑒𝑛 𝜙"
+              - numero: 9
+                seccion: "FASORES"
+                titulo: "Operaciones con Números Complejos"
+                puntos:
+                  - "Dados los números complejos"
+                  - "𝑧 = 𝑥 +𝑗𝑦 = 𝑟∠𝜙, 𝑧1 = 𝑥1 +𝑗𝑦1 = 𝑟1∠𝜙1, 𝑧2 = 𝑥2 +𝑗𝑦2 = 𝑟∠𝜙2"
+                  - "Son importantes las siguientes operaciones"
+                  - "Suma 𝑧1 +𝑧2 = 𝑥1 +𝑥2 +𝑗 𝑦1 +𝑦2"
+                  - "Resta 𝑧1 −𝑧2 = 𝑥1 −𝑥2 +𝑗 𝑦1 −𝑦2"
+              - numero: 10
+                seccion: "FASORES"
+                titulo: "Representación Fasorial"
+                puntos:
+                  - "La idea de la representación fasorial se basa en la identidad de Euler. En general,"
+                  - "𝑒±𝑗𝜙 = 𝑐𝑜𝑠𝜙±𝑗𝑠𝑒𝑛𝜙"
+                  - "Lo que indica que se puede considerar a 𝑐𝑜𝑠𝜙y 𝑠𝑒𝑛𝜙como las partes real e imaginaria de 𝑒±𝑗𝜙, se puede escribir"
+                  - "𝑐𝑜𝑠𝜙 = 𝑅𝑒 𝑒𝑗𝜙"
+                  - "𝑠𝑒𝑛𝜙 = 𝐼𝑚 𝑒𝑗𝜙"
+              - numero: 11
+                seccion: "FASORES"
+                titulo: "Representación Fasorial"
+                puntos:
+                  - "Por lo tanto, se puede expresar de la siguiente manera"
+                  - "𝑣 𝑡 = 𝑅𝑒 𝐕𝑒𝑗𝜔𝑡"
+                  - "Donde"
+                  - "𝐕 = 𝑉𝑚𝑒𝑗𝜔 = 𝑉𝑚∠𝜙"
+                  - "𝐕es entonces la representación fasorial de la senoide v(t), ya que represente su amplitud y su fase."
+              - numero: 12
+                seccion: "FASORES"
+                titulo: "Dominio Temporal al Dominio Fasorial"
+                puntos:
+                  - "Dado que un fasor posee magnitud y fase (“dirección”), se comporta como un vector y se representa en negritas."
+                  - "Por ejemplo, los fasores 𝐕 = 𝑉𝑚∠𝜙e 𝐈 = 𝐼𝑚∠−𝜃se pueden representar gráficamente en un diagrama fasorial."
+              - numero: 13
+                seccion: "FASORES"
+                titulo: "Dominio Temporal al Dominio Fasorial"
+                puntos:
+                  - "Para obtener un fasor correspondiente a una senoide, primero se debe expresar la senoide en la forma de coseno para que"
+                  - "sea posible escribirla como la parte real de un número complejo. Después se elimina el factor de tiempo 𝑒𝑗𝜔𝑡, y lo que resta"
+                  - "es el fasor correspondiente de la senoide."
+                  - "Al suprimir el factor de tiempo se transforma la senoide del dominio temporal al dominio fasorial. Esta transformación se"
+                  - "resume del siguiente modo:"
+              - numero: 14
+                seccion: "FASORES"
+                titulo: "Dominio Temporal al Dominio Fasorial"
+                puntos:
+                  - "Dada una senoide 𝑣 𝑡 = 𝑉𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙 , se obtiene el fasor 𝐕 = 𝑉𝑚∠𝜙. Usando las identidades trigonométricas vistas"
+                  - "anteriormente (Tema: Senoides), se demuestran las siguientes relaciones donde se considera la función seno además de la"
+                  - "función coseno. Aunque se advierte nuevamente que, para obtener la representación fasorial de una senoide, esta se debe"
+                  - "expresar en la forma de coseno, y se toman la magnitud y la fase."
+                  - "Representación en el dominio temporal Representación en el dominio fasorial"
+              - numero: 15
+                seccion: "FASORES"
+                titulo: "Dominio Temporal al Dominio Fasorial"
+                puntos:
+                  - "Si tenemos que 𝑣 𝑡 = 𝑉𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙 = 𝑅𝑒 𝐕𝑒𝑗𝜔𝑡 , de manera que"
+                  - "𝑑 𝑉𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙"
+                  - "𝑑𝑡 = −𝜔𝑉𝑚𝑠𝑒𝑛 𝜔𝑡 +𝜙 = 𝜔𝑉𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙+90∘"
+                  - "𝑑 𝑉𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙"
+                  - "𝑑𝑡 = 𝑅𝑒 𝜔𝑉𝑚𝑒𝑗𝜔𝑡𝑒𝑗𝜙𝑒90∘"
+              - numero: 16
+                seccion: "FASORES"
+                titulo: "Resumen"
+                puntos:
+                  - "Conviene subrayar las diferencias entre 𝑣 𝑡 y 𝐕:"
+                  - "1. 𝑣 𝑡 es la representación instantánea o en el dominio temporal, mientras que 𝐕es la representación de frecuencia o en el"
+                  - "dominio fasorial."
+                  - "2. 𝑣 𝑡 depende del tiempo, mientras que 𝐕no."
+                  - "3. 𝑣 𝑡 siempre es real y no tiene ningún término complejo, mientras que 𝐕es generalmente compleja."
+              - numero: 17
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "1. Evaluar estos números complejos"
+                  - "a) 40∠50∘ +20∠−30∘"
+                  - "b) 10∠−30∘ + 3−𝑗4"
+                  - "2+𝑗4 3−𝑗5 ∗"
+              - numero: 18
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "1. Evaluar estos números complejos"
+                  - "a) 40∠50∘ +20∠−30∘"
+                  - "b) 10∠−30∘ + 3−𝑗4"
+                  - "2+𝑗4 3−𝑗5 ∗"
+              - numero: 19
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "2. Transforme estas senoides en fasores."
+                  - "a) 𝑖 = 6𝑐𝑜𝑠 50𝑡 −40∘ A"
+                  - "b) 𝑣 = −4𝑠𝑒𝑛 30𝑡 +50∘ V"
+              - numero: 20
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "2. Transforme estas senoides en fasores."
+                  - "a) 𝑖 = 6𝑐𝑜𝑠 50𝑡 −40∘ A"
+                  - "b) 𝑣 = −4𝑠𝑒𝑛 30𝑡 +50∘ V"
+              - numero: 21
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "3. Halle las senoides representadas por estos fasores."
+                  - "a)𝐈 = −3+𝑗4 A"
+                  - "b)𝐕 = 𝑗8𝑒−𝑗20∘"
+              - numero: 22
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "3. Halle las senoides representadas por estos fasores."
+                  - "a)𝐈 = −3+𝑗4 A"
+                  - "b)𝐕 = 𝑗8𝑒−𝑗20∘"
+              - numero: 23
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "4. Dadas 𝑖1 𝑡 = 4𝑐𝑜𝑠 𝜔𝑡 +30∘ e 𝑖2 𝑡 = 5𝑠𝑒𝑛 𝜔𝑡 −20∘ , halle la suma entre ellas."
+              - numero: 24
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "4. Dadas 𝑖1 𝑡 = 4𝑐𝑜𝑠 𝜔𝑡 +30∘ e 𝑖2 𝑡 = 5𝑠𝑒𝑛 𝜔𝑡 −20∘ , halle la suma entre ellas."
+              - numero: 25
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "5. Aplicando el método fasorial, determine la corriente i(t) en un circuito descrito por la ecuación integrodiferencial."
+                  - "4𝑖 +8න𝑖𝑑𝑡 −3𝑑𝑖"
+                  - "𝑑𝑡 = 50𝑐𝑜𝑠 2𝑡 +75∘"
+              - numero: 26
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "5. Aplicando el método fasorial, determine la corriente i(t) en un circuito descrito por la ecuación integrodiferencial."
+                  - "4𝑖 +8න𝑖𝑑𝑡 −3𝑑𝑖"
+                  - "𝑑𝑡 = 50𝑐𝑜𝑠 2𝑡 +75∘"
+              - numero: 27
+                seccion: "FASORES"
+                titulo: "Relaciones Fasoriales de Elementos de Circuitos"
+                puntos:
+                  - "En esta sección determinamos la relación entre el voltaje del fasor y la corriente del fasor de los elementos R, L y C."
+                  - "Utilizamos la transformación del dominio de tiempo al dominio de frecuencia y luego resolvemos la relación del fasor para un"
+                  - "elemento especificado."
+              - numero: 28
+                seccion: "FASORES"
+                titulo: "El Resistor"
+                puntos:
+                  - "Si la corriente que pasa por el resistor R es 𝑖 = 𝐼𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙 , la tensión a través de él"
+                  - "está dada por la ley de Ohm como"
+                  - "𝑣 = 𝑖𝑅 = 𝑅𝐼𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙"
+                  - "La forma fasorial de esta tensión es"
+                  - "𝐕 = 𝑅𝐼𝑚∠𝜙"
+              - numero: 29
+                seccion: "FASORES"
+                titulo: "El Inductor"
+                puntos:
+                  - "Supóngase que la corriente que pasa por el inductor L es 𝑖 = 𝐼𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙 . Así, la"
+                  - "tensión a través de él es"
+                  - "𝑣 = 𝐿𝑑𝑖"
+                  - "𝑑𝑡 = −𝜔𝐿𝐼𝑚𝑠𝑒𝑛 𝜔𝑡 +𝜙"
+                  - "Aplicando la ecuación −𝑠𝑒𝑛 𝐴 = 𝑐𝑜𝑠 𝐴+90∘ . Se puede escribir la tensión como"
+              - numero: 30
+                seccion: "FASORES"
+                titulo: "El Capacitor"
+                puntos:
+                  - "Supóngase que la tensión que pasa por el capacitor C es 𝑣 = 𝑉𝑚𝑐𝑜𝑠 𝜔𝑡 +𝜙 . Así, la"
+                  - "corriente a través de él es"
+                  - "𝑖 = 𝐶𝑑𝑣"
+                  - "𝑑𝑡 = −𝜔𝐶𝑉𝑚𝑠𝑒𝑛 𝜔𝑡 +𝜙"
+                  - "Aplicando la ecuación −𝑠𝑒𝑛 𝐴 = 𝑐𝑜𝑠 𝐴+90∘ . Se puede escribir la tensión como"
+              - numero: 31
+                seccion: "FASORES"
+                titulo: "Resumen"
+                puntos:
+                  - "Elemento Dominio de Tiempo Dominio de la Frecuencia"
+                  - "Resistor (R) 𝑣 = 𝑅i 𝐕 = 𝑅𝐈"
+                  - "Inductor (L) 𝑣 = 𝐿𝑑𝑖"
+                  - "𝐕 = 𝑗𝜔𝐿𝐈"
+                  - "Capacitor (C) 𝑖 = 𝐶𝑑𝑣"
+              - numero: 32
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "6. La tensión 𝑣 = 12𝑐𝑜𝑠 60𝑡 +45∘ se aplica a un inductor de 0.1H. Halle la corriente en estado estable que circula por el"
+                  - "inductor."
+              - numero: 33
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "6. La tensión 𝑣 = 12𝑐𝑜𝑠 60𝑡 +45∘ se aplica a un inductor de 0.1H. Halle la corriente en estado estable que circula por el"
+                  - "inductor."
+              - numero: 34
+                seccion: "FASORES"
+                titulo: "Impedancia"
+                puntos:
+                  - "Las relaciones en el dominio de frecuencia para la corriente y el voltaje del fasor de un resistor, inductor y capacitor que se"
+                  - "obtuvieron con anterioridad son las siguientes."
+                  - "𝐕 = 𝑅𝐈, 𝐕 = 𝑗𝜔𝐿𝐈, 𝐕 = 𝐈"
+                  - "Estas ecuaciones pueden escribirse en términos de la razón entre la tensión fasorial y la corriente fasorial como"
+                  - "𝐈 = 𝐙 = 𝑅, 𝐕"
+              - numero: 35
+                seccion: "FASORES"
+                titulo: "Impedancia"
+                puntos:
+                  - "Considerando 𝐕 = 𝑉𝑚∠𝜙e𝐈 = 𝐼𝑚∠𝛽se tiene que"
+                  - "𝐙 = 𝑉𝑚∠𝜙"
+                  - "𝐼𝑚∠𝛽 = 𝑉𝑚"
+                  - "∠ 𝜙−𝛽"
+                  - "Por lo tanto, se dice que la impedancia tiene una magnitud 𝐙 = 𝑉𝑚/𝐼𝑚 y"
+              - numero: 36
+                seccion: "FASORES"
+                titulo: "Impedancia"
+                puntos:
+                  - "Como la impedancia es un número complejo, se puede escribir de diversas formas"
+                  - "𝐙 = 𝐙 ∠𝜃 Forma Polar"
+                  - "𝐙 = 𝐙 𝑒𝑗𝜃 Forma Exponencial"
+                  - "𝐙 = 𝑅 +𝑗𝑋 Forma Rectangular"
+                  - "Donde"
+              - numero: 37
+                seccion: "FASORES"
+                titulo: "Admitancia"
+                puntos:
+                  - "A veces resulta conveniente trabajar con el inverso de la impedancia, conocido como admitancia."
+                  - "La admitancia Y es el inverso de la impedancia, medido en siemens (S) o mhos."
+                  - "La admitancia Y de un elemento (o circuito) es la razón entre la corriente fasorial y la tensión fasorial a través de él, o sea"
+                  - "𝐘 = 1"
+                  - "𝐙 = 𝐈"
+              - numero: 38
+                seccion: "FASORES"
+                titulo: "Admitancia"
+                puntos:
+                  - "Consideremos la siguiente ecuación"
+                  - "𝐘 = 𝐺 +𝑗𝐵 = 1"
+                  - "𝑅 +𝑗𝑋"
+                  - "Aplicando el complejo conjugado"
+                  - "𝐺 +𝑗𝐵 = 1"
+              - numero: 39
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "7. Determine ZR, ZC, ZL1, ZL2 y Vs de la siguiente figura."
+              - numero: 40
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "7. Determine ZR, ZC, ZL1, ZL2 y Vs de la siguiente figura."
+              - numero: 41
+                seccion: "FASORES"
+                titulo: "Resumen"
+                puntos:
+                  - "Elemento Dominio de Tiempo Dominio de la"
+                  - "Frecuencia"
+                  - "Resistor (R) 𝑣 = 𝑅i 𝐕 = 𝑅𝐈"
+                  - "Inductor (L) 𝑣 = 𝐿𝑑𝑖"
+                  - "𝐕 = 𝑗𝜔𝐿𝐈"
+              - numero: 42
+                seccion: "FASORES"
+                titulo: "Leyes de Kirchhoff en el Dominio Fasorial"
+                puntos:
+                  - "La suma de los voltajes de fasor en un lazo cerrado son cero. Por lo tanto, La ley del voltaje de Kirchhoff se mantiene en el"
+                  - "dominio de frecuencia con voltajes de fasor."
+                  - "𝐕1 +𝐕2 +⋯+𝐕𝑛 = 0"
+                  - "De manera similar se puede decir que, La ley de la corriente de Kirchhoff se mantiene en el dominio de frecuencia con"
+                  - "corrientes de fasor."
+              - numero: 43
+                seccion: "FASORES"
+                titulo: "Combinaciones de Impedancias"
+                puntos:
+                  - "Impedancias en Serie"
+                  - "Considere las N impedancias conectadas en serie, a través de ellas"
+                  - "fluye la misma corriente I. Por lo tanto, aplicando la Ley de Voltajes de"
+                  - "Kirchhoff a lo largo del lazo cerrado da"
+                  - "𝐕 = 𝐕1 +𝐕2 +⋯+𝐕N = 𝐈(𝐙1 +𝐙2 +⋯+𝐙N)"
+              - numero: 44
+                seccion: "FASORES"
+                titulo: "Combinaciones de Impedancias"
+                puntos:
+                  - "Impedancias en Serie"
+                  - "Si N = 2, es decir, si tenemos dos impedancias conectadas en serie, la"
+                  - "corriente que circula por ellas es"
+                  - "𝐈 = 𝐕"
+                  - "𝐙1 +𝐙2"
+              - numero: 45
+                seccion: "FASORES"
+                titulo: "Combinaciones de Impedancias"
+                puntos:
+                  - "Impedancias en Paralelo"
+                  - "De la misma manera, se puede obtener la impedancia o admitancia"
+                  - "equivalente de las N impedancias conectadas en paralelo. La tensión en cada"
+                  - "impedancia es la misma. Al aplicar la Ley de Corrientes de Kirchhoff al nodo"
+                  - "superior da,"
+              - numero: 46
+                seccion: "FASORES"
+                titulo: "Combinaciones de Impedancias"
+                puntos:
+                  - "Impedancias en Paralelo"
+                  - "Cuando N=2, es decir, se tienen dos impedancias en paralelo, la"
+                  - "impedancia equivalente se convierte en"
+                  - "𝐙eq = 1"
+                  - "𝐘1 +𝐘2"
+              - numero: 47
+                seccion: "FASORES"
+                titulo: "Transformaciones Delta-Estrella y Estrella-Delta"
+                puntos:
+                  - "Las transformaciones delta a estrella y estrella a delta"
+                  - "aplicadas a circuitos resistivos también son válidas para las"
+                  - "impedancias. Las fórmulas de conversión son las"
+                  - "siguientes:"
+                  - "Conversión 𝒀−∆"
+              - numero: 48
+                seccion: "FASORES"
+                titulo: "Transformaciones Delta-Estrella y Estrella-Delta"
+                puntos:
+                  - "Se dice que un circuito delta o estrella está equilibrado si"
+                  - "tiene impedancias iguales en sus tres ramas. Cuando esto"
+                  - "ocurre, se obtienen las siguientes ecuaciones."
+                  - "𝐙∆ = 3𝐙𝒚 ó 𝐙𝒚 = 1"
+                  - "Donde 𝐙𝑌 = 𝐙1 = 𝐙2 = 𝐙3 y 𝐙∆ = 𝐙𝑎 = 𝐙𝑏 = 𝐙𝑐"
+              - numero: 49
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "8. Halle la impedancia de entrada del circuito. Suponga que el circuito opera a 𝜔= 50 rad/s."
+              - numero: 50
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "8. Halle la impedancia de entrada del circuito."
+                  - "Suponga que el circuito opera a 𝜔= 50 rad/s."
+              - numero: 51
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "9. Hallar 𝑣 𝑡 e𝑖 𝑡 en el circuito de la siguiente figura."
+              - numero: 52
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "9. Hallar 𝑣 𝑡 e𝑖 𝑡 en el circuito de la siguiente figura."
+              - numero: 53
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "10. Hallar 𝑣𝑜 𝑡 en el circuito de la siguiente figura."
+              - numero: 54
+                seccion: "FASORES"
+                titulo: "Ejemplos"
+                puntos:
+                  - "10. Hallar 𝑣𝑜 𝑡 en el circuito de la siguiente figura."
+                  - "Solución"
+                  - "Para hacer el análisis en el dominio de la"
+                  - "frecuencia, primero debemos transformar el"
+                  - "circuito del dominio temporal al equivalente en el"
+          - numero_tema: 5
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Análisis de Circuitos en Corriente Alterna: Nodos, Mallas, Superposición y Thévenin"
+            objetivo: "Resolver circuitos lineales en corriente alterna aplicando técnicas sistemáticas de análisis nodal, mallas, principio de superposición, transformación de fuentes y teoremas de Thévenin y Norton en el plano complejo."
+            concepto_clave_latex: "[\\mathbf{Y}]\\vec{\\mathbf{V}}_n = \\vec{\\mathbf{I}}_s \\quad ; \\quad [\\mathbf{Z}]\\vec{\\mathbf{I}}_m = \\vec{\\mathbf{V}}_s \\quad ; \\quad \\mathbf{Z}_{\\text{th}} = \\frac{\\mathbf{V}_{oc}}{\\mathbf{I}_{sc}} \\quad ; \\quad \\mathbf{I}_N = \\frac{\\mathbf{V}_{\\text{th}}}{\\mathbf{Z}_{\\text{th}}}"
+            ejemplo: |
+              Problema 1 (Análisis Nodal Fasorial): En un circuito con nodo de referencia 0 y nodo esencial 1, se conectan en paralelo: Fuente I_s = 4 ∠ 0° A, Resistencia R = 10 Ω (admitancia G = 0.1 S), Inductor con Z_L = j5 Ω (admitancia Y_L = -j0.2 S) y Capacitor con Z_C = -j10 Ω (admitancia Y_C = +j0.1 S).
+              Calcule el voltaje fasorial V_1.
+              Paso 1: Admitancia nodal total del nodo 1:
+              Y_11 = G + Y_L + Y_C = 0.1 - j0.2 + j0.1 = 0.1 - j0.1 S.
+              Paso 2: Ecuación nodal: Y_11 V_1 = I_s => (0.1 - j0.1) V_1 = 4 ∠ 0°.
+              Paso 3: Convertir Y_11 a forma polar:
+              |Y_11| = √(0.1² + 0.1²) = 0.1414 S; θ = arctan(-0.1 / 0.1) = -45° => Y_11 = 0.1414 ∠ -45° S.
+              Paso 4: Resolver V_1 = (4 ∠ 0°) / (0.1414 ∠ -45°) = 28.28 ∠ 45° V.
+              Paso 5: Dominio temporal: v_1(t) = 28.28 cos(ωt + 45°) V.
+              
+              Problema 2 (Equivalente Thévenin AC): Red excitada a 60 Hz con V_s = 120 ∠ 0° V RMS, R = 4 Ω y L con X_L = 3 Ω. En terminales A-B se conecta una carga Z_L.
+              1) Tensión de circuito abierto: V_th = V_s = 120 ∠ 0° V.
+              2) Impedancia de Thévenin apagando fuentes independientes: Z_th = R + jX_L = 4 + j3 Ω.
+              3) En polar: Z_th = 5 ∠ 36.87° Ω.
+              4) Máxima transferencia de potencia activa: Carga óptima conjugada Z_L = Z_th* = 4 - j3 Ω.
+              P_max = |V_th|² / (4 R_th) = (120)² / (4 × 4) = 14,400 / 16 = 900 W.
+            bloque_sugerido: "Cátedra Magistral 50 min • Métodos sistemáticos de análisis de circuitos en corriente alterna"
+            slides:
+              - numero: 1
+                seccion: "ANÁLISIS CA"
+                titulo: "# 3_1_analisis-en-ca.md"
+                puntos:
+                  - "# 3_1_analisis-en-ca.md"
+              - numero: 2
+                seccion: "ANÁLISIS CA"
+                titulo: "ANÁLISIS SENOIDAL"
+                puntos:
+                  - "EN ESTADO ESTABLE"
+                  - "Análisis de circuitos en CA"
+                  - "Análisis de Nodos y Mallas, superposición y transformaciónde fuentes"
+                  - "Fundamentos de Electricidad II"
+              - numero: 3
+                seccion: "ANÁLISIS CA"
+                titulo: "MAPA DE LA UNIDAD"
+                puntos:
+                  - "Análisis de Circuitos en AC"
+                  - "Análisis Nodal"
+                  - "Aplicando la Ley de"
+                  - "Corrientes de Kirchhoff"
+                  - "Análisis de Malla"
+              - numero: 4
+                seccion: "ANÁLISIS CA"
+                titulo: "INTRODUCCIÓN"
+                puntos:
+                  - "El análisis de circuitos de ca suele implicar tres pasos:"
+                  - "1. Transformar el circuito al dominio fasorial o de frecuencia."
+                  - "2. Resolver el problema aplicando técnicas de circuitos (análisis nodal, análisis de malla, superposición, etc.)."
+                  - "3. Transformar el fasor resultante al dominio del tiempo."
+                  - "El paso 1 no es necesario si el problema se especifica en el dominio de la frecuencia. En el paso 2, el análisis se efectúa de"
+              - numero: 5
+                seccion: "ANÁLISIS CA"
+                titulo: "ANÁLISIS NODAL"
+                puntos:
+                  - "La base del análisis nodal es la Ley de Corrientes de Kirchhoff (LCK). Dado que la LCK es válida en el caso de los fasores, es"
+                  - "posible analizar circuitos de ca por medio del análisis nodal."
+              - numero: 6
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: análisis nodal"
+                puntos:
+                  - "Halle ix en el circuito de la siguiente figura aplicando análisis nodal."
+              - numero: 7
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: análisis nodal"
+                puntos:
+                  - "Halle ix en el circuito de la siguiente figura aplicando análisis nodal."
+              - numero: 8
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: análisis nodal"
+                puntos:
+                  - "Halle ix en el circuito de la siguiente figura aplicando análisis nodal."
+              - numero: 9
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: análisis nodal"
+                puntos:
+                  - "Halle ix en el circuito de la siguiente figura aplicando análisis nodal."
+              - numero: 10
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: análisis nodal"
+                puntos:
+                  - "Calcule V1 y V2 en el circuito de la siguiente figura."
+              - numero: 11
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: análisis nodal"
+                puntos:
+                  - "Calcule V1 y V2 en el circuito de la siguiente figura."
+              - numero: 12
+                seccion: "ANÁLISIS CA"
+                titulo: "ANÁLISIS DE MALLA"
+                puntos:
+                  - "La Ley de Voltajes de Kirchhoff (LVK) ó Ley de Tensión de Kirchhoff (LTK) es la base del análisis de malla."
+              - numero: 13
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: análisis de malla"
+                puntos:
+                  - "Determina la corriente Io en el circuito de la siguiente figura."
+              - numero: 14
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: análisis de malla"
+                puntos:
+                  - "Determina la corriente Io en el circuito de la siguiente figura."
+              - numero: 15
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: análisis de malla"
+                puntos:
+                  - "Determina Vo en el circuito de la siguiente figura."
+              - numero: 16
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: análisis de malla"
+                puntos:
+                  - "Determina Vo en el circuito de la siguiente figura."
+              - numero: 17
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: análisis de malla"
+                puntos:
+                  - "Determina Vo en el circuito de la siguiente figura."
+              - numero: 18
+                seccion: "ANÁLISIS CA"
+                titulo: "TEOREMA DE SUPERPOSICIÓN"
+                puntos:
+                  - "El teorema de superposición se aplica a los circuitos de ca, del mismo modo que en los circuitos de cd. Este teorema toma"
+                  - "importancia si el circuito tiene fuentes que opera a diferentes frecuencias."
+                  - "Debido a que las impedancias dependen de la frecuencia, se debe tener un circuito diferente en el dominio fasorial para"
+                  - "cada frecuencia. De modo que la respuesta final se puede obtener sumando las respuestas individuales en el dominio del"
+                  - "tiempo. Ya que no tendría ningún sentido sumar respuestas a diferentes frecuencias en el dominio fasorial."
+              - numero: 19
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: teorema de superposición"
+                puntos:
+                  - "Halle Vo en el circuito de la siguiente figura aplicando teorema de superposición."
+              - numero: 20
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: teorema de superposición"
+                puntos:
+                  - "Halle Vo en el circuito de la siguiente figura aplicando teorema de superposición."
+              - numero: 21
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: teorema de superposición"
+                puntos:
+                  - "Halle Vo en el circuito de la siguiente figura aplicando teorema de superposición."
+              - numero: 22
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: teorema de superposición"
+                puntos:
+                  - "Halle Vo en el circuito de la siguiente figura aplicando teorema de superposición."
+              - numero: 23
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: teorema de superposición"
+                puntos:
+                  - "Halle Vo en el circuito de la siguiente figura aplicando teorema de superposición."
+              - numero: 24
+                seccion: "ANÁLISIS CA"
+                titulo: "TRANSFORMACIÓN DE FUENTES"
+                puntos:
+                  - "La transformación de fuente en el dominio de la frecuencia implica transformar una fuente de tensión en serie con una"
+                  - "impedancia a una fuente de corriente en paralelo con una impedancia, o viceversa. Esto se logra mediante la siguiente"
+                  - "relación:"
+              - numero: 25
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: transformación de fuente"
+                puntos:
+                  - "Calcule Vx en el circuito de la siguiente figura aplicando el método de transformación de fuentes."
+              - numero: 26
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: transformación de fuente"
+                puntos:
+                  - "Calcule Vx en el circuito de la siguiente figura aplicando el método de transformación de fuentes."
+              - numero: 27
+                seccion: "ANÁLISIS CA"
+                titulo: "CIRCUITOS EQUIVALENTES DE THEVENIN Y NORTON"
+                puntos:
+                  - "La versión en el dominio de frecuencia de un circuito equivalente de Thevenin es aquel donde un circuito lineal se"
+                  - "reemplaza por la fuente de tensión en serie con una impedancia, y el circuito equivalente de Norton es aquel donde un"
+                  - "circuito lineal se reemplaza por una fuente de corriente en paralelo con una impedancia."
+                  - "Si el circuito tiene fuentes que operan a diferentes frecuencias, el circuito equivalente de Thevenin o de Norton debe"
+                  - "determinarse para cada frecuencia. Esto conduce a circuitos equivalentes totalmente distintos, uno por cada frecuencia,"
+              - numero: 28
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: equivalente de Thevenin"
+                puntos:
+                  - "Obtenga el equivalente de Thevenin en las terminales a-b del circuito de la siguiente figura."
+              - numero: 29
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: equivalente de Thevenin"
+                puntos:
+                  - "Obtenga el equivalente de Thevenin en las terminales a-b del circuito de la siguiente figura."
+              - numero: 30
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 1: equivalente de Thevenin"
+                puntos:
+                  - "Obtenga el equivalente de Thevenin en las terminales a-b del circuito de la siguiente figura."
+              - numero: 31
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: equivalente de Norton"
+                puntos:
+                  - "Obtenga la corriente Io en el circuito de la siguiente figura, aplicando el teorema de Norton."
+              - numero: 32
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: equivalente de Norton"
+                puntos:
+                  - "Obtenga la corriente Io en el circuito de la siguiente figura, aplicando el teorema de Norton."
+              - numero: 33
+                seccion: "ANÁLISIS CA"
+                titulo: "Ejemplo 2: equivalente de Norton"
+                puntos:
+                  - "Obtenga la corriente Io en el circuito de la siguiente figura, aplicando el teorema de Norton."
+          - numero_tema: 6
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Notas de Cátedra: Ejercicios de Aplicación en Régimen Senoidal Permanente"
+            objetivo: "Consolidar las metodologías de análisis en corriente alterna a través del desarrollo paso a paso de problemas avanzados de examen y cátedra magistral."
+            concepto_clave_latex: "\\sum \\mathbf{I}_{\\text{nodo}} = 0 \\quad ; \\quad \\sum \\mathbf{V}_{\\text{malla}} = 0 \\quad ; \\quad \\mathbf{S} = \\mathbf{V}_{\\text{rms}}\\mathbf{I}_{\\text{rms}}^* = P + jQ \\quad ; \\quad fp = \\cos(\\theta_v - \\theta_i)"
+            ejemplo: |
+              Problema 1 (Cálculo de corrientes de malla complejas): Un circuito AC tiene dos mallas con impedancias: Malla 1 tiene Z11 = 8 + j6 Ω y excitación V1 = 100 ∠ 0° V; Malla 2 tiene Z22 = 12 + j4 Ω y Z12 = Z21 = j4 Ω (impedancia mutua compartida).
+              Paso 1: Plantear sistema matricial:
+              [ 8 + j6   -j4    ] [ I1 ] = [ 100 ∠ 0° ]
+              [ -j4     12 + j4 ] [ I2 ]   [    0     ]
+              Paso 2: Determinante del sistema:
+              Δ = (8 + j6)(12 + j4) - (-j4)² = (96 + j32 + j72 - 24) - (-16) = (72 + j104) + 16 = 88 + j104 = 136.25 ∠ 49.76°.
+              Paso 3: Determinante para I1:
+              Δ1 = (100)(12 + j4) - 0 = 1200 + j400 = 1264.91 ∠ 18.43°.
+              Paso 4: Corriente I1 = Δ1 / Δ = (1264.91 ∠ 18.43°) / (136.25 ∠ 49.76°) = 9.28 ∠ -31.33° A.
+              Paso 5: Determinante para I2:
+              Δ2 = (8 + j6)(0) - (-j4)(100) = j400 = 400 ∠ 90°.
+              Paso 6: Corriente I2 = Δ2 / Δ = (400 ∠ 90°) / (136.25 ∠ 49.76°) = 2.94 ∠ 40.24° A.
+              
+              Problema 2 (Potencia compleja y factor de potencia): Para la malla 1, calcule la potencia compleja entregada por la fuente V1 = 100 ∠ 0° V con I1 = 9.28 ∠ -31.33° A.
+              Paso 1: S = V × I* = (100 ∠ 0°)(9.28 ∠ +31.33°) = 928 ∠ 31.33° VA.
+              Paso 2: En componentes rectangulares:
+              P = 928 cos(31.33°) = 792.6 W (potencia activa disipada).
+              Q = 928 sen(31.33°) = 482.5 VAr (potencia reactiva inductiva absorbida).
+              Paso 3: Factor de potencia: fp = cos(31.33°) = 0.854 retrasado (inductivo).
+            bloque_sugerido: "Taller Magistral 45 min • Resolución guiada de problemas de examen y cátedra"
+            slides:
+              - numero: 1
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "# 3_2_notas_de_clase_analisis_ac.md"
+                puntos:
+                  - "# 3_2_notas_de_clase_analisis_ac.md"
+              - numero: 2
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t1"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:07 p.m."
+              - numero: 3
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t2"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:09 p.m."
+              - numero: 4
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t3"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:10 p.m."
+              - numero: 5
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t4"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:11 p.m."
+              - numero: 6
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t5"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:12 p.m."
+              - numero: 7
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t6"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:23 p.m."
+              - numero: 8
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t7"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:25 p.m."
+              - numero: 9
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t8"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:25 p.m."
+              - numero: 10
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t1"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:29 p.m."
+              - numero: 11
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t2"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:30 p.m."
+              - numero: 12
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t3"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:31 p.m."
+              - numero: 13
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t4"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:31 p.m."
+              - numero: 14
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t5"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:33 p.m."
+              - numero: 15
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t6"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:33 p.m."
+              - numero: 16
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t7"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:33 p.m."
+              - numero: 17
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t8"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:33 p.m."
+              - numero: 18
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t9"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:36 p.m."
+              - numero: 19
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t1"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:40 p.m."
+              - numero: 20
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t2"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:40 p.m."
+              - numero: 21
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t3"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:40 p.m."
+              - numero: 22
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t4"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:40 p.m."
+              - numero: 23
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t5"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:41 p.m."
+              - numero: 24
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t1"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:46 p.m."
+              - numero: 25
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t2"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:47 p.m."
+              - numero: 26
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t3"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:47 p.m."
+              - numero: 27
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t1"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:50 p.m."
+              - numero: 28
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t2"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:50 p.m."
+              - numero: 29
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t3"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:50 p.m."
+              - numero: 30
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t4"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:50 p.m."
+              - numero: 31
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t5"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:50 p.m."
+              - numero: 32
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t6"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:50 p.m."
+              - numero: 33
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t7"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:50 p.m."
+              - numero: 34
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t8"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:51 p.m."
+              - numero: 35
+                seccion: "NOTAS CÁTEDRA"
+                titulo: "Pág\t9"
+                puntos:
+                  - "martes,	27	de	octubre	de	2026 9:51 p.m."
+          - numero_tema: 7
+            corte: 1
+            modalidad: "magistral"
+            titulo: "Taller de Cátedra N° 1: Circuitos RC, RL y Senoides (Ejercicios Prácticos Resueltos)"
+            objetivo: "Resolver integralmente el Taller Oficial N° 1 de Fundamentos de Electricidad II, cubriendo capacitancias e inductancias equivalentes, circuitos de primer orden en conmutación y análisis de senoides."
+            concepto_clave_latex: "C_{\\text{eq}} = \\sum C_k \\quad ; \\quad \\frac{1}{C_{\\text{eq}}} = \\sum \\frac{1}{C_k} \\quad ; \\quad L_{\\text{eq}} = \\sum L_k \\quad ; \\quad v(t) = v(\\infty) + [v(0^+) - v(\\infty)]e^{-t/\\tau}"
+            ejemplo: |
+              Problema 1 (Ejercicio 1.1 y 1.2 del Taller):
+              a) Para una red capacitiva con C1 = 20 μF en paralelo con la rama serie de C2 = 60 μF y C3 = 30 μF:
+              Rama serie: C_s = (60 × 30) / (60 + 30) = 1800 / 90 = 20 μF.
+              Capacitancia equivalente vista: C_eq = C1 + C_s = 20 + 20 = 40 μF.
+              b) Para una red inductiva en escalera con L1 = 10 mH en serie con el paralelo de L2 = 12 mH y L3 = 24 mH:
+              Paralelo: L_p = (12 × 24) / (12 + 24) = 288 / 36 = 8 mH.
+              Inductancia equivalente: L_eq = L1 + L_p = 10 + 8 = 18 mH.
+              
+              Problema 2 (Ejercicio 2.2 - Respuesta Natural RC): En un circuito con interruptor que conmuta en t = 0, C = 2 mF con v_C(0) = 40 V se descarga a través de R = 500 Ω.
+              Determine v_C(t), i_C(t) y v_C(2 ms).
+              Paso 1: Constante de tiempo: τ = RC = (500 Ω)(2 × 10⁻³ F) = 1.0 s.
+              Paso 2: Tensión en el capacitor para t > 0: v_C(t) = 40 e^(-t / 1.0) = 40 e^(-t) V.
+              Paso 3: Corriente: i_C(t) = C dv_C/dt = (2 × 10⁻³)(-40 e^(-t)) = -0.08 e^(-t) A = -80 e^(-t) mA.
+              Paso 4: Evaluación en t = 2 ms = 0.002 s:
+              v_C(0.002) = 40 e^(-0.002) = 40(0.99800) = 39.92 V.
+              
+              Problema 3 (Ejercicio 2.3 - Respuesta Natural RL): Inductor ideal L = 0.3 H conduce inicialmente i(0) = 1.5 A. En t = 0 queda en lazo cerrado con R = 6 Ω.
+              1) Constante de tiempo: τ = L / R = 0.3 H / 6 Ω = 0.05 s = 50 ms.
+              2) Corriente: i(t) = I_0 e^(-t/τ) = 1.5 e^(-t / 0.05) = 1.5 e^(-20t) A.
+              3) En t = 50 ms (t = τ): i(50 ms) = 1.5 e^(-1) = 1.5(0.3679) = 0.552 A.
+              4) En t = 100 ms (t = 2τ): i(100 ms) = 1.5 e^(-2) = 1.5(0.1353) = 0.203 A.
+              5) Tensión en el inductor en t = 50 ms: v_L(t) = L di/dt = 0.3 (-30 e^(-20t)) = -9 e^(-20t) V.
+              v_L(50 ms) = -9 e^(-1) = -3.31 V.
+              6) Tiempo de extinción de la corriente: t_ext ≈ 5τ = 5(50 ms) = 250 ms = 0.25 s.
+            bloque_sugerido: "Taller Práctico 60 min • Ejercicios del Taller 1 Grupo 2 resueltos a profundidad"
+            slides:
+              - numero: 1
+                seccion: "TALLER 1"
+                titulo: "# Taller1_Grupo2 (1).md"
+                puntos:
+                  - "# Taller1_Grupo2 (1).md"
+              - numero: 2
+                seccion: "TALLER 1"
+                titulo: "Taller 1. Circuitos RC y RL - Senoides"
+                puntos:
+                  - "Fundamentos de Electricidad II - Grupo 2"
+                  - "1. Capacitancias e Inductancias Equivalentes (30 puntos)"
+                  - "Ejercicio 1.1 (10 puntos)"
+                  - "Halle la capacitancia equivalente vista en las terminales del circuito de la Figura 1"
+                  - "Ejercicio 1.2 (10 puntos)"
+              - numero: 3
+                seccion: "TALLER 1"
+                titulo: "Ejercicio 1.3 (10 puntos)"
+                puntos:
+                  - "En referencia al circuito de la Figura 3 halle la tensión en cada capacitor."
+                  - "2. Circuitos RC y RL (30 puntos + 10 puntos extra)"
+                  - "Ejercicio 2.1 (15 puntos)"
+                  - "Determinev c,i L y la energía almacenada en el capacitor y el inductor del circuito de la"
+                  - "Ejercicio 2.2 Respuesta Natural RC (15 puntos)"
+              - numero: 4
+                seccion: "TALLER 1"
+                titulo: "Ejercicio 2.2 Respuesta Natural RL (10 puntos extra)"
+                puntos:
+                  - "Un inductor ideal de 0.3 H conduce inicialmente 1.5 A. En t = 0 queda en un lazo cerrado"
+                  - "con una resistencia de 6Ω, sin fuente."
+                  - "Determineτy escriba la expresión de la corriente."
+                  - "Calcule la corriente a los 50 ms y a los 100 ms."
+                  - "Halle la tensión del inductor a los 50 ms y el tiempo aproximado de extinción de la"
+              - numero: 5
+                seccion: "TALLER 1"
+                titulo: "−20sen(ωt+ 45 °)."
+                puntos:
+                  - "Ejercicio 3.3 (10 puntos)"
+                  - "Dadasv 1 = 45sen(ωt+ 30 °) yv 2 = 50cos(ωt−30 °). Determine el ángulo defase entre las"
+                  - "dos senoides y cúal se retrasa respecto a la otra."
       - codigo: "03021815"
         nombre: "Fundamentos de Hidráulica y Neumática"
         creditos: 3
