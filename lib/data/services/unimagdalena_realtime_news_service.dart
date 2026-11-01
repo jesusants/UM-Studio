@@ -94,6 +94,39 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
       category: 'FACULTAD',
       publishedAt: DateTime.now().subtract(const Duration(days: 5)),
     ),
+    NoticiaModel(
+      id: 'unimag_seed_6',
+      title: 'Convocatoria de Monitorías Académicas para el periodo 2026-II',
+      summary:
+          'Estudiantes destacados pueden postularse como monitores de docencia e investigación en áreas de cálculo, física y circuitos.',
+      url: 'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias',
+      imageUrl: 'https://cdn.unimagdalena.edu.co/images/escudo/bg_dark/default.png',
+      dateText: 'Hace 6 días',
+      category: 'ACADÉMICO',
+      publishedAt: DateTime.now().subtract(const Duration(days: 6)),
+    ),
+    NoticiaModel(
+      id: 'unimag_seed_7',
+      title: 'Instalación de Sistema de Generación Solar Distribuida en Edificio Docente',
+      summary:
+          'Proyecto piloto de inyección a red interna que abastece el 35% de la demanda en horas pico con monitoreo telemétrico.',
+      url: 'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias',
+      imageUrl: 'https://cdn.unimagdalena.edu.co/images/escudo/bg_dark/default.png',
+      dateText: 'Hace 1 semana',
+      category: 'FACULTAD',
+      publishedAt: DateTime.now().subtract(const Duration(days: 7)),
+    ),
+    NoticiaModel(
+      id: 'unimag_seed_8',
+      title: 'Jornada de Actualización en Software de Simulación de Potencia (PowerFactory)',
+      summary:
+          'Capacitación técnica sobre modelado de estabilidad de voltaje, flujo de carga óptimo y cortocircuito conforme a norma IEEE.',
+      url: 'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias',
+      imageUrl: 'https://cdn.unimagdalena.edu.co/images/escudo/bg_dark/default.png',
+      dateText: 'Hace 1 semana',
+      category: 'INVESTIGACIÓN',
+      publishedAt: DateTime.now().subtract(const Duration(days: 8)),
+    ),
   ];
 
   /// Inicializa el servicio, carga la caché local y arranca el ciclo de auto-refresco
@@ -255,7 +288,7 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
     return parseNoticiasHtml(htmlBody);
   }
 
-  /// Analizador de DOM HTML resiliente
+  /// Analizador de DOM HTML resiliente sin límites artificiales (devuelve todas las noticias)
   static List<NoticiaModel> parseNoticiasHtml(String html) {
     final document = html_parser.parse(html);
     final List<NoticiaModel> results = [];
@@ -310,11 +343,12 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
         final summaryEl = card.querySelector('p, .resumen, .descripcion, .summary, .card-text');
         final summary = summaryEl?.text.trim() ?? 'Información institucional de la Universidad del Magdalena.';
 
-        // 5. Fecha
+        // 5. Fecha limpia
         final dateEl = card.querySelector('time, .fecha, .date, span.fecha, small');
-        final dateText = dateEl?.text.trim().isNotEmpty == true
-            ? dateEl!.text.trim()
-            : 'Reciente';
+        var dateText = dateEl?.text.replaceAll(RegExp(r'\s+'), ' ').trim() ?? '';
+        if (dateText.isEmpty) {
+          dateText = 'Reciente';
+        }
 
         // 6. Categoría inferida
         final catText = _inferCategory(title, summary);
@@ -334,8 +368,6 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
             isNew: i == 0,
           ),
         );
-
-        if (results.length >= 10) break;
       }
     }
 
@@ -365,7 +397,6 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
             isNew: i == 0,
           ),
         );
-        if (results.length >= 8) break;
       }
     }
 

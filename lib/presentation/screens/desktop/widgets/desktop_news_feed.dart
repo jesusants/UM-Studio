@@ -82,6 +82,9 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed>
       if (_selectedCategory == 'INVESTIGACIÓN') {
         return cat.contains('INVESTIGA') || cat.contains('SEMILLERO');
       }
+      if (_selectedCategory == 'INSTITUCIONAL') {
+        return cat.contains('INSTITUCIONAL');
+      }
       return cat.contains(_selectedCategory);
     }).toList();
   }
@@ -213,6 +216,14 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed>
                     _CategoryPill(
                       label: 'Investigación',
                       id: 'INVESTIGACIÓN',
+                      selectedId: _selectedCategory,
+                      tokens: tokens,
+                      onSelect: (id) => setState(() => _selectedCategory = id),
+                    ),
+                    const SizedBox(width: 6),
+                    _CategoryPill(
+                      label: 'Institucional',
+                      id: 'INSTITUCIONAL',
                       selectedId: _selectedCategory,
                       tokens: tokens,
                       onSelect: (id) => setState(() => _selectedCategory = id),

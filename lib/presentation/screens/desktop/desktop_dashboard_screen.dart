@@ -203,8 +203,21 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
     final examLocation = nextExam?.subtitulo.isNotEmpty == true
         ? nextExam!.subtitulo
         : 'Edificio Mar Caribe • Salón 304';
+
+    String countdownBadge(String fechaIso) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final target = DateTime.tryParse(fechaIso);
+      if (target == null) return fechaIso;
+      final cleanTarget = DateTime(target.year, target.month, target.day);
+      final diff = cleanTarget.difference(today).inDays;
+      if (diff <= 0) return 'Hoy';
+      if (diff == 1) return 'Mañana';
+      return 'En $diff días';
+    }
+
     final examDateText = nextExam != null
-        ? '${nextExam.fechaIso} • ${nextExam.hora}'
+        ? '${countdownBadge(nextExam.fechaIso)} • ${nextExam.hora}'
         : 'En 3 días • 08:00 - 10:00 AM';
 
     return Focus(

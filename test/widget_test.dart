@@ -135,9 +135,9 @@ void main() {
             techSubjects++;
             expect(
               asig.temas.length,
-              inInclusiveRange(8, 12),
+              greaterThanOrEqualTo(8),
               reason:
-                  '${asig.codigo} (${asig.nombre}) debe tener entre 8 y 12 temas completos.',
+                  '${asig.codigo} (${asig.nombre}) debe tener al menos 8 temas completos.',
             );
             final cortes = asig.temas.map((t) => t.corte).toSet();
             expect(

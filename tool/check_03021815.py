@@ -1,0 +1,13 @@
+# -*- coding: utf-8 -*-
+with open('db/ingenieria_energetica.md', encoding='utf-8') as f:
+    text = f.read()
+
+idx1 = text.find('codigo: "03021815"')
+idx2 = text.find('codigo: "01021804"')
+block = text[idx1:idx2]
+
+import re
+titles = re.findall(r'numero_tema:\s*(\d+)[\s\S]*?titulo:\s*"([^"]+)"', block)
+print(f"03021815 Topics ({len(titles)}):")
+for num, t in titles:
+    print(f"  Tema {num}: {t}")
