@@ -86,7 +86,11 @@ class GitHubSyncService extends ChangeNotifier {
 
     try {
       final map = jsonDecode(rawJson) as Map<String, dynamic>;
-      final user = StudentUserModel.fromJson(map);
+      var user = StudentUserModel.fromJson(map);
+      final localMatriculadas = prefs.getStringList('um_materias_matriculadas');
+      if (user.materiasMatriculadas.isEmpty && localMatriculadas != null && localMatriculadas.isNotEmpty) {
+        user = user.copyWith(materiasMatriculadas: localMatriculadas);
+      }
       _status = hasWriteToken
           ? (_pendingSync ? GitHubSyncStatus.syncing : GitHubSyncStatus.synced)
           : GitHubSyncStatus.localOnly;
@@ -493,6 +497,7 @@ class GitHubSyncService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(user.toJson());
     await prefs.setString(_activeUserPrefsKey, encoded);
+    await prefs.setStringList('um_materias_matriculadas', user.materiasMatriculadas);
     await prefs.setBool(_pendingSyncPrefsKey, pending);
     if (_knownSha != null) {
       await prefs.setString(_activeShaPrefsKey, _knownSha!);
@@ -537,6 +542,7 @@ class GitHubSyncService extends ChangeNotifier {
     await prefs.remove(_activeUserPrefsKey);
     await prefs.remove(_activeShaPrefsKey);
     await prefs.remove(_pendingSyncPrefsKey);
+    await prefs.remove('um_materias_matriculadas');
     notifyListeners();
   }
 }

@@ -128,7 +128,11 @@ class InstitutionalSessionController extends ChangeNotifier {
   String get displayName => _currentUser?.nombre ?? 'Estudiante Ing. Energética';
   String get primerNombre => _currentUser?.primerNombre ?? 'Ingeniero';
   String get initials => _currentUser?.iniciales ?? 'UM';
-  int get cuatrimestreActual => _currentUser?.cuatrimestreActual ?? 2;
+  int get cuatrimestreActivo => _currentUser?.cuatrimestreActivo ?? 1;
+  int get cuatrimestreActual => cuatrimestreActivo;
+  List<String> get materiasMatriculadas =>
+      _currentUser?.materiasMatriculadas ?? const [];
+  bool get hasMatriculaConfigured => materiasMatriculadas.isNotEmpty;
 
   Map<String, int> get progresoMaterias =>
       _currentUser?.progresoMaterias ?? const {};
@@ -428,9 +432,39 @@ class InstitutionalSessionController extends ChangeNotifier {
     final user = _currentUser;
     if (user == null) return;
     final clamped = cuatrimestre.clamp(1, 12);
-    if (user.cuatrimestreActual == clamped) return;
+    if (user.cuatrimestreActivo == clamped) return;
 
-    final updated = user.copyWith(cuatrimestreActual: clamped);
+    final updated = user.copyWith(cuatrimestreActivo: clamped);
+    _currentUser = updated;
+    notifyListeners();
+    await _syncService.saveOptimisticAndSync(updated);
+  }
+
+  /// Actualiza la carga académica oficial matriculada por el estudiante y su cuatrimestre base.
+  Future<void> updateMatricula({
+    required int cuatrimestre,
+    required List<String> materias,
+  }) async {
+    final clampedCuat = cuatrimestre.clamp(1, 12);
+    final cleanMaterias = materias
+        .map((m) => m.trim())
+        .where((m) => m.isNotEmpty)
+        .toSet()
+        .toList();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('um_materias_matriculadas', cleanMaterias);
+
+    final user = _currentUser;
+    if (user == null) {
+      notifyListeners();
+      return;
+    }
+
+    final updated = user.copyWith(
+      cuatrimestreActivo: clampedCuat,
+      materiasMatriculadas: cleanMaterias,
+    );
     _currentUser = updated;
     notifyListeners();
     await _syncService.saveOptimisticAndSync(updated);
@@ -441,8 +475,11 @@ class InstitutionalSessionController extends ChangeNotifier {
 
   /// Determina si una asignatura pertenece a "Mis Materias" del estudiante.
   bool isMySubject(AsignaturaModel asignatura) {
+    if (materiasMatriculadas.isNotEmpty) {
+      return materiasMatriculadas.contains(asignatura.codigo);
+    }
     if (progresoMaterias.containsKey(asignatura.codigo)) return true;
-    return asignatura.cuatrimestre == cuatrimestreActual;
+    return asignatura.cuatrimestre == cuatrimestreActivo;
   }
 
   /// Actualiza el porcentaje de avance de una asignatura (`0..100`) en 0 ms.

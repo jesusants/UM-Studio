@@ -5,6 +5,7 @@ import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../clases/asignatura_temario_page.dart';
+import '../../matricula/mi_cuatrimestre_screen.dart';
 
 /// Nueva Pestaña "Clases": exploración 100% libre organizada en los 12
 /// Cuatrimestres oficiales de Ingeniería Energética para todos los usuarios.
@@ -16,7 +17,7 @@ class ClasesTab extends StatefulWidget {
 }
 
 class _ClasesTabState extends State<ClasesTab> {
-  /// `0` = Todos los Cuatrimestres (`1..12`), `1..12` = Cuatrimestre específico.
+  /// `-1` = Mis Materias, `0` = Todos los Cuatrimestres (`1..12`), `1..12` = Cuatrimestre específico.
   int _selectedCuatrimestre = 0;
   String _searchQuery = '';
   final TextEditingController _searchCtrl = TextEditingController();
@@ -57,11 +58,14 @@ class _ClasesTabState extends State<ClasesTab> {
     var totalVisibleSubjects = 0;
 
     for (final c in cuatrimestres) {
-      if (_selectedCuatrimestre != 0 && c.numero != _selectedCuatrimestre) {
+      if (_selectedCuatrimestre != 0 &&
+          _selectedCuatrimestre != -1 &&
+          c.numero != _selectedCuatrimestre) {
         continue;
       }
       final matching = c.asignaturas
           .where((a) => _matchesSearch(a, q))
+          .where((a) => _selectedCuatrimestre != -1 || (session != null && session.isMySubject(a)))
           .toList(growable: false);
       if (matching.isNotEmpty) {
         totalVisibleSubjects += matching.length;
@@ -173,12 +177,19 @@ class _ClasesTabState extends State<ClasesTab> {
         ),
         const SizedBox(height: 12),
 
-        // Píldoras horizontales por Cuatrimestre (1..12) para todos los usuarios
+        // Píldoras horizontales estilo iOS (Mis Materias + Cuatrimestres 1..12 + Todos)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           child: Row(
             children: [
+              _CuatrimestrePill(
+                label: '★ Mis Materias',
+                selected: _selectedCuatrimestre == -1,
+                accentColor: p.green,
+                onTap: () => setState(() => _selectedCuatrimestre = -1),
+              ),
+              const SizedBox(width: 7),
               _CuatrimestrePill(
                 label: 'Todos (12 Cuat.)',
                 selected: _selectedCuatrimestre == 0,
@@ -252,10 +263,38 @@ class _ClasesTabState extends State<ClasesTab> {
 
         if (visibleGroups.isEmpty)
           IosCard(
-            child: Text(
-              'No se encontraron clases para esa búsqueda.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, color: p.textSecondary),
+            child: Column(
+              children: [
+                Text(
+                  _selectedCuatrimestre == -1 && session?.hasMatriculaConfigured != true
+                      ? 'Aún no has configurado tus asignaturas matriculadas.'
+                      : 'No se encontraron clases para esa búsqueda.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.5, color: p.textSecondary),
+                ),
+                if (_selectedCuatrimestre == -1 && session?.hasMatriculaConfigured != true) ...[
+                  const SizedBox(height: 10),
+                  TapScale(
+                    onTap: () => MiCuatrimestreScreen.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: p.green.o(0.14),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: p.green.o(0.40)),
+                      ),
+                      child: Text(
+                        '✏️ Configurar Mi Matrícula',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: p.green,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           )
         else

@@ -168,9 +168,10 @@ class StudentUserModel {
     required this.progresoMaterias,
     required this.recordatoriosCalendario,
     required this.apuntesPersonales,
+    this.materiasMatriculadas = const [],
     this.ultimosTemasRevisados = const {},
     this.ultimoRevisado,
-    this.cuatrimestreActual = 2,
+    this.cuatrimestreActivo = 1,
     this.oid,
     this.tid,
   });
@@ -190,7 +191,15 @@ class StudentUserModel {
   /// Último tema revisado globalmente por el estudiante.
   final LastReviewedTopicModel? ultimoRevisado;
 
-  final int cuatrimestreActual;
+  /// Lista de códigos oficiales de asignaturas actualmente matriculadas.
+  final List<String> materiasMatriculadas;
+
+  /// Número del cuatrimestre activo (1..12).
+  final int cuatrimestreActivo;
+
+  /// Alias de compatibilidad hacia atrás.
+  int get cuatrimestreActual => cuatrimestreActivo;
+
   final String? oid;
   final String? tid;
 
@@ -226,9 +235,13 @@ class StudentUserModel {
     required String nombre,
     required String email,
     required String pinHash,
-    int cuatrimestreActual = 2,
+    int cuatrimestreActivo = 1,
+    int? cuatrimestreActual,
+    List<String> materiasMatriculadas = const [],
     List<String> starterSubjectCodes = const ['02021810', '03041819'],
   }) {
+    final effectiveCuat =
+        (cuatrimestreActual ?? cuatrimestreActivo).clamp(1, 12);
     final starterProgress = <String, int>{};
     for (var i = 0; i < starterSubjectCodes.length; i++) {
       starterProgress[starterSubjectCodes[i]] =
@@ -241,7 +254,10 @@ class StudentUserModel {
       email: email.trim().toLowerCase(),
       programa: AppConstants.programName,
       pinHash: pinHash,
-      cuatrimestreActual: cuatrimestreActual.clamp(1, 12),
+      cuatrimestreActivo: effectiveCuat,
+      materiasMatriculadas: materiasMatriculadas.isNotEmpty
+          ? materiasMatriculadas
+          : starterSubjectCodes,
       progresoMaterias: starterProgress,
       recordatoriosCalendario: const [],
       apuntesPersonales: const {},
@@ -339,9 +355,15 @@ class StudentUserModel {
       email: email,
       programa: (json['programa'] ?? AppConstants.programName).toString(),
       pinHash: pinHash,
-      cuatrimestreActual: (json['cuatrimestre_actual'] is num)
-          ? (json['cuatrimestre_actual'] as num).toInt().clamp(1, 12)
-          : 2,
+      cuatrimestreActivo: ((json['cuatrimestre_activo'] ?? json['cuatrimestre_actual']) is num)
+          ? ((json['cuatrimestre_activo'] ?? json['cuatrimestre_actual']) as num).toInt().clamp(1, 12)
+          : 1,
+      materiasMatriculadas: (json['materias_matriculadas'] is Iterable)
+          ? (json['materias_matriculadas'] as Iterable)
+              .map((e) => e.toString().trim())
+              .where((e) => e.isNotEmpty)
+              .toList()
+          : const [],
       progresoMaterias: progress,
       recordatoriosCalendario: reminders,
       apuntesPersonales: notes,
@@ -361,8 +383,10 @@ class StudentUserModel {
     Map<String, int>? progresoMaterias,
     List<CalendarReminderModel>? recordatoriosCalendario,
     Map<String, dynamic>? apuntesPersonales,
+    List<String>? materiasMatriculadas,
     Map<String, int>? ultimosTemasRevisados,
     LastReviewedTopicModel? ultimoRevisado,
+    int? cuatrimestreActivo,
     int? cuatrimestreActual,
     String? oid,
     String? tid,
@@ -377,10 +401,11 @@ class StudentUserModel {
       recordatoriosCalendario:
           recordatoriosCalendario ?? this.recordatoriosCalendario,
       apuntesPersonales: apuntesPersonales ?? this.apuntesPersonales,
+      materiasMatriculadas: materiasMatriculadas ?? this.materiasMatriculadas,
       ultimosTemasRevisados:
           ultimosTemasRevisados ?? this.ultimosTemasRevisados,
       ultimoRevisado: ultimoRevisado ?? this.ultimoRevisado,
-      cuatrimestreActual: cuatrimestreActual ?? this.cuatrimestreActual,
+      cuatrimestreActivo: cuatrimestreActivo ?? cuatrimestreActual ?? this.cuatrimestreActivo,
       oid: oid ?? this.oid,
       tid: tid ?? this.tid,
     );
@@ -392,7 +417,9 @@ class StudentUserModel {
         'nombre': nombre,
         'email': email,
         'programa': programa,
-        'cuatrimestre_actual': cuatrimestreActual,
+        'cuatrimestre_activo': cuatrimestreActivo,
+        'cuatrimestre_actual': cuatrimestreActivo,
+        'materias_matriculadas': materiasMatriculadas,
         'pin_hash': pinHash,
         'progreso_materias': progresoMaterias,
         'ultimos_temas_revisados': ultimosTemasRevisados,
@@ -416,7 +443,9 @@ class StudentUserModel {
       'nombre': nombre,
       'email': email,
       'programa': programa,
-      'cuatrimestre_actual': cuatrimestreActual,
+      'cuatrimestre_activo': cuatrimestreActivo,
+      'cuatrimestre_actual': cuatrimestreActivo,
+      'materias_matriculadas': materiasMatriculadas,
       'pin_hash': pinHash,
       'progreso_materias': UserPayloadCipher.encryptJson(
         progresoMaterias,

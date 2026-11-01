@@ -32,11 +32,13 @@ class DesktopDashboardScreen extends StatefulWidget {
     required this.onOpenStudentProfile,
     required this.onOpenClaseViva,
     required this.onOpenTemario,
+    this.onOpenMiCuatrimestre,
   });
 
   final VoidCallback onOpenStudentProfile;
   final ValueChanged<String> onOpenClaseViva;
   final ValueChanged<AsignaturaModel> onOpenTemario;
+  final VoidCallback? onOpenMiCuatrimestre;
 
   @override
   State<DesktopDashboardScreen> createState() => _DesktopDashboardScreenState();
@@ -100,8 +102,12 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     final session = SessionScope.maybeOf(context);
-    if (session != null && session.cuatrimestreActual != _selectedCuatrimestre) {
-      _selectedCuatrimestre = session.cuatrimestreActual;
+    if (session != null) {
+      if (session.hasMatriculaConfigured && _selectedCuatrimestre != 0) {
+        _selectedCuatrimestre = 0;
+      } else if (!session.hasMatriculaConfigured && _selectedCuatrimestre == 0) {
+        _selectedCuatrimestre = session.cuatrimestreActivo;
+      }
     }
   }
 
@@ -113,10 +119,21 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
 
   List<AsignaturaModel> _resolveSubjectsForCuatrimestre(
     MarkdownCurriculumService? curriculum,
+    InstitutionalSessionController? session,
     int cuat,
   ) {
     final db = curriculum?.database;
     if (db == null || db.allAsignaturas.isEmpty) return const [];
+    if (cuat == 0) {
+      if (session != null && session.hasMatriculaConfigured) {
+        final enrolled = session.materiasMatriculadas
+            .map((c) => db.findAsignatura(c))
+            .whereType<AsignaturaModel>()
+            .toList();
+        if (enrolled.isNotEmpty) return enrolled;
+      }
+      return db.byCuatrimestre(session?.cuatrimestreActivo ?? 1);
+    }
     return db.byCuatrimestre(cuat);
   }
 
@@ -180,6 +197,7 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
     final curriculum = CurriculumScope.maybeOf(context);
     final cuatSubjects = _resolveSubjectsForCuatrimestre(
       curriculum,
+      session,
       _selectedCuatrimestre,
     );
 
@@ -266,6 +284,7 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                           setState(() => _selectedSubject = subject);
                         },
                         onOpenStudentProfile: widget.onOpenStudentProfile,
+                        onEditMatricula: widget.onOpenMiCuatrimestre,
                       ),
                     ),
                   ),

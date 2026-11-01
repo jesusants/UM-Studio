@@ -23,6 +23,7 @@ class DesktopSidebar extends StatefulWidget {
     required this.selectedSubject,
     required this.onSelectSubject,
     required this.onOpenStudentProfile,
+    this.onEditMatricula,
   });
 
   final int selectedCuatrimestre;
@@ -31,6 +32,7 @@ class DesktopSidebar extends StatefulWidget {
   final AsignaturaModel? selectedSubject;
   final ValueChanged<AsignaturaModel> onSelectSubject;
   final VoidCallback onOpenStudentProfile;
+  final VoidCallback? onEditMatricula;
 
   @override
   State<DesktopSidebar> createState() => _DesktopSidebarState();
@@ -173,11 +175,12 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: 12,
+              itemCount: 13,
               separatorBuilder: (_, __) => const SizedBox(width: 6),
               itemBuilder: (context, index) {
-                final cuat = index + 1;
+                final cuat = index;
                 final isSelected = cuat == widget.selectedCuatrimestre;
+                final label = cuat == 0 ? '★ Matrícula' : 'C$cuat';
                 return TapScale(
                   onTap: () {
                     HapticFeedback.selectionClick();
@@ -200,7 +203,7 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                       ),
                     ),
                     child: Text(
-                      'C$cuat',
+                      label,
                       style: mono(
                         fontSize: 11,
                         fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
@@ -222,7 +225,9 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
             children: [
               Flexible(
                 child: Text(
-                  'ASIGNATURAS (${widget.subjects.length})',
+                  widget.selectedCuatrimestre == 0
+                      ? 'MATRÍCULA ACTIVA (${widget.subjects.length})'
+                      : 'ASIGNATURAS (${widget.subjects.length})',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: mono(
@@ -234,14 +239,44 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                 ),
               ),
               const SizedBox(width: 6),
-              Text(
-                'C${widget.selectedCuatrimestre}',
-                style: mono(
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w600,
-                  color: tokens.textTertiary,
+              if (widget.onEditMatricula != null)
+                TapScale(
+                  onTap: widget.onEditMatricula,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: tokens.accentGreen.o(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: tokens.accentGreen.o(0.35)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.edit_note_rounded, size: 12, color: tokens.accentGreen),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Editar Matrícula',
+                          style: mono(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: tokens.accentGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Text(
+                  widget.selectedCuatrimestre == 0
+                      ? 'MATRÍCULA'
+                      : 'C${widget.selectedCuatrimestre}',
+                  style: mono(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: tokens.textTertiary,
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 10),

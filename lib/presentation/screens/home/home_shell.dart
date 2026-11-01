@@ -12,6 +12,7 @@ import '../../widgets/header_morph_avatar.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
 import '../clases/asignatura_temario_page.dart';
+import '../matricula/mi_cuatrimestre_screen.dart';
 import '../desktop/desktop_dashboard_screen.dart';
 import 'tabs/calendario_tab.dart';
 import 'tabs/clases_tab.dart';
@@ -32,6 +33,32 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   final PageController _pageController = PageController();
   int _tab = 0;
+  bool _onboardingGateChecked = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final session = SessionScope.maybeOf(context);
+    if (!_onboardingGateChecked &&
+        session != null &&
+        session.isInitialized &&
+        session.isAuthenticated) {
+      if (!session.hasMatriculaConfigured) {
+        _onboardingGateChecked = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _openMiCuatrimestreModal(isMandatory: true);
+          }
+        });
+      } else {
+        _onboardingGateChecked = true;
+      }
+    }
+  }
+
+  void _openMiCuatrimestreModal({bool isMandatory = false}) {
+    MiCuatrimestreScreen.show(context, isMandatory: isMandatory);
+  }
 
   @override
   void dispose() {
@@ -159,6 +186,64 @@ class _HomeShellState extends State<HomeShell> {
                     const SizedBox(height: 14),
                     const IosHairline(),
                     const SizedBox(height: 12),
+
+                    // Acceso directo a Mi Matrícula (Selección Manual)
+                    TapScale(
+                      onTap: () {
+                        Navigator.of(sheetCtx).pop();
+                        _openMiCuatrimestreModal(isMandatory: false);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: p.green.o(0.12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: p.green.o(0.40)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_calendar_rounded,
+                              size: 20,
+                              color: p.green,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'MI MATRÍCULA ACADÉMICA',
+                                    style: sectionMicroStyle(p),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    session.hasMatriculaConfigured
+                                        ? 'C${session.cuatrimestreActivo} • ${session.materiasMatriculadas.length} asignaturas inscritas'
+                                        : 'Configurar asignaturas del cuatrimestre',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: p.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 20,
+                              color: p.green,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
 
                     Row(
                       children: [
@@ -523,6 +608,7 @@ class _HomeShellState extends State<HomeShell> {
                       syncStatus:
                           session?.syncService.status ?? GitHubSyncStatus.idle,
                       onTapIdentity: _openStudentProfileSheet,
+                      onTapMatricula: () => _openMiCuatrimestreModal(isMandatory: false),
                     ),
                     Expanded(
                       child: PageView(
@@ -556,10 +642,12 @@ class _Header extends StatelessWidget {
   const _Header({
     required this.syncStatus,
     required this.onTapIdentity,
+    required this.onTapMatricula,
   });
 
   final GitHubSyncStatus syncStatus;
   final VoidCallback onTapIdentity;
+  final VoidCallback onTapMatricula;
 
   @override
   Widget build(BuildContext context) {
@@ -585,81 +673,141 @@ class _Header extends StatelessWidget {
         badgeText = 'Ing. Energética';
     }
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(20, 14 + top, 20, 13),
-      decoration: BoxDecoration(
-        color: p.glass,
-        border: Border(bottom: BorderSide(color: p.cardBorder.o(0.8))),
-      ),
-      child: Row(
-        children: [
-          HeaderMorphAvatar(
-            size: 36,
-            photoBytes: session?.userPhotoBytes,
-            onTap: () {
-              // Alternancia automática e interactiva con lógica anti-tilde
-            },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 420;
+        return Container(
+          padding: EdgeInsets.fromLTRB(16, 14 + top, 16, 13),
+          decoration: BoxDecoration(
+            color: p.glass,
+            border: Border(bottom: BorderSide(color: p.cardBorder.o(0.8))),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TapScale(
-              onTap: onTapIdentity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppConstants.appTitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.3,
-                      color: p.textPrimary,
+          child: Row(
+            children: [
+              HeaderMorphAvatar(
+                size: 32,
+                photoBytes: session?.userPhotoBytes,
+                onTap: () {
+                  // Alternancia automática e interactiva con lógica anti-tilde
+                },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TapScale(
+                  onTap: onTapIdentity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppConstants.appTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.1,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                          color: p.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        session?.hasMatriculaConfigured == true
+                            ? 'C${session!.cuatrimestreActivo} • ${session.materiasMatriculadas.length} materias'
+                            : AppConstants.programSubtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 10, color: p.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              TapScale(
+                onTap: onTapMatricula,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: session?.hasMatriculaConfigured == true
+                        ? p.green.o(0.12)
+                        : p.card,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: session?.hasMatriculaConfigured == true
+                          ? p.green.o(0.40)
+                          : p.cardBorder,
                     ),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    AppConstants.programSubtitle,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 11, color: p.textSecondary),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.edit_calendar_rounded,
+                        size: 12,
+                        color: session?.hasMatriculaConfigured == true
+                            ? p.green
+                            : p.textSecondary,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        session?.hasMatriculaConfigured == true
+                            ? 'C${session!.cuatrimestreActivo}'
+                            : 'Matrícula',
+                        style: mono(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          color: session?.hasMatriculaConfigured == true
+                              ? p.green
+                              : p.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          const ThemeToggleButton(),
-          const SizedBox(width: 8),
-          TapScale(
-            onTap: onTapIdentity,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: p.card,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: p.cardBorder),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  PulseDot(color: dotColor),
-                  const SizedBox(width: 6),
-                  Text(
-                    badgeText,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: p.textSecondary,
-                    ),
+              const SizedBox(width: 4),
+              const ThemeToggleButton(),
+              const SizedBox(width: 4),
+              TapScale(
+                onTap: onTapIdentity,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 6 : 8,
+                    vertical: 4,
                   ),
-                ],
+                  decoration: BoxDecoration(
+                    color: p.card,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: p.cardBorder),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PulseDot(color: dotColor, size: 6),
+                      if (!isCompact) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          badgeText,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w500,
+                            color: p.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

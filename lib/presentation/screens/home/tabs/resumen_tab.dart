@@ -72,6 +72,23 @@ class ResumenTab extends StatelessWidget {
     if (db == null || db.allAsignaturas.isEmpty) return null;
 
     if (session != null) {
+      if (session.hasMatriculaConfigured) {
+        final enrolled = session.materiasMatriculadas
+            .map((c) => db.findAsignatura(c))
+            .whereType<AsignaturaModel>()
+            .toList();
+        if (enrolled.isNotEmpty) {
+          final lastRev = session.ultimoRevisado;
+          if (lastRev != null) {
+            final fromRev = enrolled.firstWhere(
+              (a) => a.codigo == lastRev.codigoMateria,
+              orElse: () => enrolled.first,
+            );
+            return fromRev;
+          }
+          return enrolled.first;
+        }
+      }
       final lastRev = session.ultimoRevisado;
       if (lastRev != null) {
         final fromRev = db.findAsignatura(lastRev.codigoMateria);
@@ -81,7 +98,7 @@ class ResumenTab extends StatelessWidget {
         final found = db.findAsignatura(code);
         if (found != null) return found;
       }
-      final semList = db.byCuatrimestre(session.cuatrimestreActual);
+      final semList = db.byCuatrimestre(session.cuatrimestreActivo);
       if (semList.isNotEmpty) return semList.first;
     }
     return db.findAsignatura('02021810') ?? db.allAsignaturas.first;
@@ -315,7 +332,9 @@ class ResumenTab extends StatelessWidget {
                           ? 'TU AGENDA DE HOY'
                           : (lastTema != null
                               ? 'CONTINUAR TEMA'
-                              : 'CÁTEDRA ACTIVA • CUAT. ${session?.cuatrimestreActual ?? 2}'),
+                              : (session?.hasMatriculaConfigured == true
+                                  ? 'CÁTEDRA ACTIVA • ${session!.materiasMatriculadas.length} MATERIAS'
+                                  : 'CÁTEDRA ACTIVA • CUAT. ${session?.cuatrimestreActivo ?? 1}')),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

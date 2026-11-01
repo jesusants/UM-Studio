@@ -6,6 +6,7 @@ import '../../../../data/datasources/academic_seed_data.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
+import '../../matricula/mi_cuatrimestre_screen.dart';
 
 /// Pestaña 4: "Estudio Extraclase" alimentada desde `ingenieria_energetica.md`
 /// con filtro horizontal estilo píldora iOS por Cuatrimestre (`1..12`), `Mis Materias`
@@ -182,7 +183,7 @@ class _EstudioTabState extends State<EstudioTab> {
           child: Row(
             children: [
               _FilterPill(
-                label: 'Mis Materias',
+                label: '★ Mis Materias',
                 selected: _selectedFilter == -1,
                 accentColor: p.green,
                 onTap: () => setState(() => _selectedFilter = -1),
@@ -211,28 +212,51 @@ class _EstudioTabState extends State<EstudioTab> {
             child: Column(
               children: [
                 Text(
-                  'No se encontraron asignaturas con ese filtro.',
+                  _selectedFilter == -1 && session?.hasMatriculaConfigured != true
+                      ? 'Aún no has configurado tus asignaturas matriculadas.'
+                      : 'No se encontraron asignaturas con ese filtro.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12.5, color: p.textSecondary),
                 ),
                 const SizedBox(height: 8),
-                TapScale(
-                  onTap: () {
-                    _searchCtrl.clear();
-                    setState(() {
-                      _searchQuery = '';
-                      _selectedFilter = 0;
-                    });
-                  },
-                  child: Text(
-                    'Ver las 56 asignaturas del Plan 8108',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: p.green,
+                if (_selectedFilter == -1 && session?.hasMatriculaConfigured != true)
+                  TapScale(
+                    onTap: () => MiCuatrimestreScreen.show(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: p.green.o(0.14),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: p.green.o(0.40)),
+                      ),
+                      child: Text(
+                        '✏️ Configurar Mi Matrícula',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: p.green,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  TapScale(
+                    onTap: () {
+                      _searchCtrl.clear();
+                      setState(() {
+                        _searchQuery = '';
+                        _selectedFilter = 0;
+                      });
+                    },
+                    child: Text(
+                      'Ver las 56 asignaturas del Plan 8108',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: p.green,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           )
