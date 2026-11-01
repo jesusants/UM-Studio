@@ -7,6 +7,7 @@ import '../../../../core/utils/fullscreen/fullscreen_helper.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
+import '../../../widgets/unimagdalena_portal_button.dart';
 import '../desktop_theme_tokens.dart';
 
 /// Sidebar izquierdo (24% del ancho) para el Dashboard de Escritorio:
@@ -145,6 +146,9 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                   ],
                 ),
               ),
+              const SizedBox(width: 6),
+              // Botón Expandible Módulo Estudiantes Unimagdalena (AyRe)
+              const UnimagdalenaPortalButton(),
               const SizedBox(width: 6),
               // Conmutador de Tema Dual Dinámico (Sol / Luna)
               _ThemeTogglePill(

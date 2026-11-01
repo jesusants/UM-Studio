@@ -9,6 +9,7 @@ import '../../../data/models/curriculum_models.dart';
 import '../../../data/services/github_sync_service.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/header_morph_avatar.dart';
+import '../../widgets/unimagdalena_portal_button.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
 import '../clases/asignatura_temario_page.dart';
@@ -690,6 +691,10 @@ class _Header extends StatelessWidget {
                 onTap: () {
                   // Alternancia automática e interactiva con lógica anti-tilde
                 },
+              ),
+              const SizedBox(width: 6),
+              UnimagdalenaPortalButton(
+                expandOnHover: !isCompact,
               ),
               const SizedBox(width: 8),
               Expanded(
