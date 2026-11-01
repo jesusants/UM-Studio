@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -1087,6 +1087,39 @@ void main() {
         expect(find.byType(DesktopLiveClock), findsOneWidget);
       }
 
+      // 4. Ocultar y restaurar el temporizador Pomodoro en el Dashboard de Escritorio
+      expect(find.byType(DesktopFocusTimer), findsOneWidget);
+      expect(find.text('Ocultar'), findsOneWidget);
+
+      // Pulsar 'Ocultar' para ocultar el temporizador
+      await tester.tap(find.text('Ocultar'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(DesktopFocusTimer), findsNothing);
+      expect(find.text('TEMPORIZADOR OCULTO'), findsOneWidget);
+      expect(find.text('Mostrar temporizador'), findsOneWidget);
+
+      // Pulsar 'Mostrar temporizador' para restaurarlo
+      await tester.tap(find.text('Mostrar temporizador'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(DesktopFocusTimer), findsOneWidget);
+      expect(find.text('TEMPORIZADOR OCULTO'), findsNothing);
+
+      // Alternar con la tecla física 'P'
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyP);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(DesktopFocusTimer), findsNothing);
+      expect(find.text('TEMPORIZADOR OCULTO'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyP);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(DesktopFocusTimer), findsOneWidget);
+
       tester.view.reset();
     });
 
@@ -1103,6 +1136,7 @@ void main() {
             home: Scaffold(
               body: DesktopFocusTimer(
                 activeSubjects: subjects,
+                onHideTimer: () {},
               ),
             ),
           ),
@@ -1122,6 +1156,9 @@ void main() {
       await tester.tap(find.text('Pausa corta'));
       await tester.pump();
       expect(find.text('05:00'), findsOneWidget);
+
+      // El botón de Ocultar está presente cuando onHideTimer está configurado
+      expect(find.text('Ocultar'), findsOneWidget);
     });
   });
 }

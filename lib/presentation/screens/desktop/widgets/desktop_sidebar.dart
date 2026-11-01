@@ -25,6 +25,8 @@ class DesktopSidebar extends StatefulWidget {
     required this.onSelectSubject,
     required this.onOpenStudentProfile,
     this.onEditMatricula,
+    this.isTimerVisible,
+    this.onToggleTimer,
   });
 
   final int selectedCuatrimestre;
@@ -34,6 +36,8 @@ class DesktopSidebar extends StatefulWidget {
   final ValueChanged<AsignaturaModel> onSelectSubject;
   final VoidCallback onOpenStudentProfile;
   final VoidCallback? onEditMatricula;
+  final bool? isTimerVisible;
+  final VoidCallback? onToggleTimer;
 
   @override
   State<DesktopSidebar> createState() => _DesktopSidebarState();
@@ -417,6 +421,40 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                     ),
                   ),
                 ),
+                if (widget.onToggleTimer != null) ...[
+                  const SizedBox(width: 5),
+                  TapScale(
+                    onTap: widget.onToggleTimer,
+                    child: Tooltip(
+                      message: (widget.isTimerVisible ?? true)
+                          ? 'Ocultar temporizador Pomodoro (P)'
+                          : 'Mostrar temporizador Pomodoro (P)',
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: (widget.isTimerVisible ?? true)
+                              ? tokens.surface
+                              : tokens.accentIndigo.o(0.12),
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(
+                            color: (widget.isTimerVisible ?? true)
+                                ? tokens.border
+                                : tokens.accentIndigo.o(0.4),
+                          ),
+                        ),
+                        child: Icon(
+                          (widget.isTimerVisible ?? true)
+                              ? Icons.timer_outlined
+                              : Icons.timer_off_outlined,
+                          size: 16,
+                          color: (widget.isTimerVisible ?? true)
+                              ? tokens.textSecondary
+                              : tokens.accentIndigo,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

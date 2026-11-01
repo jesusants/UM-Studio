@@ -28,10 +28,12 @@ class DesktopFocusTimer extends StatefulWidget {
     super.key,
     required this.activeSubjects,
     this.onOpenClaseViva,
+    this.onHideTimer,
   });
 
   final List<AsignaturaModel> activeSubjects;
   final ValueChanged<String>? onOpenClaseViva;
+  final VoidCallback? onHideTimer;
 
   @override
   DesktopFocusTimerState createState() => DesktopFocusTimerState();
@@ -257,6 +259,42 @@ class DesktopFocusTimerState extends State<DesktopFocusTimer> {
                   }).toList(),
                 ),
               ),
+              if (widget.onHideTimer != null) ...[
+                const SizedBox(width: 8),
+                TapScale(
+                  onTap: widget.onHideTimer,
+                  child: Tooltip(
+                    message: 'Ocultar temporizador (P)',
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(color: tokens.borderSubtle),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.visibility_off_outlined,
+                            size: 14,
+                            color: tokens.textSecondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Ocultar',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: tokens.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 16),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/fullscreen/fullscreen_helper.dart';
@@ -24,7 +25,7 @@ import 'widgets/desktop_subject_detail_view.dart';
 /// - Soporte bidireccional nativo para Modo Oscuro OLED y Modo Claro.
 /// - Navegación Maestro-Detalle continua (al pulsar una materia en la barra lateral,
 ///   la columna central pasa a detalle panorámico con visores KaTeX/Slides).
-/// - Atajos de teclado físicos (`T` tema, `F` fullscreen, `Espacio` timer, `Esc` volver).
+/// - Atajos de teclado físicos (`T` tema, `F` fullscreen, `P` temporizador, `Espacio` timer, `Esc` volver).
 /// - Cero referencias a "Uso Diario" o cuotas de IA.
 class DesktopDashboardScreen extends StatefulWidget {
   const DesktopDashboardScreen({
@@ -49,6 +50,28 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
   final GlobalKey<DesktopFocusTimerState> _timerKey =
       GlobalKey<DesktopFocusTimerState>();
 
+  static const String _kShowTimerPrefKey = 'desktop_show_focus_timer';
+  bool _showFocusTimer = true;
+
+  Future<void> _loadTimerVisibility() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final show = prefs.getBool(_kShowTimerPrefKey);
+      if (show != null && mounted) {
+        setState(() => _showFocusTimer = show);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _setTimerVisibility(bool visible) async {
+    HapticFeedback.lightImpact();
+    setState(() => _showFocusTimer = visible);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_kShowTimerPrefKey, visible);
+    } catch (_) {}
+  }
+
   late final AnimationController _staggerController;
   late final Animation<double> _col1Opacity;
   late final Animation<Offset> _col1Slide;
@@ -63,6 +86,7 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
   @override
   void initState() {
     super.initState();
+    _loadTimerVisibility();
     _staggerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 550),
@@ -160,11 +184,25 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
         }
       }
 
-      // Espacio: Iniciar / Pausar temporizador Pomodoro
-      if (event.logicalKey == LogicalKeyboardKey.space) {
-        if (_selectedSubject == null && _timerKey.currentState != null) {
-          _timerKey.currentState?.togglePlayPause();
+      // P: Alternar visibilidad del temporizador Pomodoro
+      if (event.logicalKey == LogicalKeyboardKey.keyP) {
+        if (_selectedSubject == null) {
+          _setTimerVisibility(!_showFocusTimer);
           return KeyEventResult.handled;
+        }
+      }
+
+      // Espacio: Iniciar / Pausar temporizador Pomodoro (o mostrar si estaba oculto)
+      if (event.logicalKey == LogicalKeyboardKey.space) {
+        if (_selectedSubject == null) {
+          if (!_showFocusTimer) {
+            _setTimerVisibility(true);
+            return KeyEventResult.handled;
+          }
+          if (_timerKey.currentState != null) {
+            _timerKey.currentState?.togglePlayPause();
+            return KeyEventResult.handled;
+          }
         }
       }
 
@@ -285,6 +323,8 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                         },
                         onOpenStudentProfile: widget.onOpenStudentProfile,
                         onEditMatricula: widget.onOpenMiCuatrimestre,
+                        isTimerVisible: _showFocusTimer,
+                        onToggleTimer: () => _setTimerVisibility(!_showFocusTimer),
                       ),
                     ),
                   ),
@@ -329,18 +369,35 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                                   ),
                                   const SizedBox(height: 16),
 
-                                  // Bloque de Enfoque Pomodoro
+                                  // Bloque de Enfoque Pomodoro O Vista Alternativa Oculta
                                   Expanded(
-                                    child: DesktopFocusTimer(
-                                      key: _timerKey,
-                                      activeSubjects: cuatSubjects,
-                                      onOpenClaseViva: (code) {
-                                        final matched = cuatSubjects.firstWhere(
-                                          (s) => s.codigo == code,
-                                          orElse: () => leadSubject ?? cuatSubjects.first,
-                                        );
-                                        setState(() => _selectedSubject = matched);
-                                      },
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 240),
+                                      switchInCurve: Curves.easeOutCubic,
+                                      switchOutCurve: Curves.easeInCubic,
+                                      child: _showFocusTimer
+                                          ? DesktopFocusTimer(
+                                              key: _timerKey,
+                                              activeSubjects: cuatSubjects,
+                                              onHideTimer: () => _setTimerVisibility(false),
+                                              onOpenClaseViva: (code) {
+                                                final matched = cuatSubjects.firstWhere(
+                                                  (s) => s.codigo == code,
+                                                  orElse: () => leadSubject ?? cuatSubjects.first,
+                                                );
+                                                setState(() => _selectedSubject = matched);
+                                              },
+                                            )
+                                          : _DesktopTimerHiddenCard(
+                                              key: const ValueKey('desktop_timer_hidden_card'),
+                                              tokens: tokens,
+                                              subjects: cuatSubjects,
+                                              reminders: userReminders,
+                                              onShowTimer: () => _setTimerVisibility(true),
+                                              onSelectSubject: (subject) {
+                                                setState(() => _selectedSubject = subject);
+                                              },
+                                            ),
                                     ),
                                   ),
                                 ],
@@ -539,5 +596,303 @@ class _DesktopNextMilestoneBanner extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+
+/// Tarjeta de modo ambiente y estudio mostrada cuando el usuario oculta el temporizador Pomodoro.
+/// Mantiene balance estético en la columna central, da acceso a asignaturas y permite restaurar el temporizador.
+class _DesktopTimerHiddenCard extends StatelessWidget {
+  const _DesktopTimerHiddenCard({
+    super.key,
+    required this.tokens,
+    required this.subjects,
+    required this.reminders,
+    required this.onShowTimer,
+    required this.onSelectSubject,
+  });
+
+  final DesktopThemeTokens tokens;
+  final List<AsignaturaModel> subjects;
+  final List<CalendarReminderModel> reminders;
+  final VoidCallback onShowTimer;
+  final ValueChanged<AsignaturaModel> onSelectSubject;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: tokens.border, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: tokens.shadowColor,
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Encabezado con estado y acción de restauración
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: tokens.accentIndigo.o(0.14),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.timer_off_outlined,
+                  size: 16,
+                  color: tokens.accentIndigo,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(),
+                  clipBehavior: Clip.antiAlias,
+                  child: Row(
+                    children: [
+                      Text(
+                        'TEMPORIZADOR OCULTO',
+                        maxLines: 1,
+                        style: mono(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.8,
+                          color: tokens.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: tokens.accentGreen.o(0.12),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: tokens.accentGreen.o(0.25)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Dot(color: tokens.accentGreen, size: 5),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Modo Ambiente & Estudio',
+                              style: mono(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: tokens.accentGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Botón Restaurar / Mostrar Temporizador
+              TapScale(
+                onTap: onShowTimer,
+                child: Tooltip(
+                  message: 'Mostrar temporizador Pomodoro (P)',
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: tokens.accentIndigo.o(0.12),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(color: tokens.accentIndigo.o(0.4)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.timer_outlined,
+                          size: 14,
+                          color: tokens.accentIndigo,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Mostrar temporizador',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: tokens.accentIndigo,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Banner Zen descriptivo
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: tokens.surfaceElevated,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: tokens.borderSubtle),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.spa_outlined, size: 16, color: tokens.accentIndigo),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Espacio de estudio libre de distracciones. Selecciona una asignatura para explorar sus temas y clases vivas.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: tokens.textSecondary,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Atajo: P',
+                  style: mono(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: tokens.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Lista de asignaturas con temarios para estudio directo
+          Expanded(
+            child: subjects.isEmpty
+                ? Center(
+                    child: Text(
+                      'No hay asignaturas disponibles en este cuatrimestre.',
+                      style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                    ),
+                  )
+                : ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: subjects.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final subject = subjects[index];
+                      final color = _parseColor(subject.colorHex);
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: tokens.surfaceElevated,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: tokens.borderSubtle),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: color.o(0.14),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: color.o(0.35)),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  subject.codigo.length >= 2
+                                      ? subject.codigo.substring(subject.codigo.length - 2)
+                                      : subject.codigo,
+                                  style: mono(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: color,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    subject.nombre,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: tokens.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${subject.temas.length} temas • ${subject.creditos} Créditos • ${subject.categoria}',
+                                    style: mono(
+                                      fontSize: 9.5,
+                                      color: tokens.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            TapScale(
+                              onTap: () => onSelectSubject(subject),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: color.o(0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: color.o(0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Ver Temario',
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: color,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 12,
+                                      color: color,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Color _parseColor(String hex) {
+    final clean = hex.replaceAll('#', '');
+    if (clean.length == 6) {
+      return Color(int.parse('0xFF$clean'));
+    }
+    return const Color(0xFF5E5CE6);
   }
 }
