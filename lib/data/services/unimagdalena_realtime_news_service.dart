@@ -366,13 +366,26 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
 
         final id = 'unimag_scraped_${i}_${title.hashCode.abs()}';
 
+        // Sanitización estricta de esquemas de URL para prevenir inyección de javascript: o data:
+        final parsedUrl = Uri.tryParse(link);
+        final safeUrl = (parsedUrl != null &&
+                (parsedUrl.scheme == 'https' || parsedUrl.scheme == 'http'))
+            ? link
+            : 'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias';
+
+        final parsedImg = Uri.tryParse(imgSrc);
+        final safeImg = (parsedImg != null &&
+                (parsedImg.scheme == 'https' || parsedImg.scheme == 'http'))
+            ? imgSrc
+            : _defaultImage;
+
         results.add(
           NoticiaModel(
             id: id,
             title: title,
             summary: summary,
-            url: link,
-            imageUrl: imgSrc,
+            url: safeUrl,
+            imageUrl: safeImg,
             dateText: dateText,
             category: catText,
             publishedAt: DateTime.now(),

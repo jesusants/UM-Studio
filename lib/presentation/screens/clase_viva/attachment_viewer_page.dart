@@ -46,7 +46,7 @@ class AttachmentViewerPage extends StatelessWidget {
     final rawUrl = adjunto.urlArchivo;
     if (rawUrl == null || rawUrl.isEmpty) return;
     final uri = Uri.tryParse(rawUrl);
-    if (uri == null) return;
+    if (uri == null || (uri.scheme != 'https' && uri.scheme != 'http')) return;
 
     if (rawUrl.contains('storage.unimagdalena.edu.co')) {
       showIosToast(
@@ -57,7 +57,9 @@ class AttachmentViewerPage extends StatelessWidget {
       return;
     }
 
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override

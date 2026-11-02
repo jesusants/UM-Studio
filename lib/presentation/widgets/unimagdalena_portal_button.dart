@@ -47,9 +47,11 @@ class _UnimagdalenaPortalButtonState extends State<UnimagdalenaPortalButton> {
       widget.onTap!();
       return;
     }
-    final uri = Uri.parse(_effectiveUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final uri = Uri.tryParse(_effectiveUrl);
+    if (uri != null && (uri.scheme == 'https' || uri.scheme == 'http')) {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
     }
   }
 

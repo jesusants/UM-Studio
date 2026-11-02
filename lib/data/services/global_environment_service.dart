@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/institutional_validator.dart';
 import '../models/global_env_config.dart';
 import 'github_sync_service.dart';
 
@@ -140,6 +141,24 @@ class GlobalEnvironmentService extends ChangeNotifier {
     required String adminPin,
     GitHubSyncService? syncService,
   }) async {
+    // Verificación estricta de plataforma (solo Web) y credenciales de administrador maestro
+    if (!kIsWeb) {
+      return (
+        success: false,
+        error: 'Operación denegada: La consola de administración solo opera en entorno Web.',
+      );
+    }
+
+    if (!InstitutionalValidator.verifyMasterAdmin(
+      userOrEmail: adminUsername,
+      pin: adminPin,
+    )) {
+      return (
+        success: false,
+        error: 'Acceso no autorizado: credenciales de administrador inválidas.',
+      );
+    }
+
     _isPublishing = true;
     _lastError = null;
     notifyListeners();

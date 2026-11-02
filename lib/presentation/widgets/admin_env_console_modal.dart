@@ -18,6 +18,8 @@ class AdminEnvConsoleModal extends StatefulWidget {
 
   static Future<void> show(BuildContext context) async {
     if (!kIsWeb) return;
+    final session = SessionScope.maybeOf(context);
+    if (session == null || !session.isAdmin) return;
     return showDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -112,9 +114,10 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
     });
 
     final session = SessionScope.maybeOf(context);
+    final adminUsername = session?.currentUser?.username ?? '';
     final result = await GlobalEnvironmentService.instance.publishGlobalConfig(
       newConfig: _config,
-      adminUsername: session?.currentUser?.username ?? 'jsierra',
+      adminUsername: adminUsername,
       adminPin: '81991042249674',
       syncService: session?.syncService,
     );

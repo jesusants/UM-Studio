@@ -363,7 +363,11 @@ class _DesktopNewsCardState extends State<_DesktopNewsCard> {
     if (url.isEmpty) return;
     try {
       final uri = Uri.parse(url);
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (uri.scheme == 'https' || uri.scheme == 'http') {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      }
     } catch (_) {}
   }
 
