@@ -4,7 +4,7 @@
   "ai_model_name": "llama-3.3-70b-versatile",
   "ai_api_key_override": "",
   "ai_temperature": 0.2,
-  "ai_max_tokens": 256,
+  "ai_max_tokens": 1536,
   "ai_custom_system_prompt": "",
   "periodo_academico_actual": "2026-III",
   "corte_activo_global": 1,
@@ -21,6 +21,6 @@
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
   "maintenance_mode": true,
-  "updated_at": "2026-11-01T23:57:31.542",
+  "updated_at": "2026-11-02T00:00:05.507",
   "updated_by": "jsierra"
 }
