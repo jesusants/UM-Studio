@@ -14,6 +14,7 @@ import 'desktop_theme_tokens.dart';
 import 'widgets/desktop_focus_timer.dart';
 import 'widgets/desktop_live_clock.dart';
 import 'widgets/desktop_news_feed.dart';
+import '../../widgets/global_broadcast_banner.dart';
 import 'widgets/desktop_sidebar.dart';
 import 'widgets/desktop_subject_detail_view.dart';
 
@@ -348,6 +349,8 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                                 key: const ValueKey('desktop_mode_dashboard'),
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
+                                  // Banner de Anuncio Global en Tiempo Real
+                                  const GlobalBroadcastBanner(),
                                   // Reloj Digital Aislado
                                   const DesktopLiveClock(),
                                   const SizedBox(height: 16),

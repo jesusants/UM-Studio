@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'global_environment_service.dart';
 
 class GroqTopicAssistantService {
   // Ofuscación por fragmentos para evitar revocación automática de GitHub Secret Scanning
@@ -7,14 +8,19 @@ class GroqTopicAssistantService {
   static const String _p2 = 'p4G9ceWGdyb3FYhSco';
   static const String _p3 = 'i1hh9CSv1bZ01U5WVl5q';
 
-  static String get _apiKey {
+  static String get _defaultApiKey {
     const envKey = String.fromEnvironment('GROQ_API_KEY');
     return envKey.isNotEmpty ? envKey : '$_p1$_p2$_p3';
   }
 
+  static String get effectiveApiKey {
+    final override = GlobalEnvironmentService.instance.config.aiApiKeyOverride.trim();
+    if (override.isNotEmpty) return override;
+    return _defaultApiKey;
+  }
+
   static const String _endpoint =
       'https://api.groq.com/openai/v1/chat/completions';
-  static const String _primaryModel = 'llama-3.3-70b-versatile';
   static const String _fallbackModel = 'qwen/qwen3.8-27b';
 
   /// Ensambla un contexto estructurado y denso del tema para el asistente
@@ -85,6 +91,15 @@ class GroqTopicAssistantService {
     required List<Map<String, String>> historialReciente,
     required String preguntaUsuario,
   }) async {
+    final globalConfig = GlobalEnvironmentService.instance.config;
+    if (!globalConfig.aiEnabled) {
+      return 'El Asistente de IA está pausado temporalmente por administración institucional.';
+    }
+
+    final customInstruction = globalConfig.aiCustomSystemPrompt.trim().isNotEmpty
+        ? '\nINSTRUCCIÓN ADICIONAL DE ADMINISTRACIÓN:\n${globalConfig.aiCustomSystemPrompt.trim()}\n'
+        : '';
+
     final systemPrompt = '''
 Eres el Asistente Académico Contextual de UM Studio (Universidad del Magdalena).
 Tu alcance está ESTRICTAMENTE LIMITADO al tema que el estudiante tiene abierto en pantalla.
@@ -96,7 +111,7 @@ DATOS DEL TEMA ACTIVO:
 """
 $temaContextoCompleto
 """
-
+$customInstruction
 REGLAS INNEGOCIABLES:
 1. Responde ÚNICAMENTE basándote en el contenido, fórmulas, ejercicios y conceptos del tema activo proporcionado arriba.
 2. Si el estudiante pregunta sobre otra materia, otro tema distinto o cosas fuera de este tema, responde amablemente: "Solo tengo acceso al contexto del tema actual ($temaTitulo). Por favor, hazme preguntas relacionadas con esta sesión."
@@ -110,37 +125,53 @@ REGLAS INNEGOCIABLES:
       {'role': 'user', 'content': preguntaUsuario},
     ];
 
+    final primaryModel = globalConfig.aiModelName.trim().isNotEmpty
+        ? globalConfig.aiModelName.trim()
+        : 'llama-3.3-70b-versatile';
+
     // Intento con modelo primario con fallback automático en caso de incompatibilidad
     try {
-      return await _callGroqApi(_primaryModel, messages);
+      return await _callGroqApi(
+        modelName: primaryModel,
+        messages: messages,
+        temperature: globalConfig.aiTemperature,
+        maxTokens: globalConfig.aiMaxTokens,
+      );
     } catch (e) {
       final errStr = e.toString().toLowerCase();
       if (errStr.contains('400') ||
           errStr.contains('404') ||
           errStr.contains('decommissioned') ||
           errStr.contains('not_found')) {
-        return await _callGroqApi(_fallbackModel, messages);
+        return await _callGroqApi(
+          modelName: _fallbackModel,
+          messages: messages,
+          temperature: globalConfig.aiTemperature,
+          maxTokens: globalConfig.aiMaxTokens,
+        );
       }
       rethrow;
     }
   }
 
-  Future<String> _callGroqApi(
-    String modelName,
-    List<Map<String, String>> messages,
-  ) async {
+  Future<String> _callGroqApi({
+    required String modelName,
+    required List<Map<String, String>> messages,
+    double temperature = 0.2,
+    int maxTokens = 1024,
+  }) async {
     final response = await http.post(
       Uri.parse(_endpoint),
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'Authorization': 'Bearer $_apiKey',
+        'Authorization': 'Bearer $effectiveApiKey',
         'User-Agent': 'UM-Studio-Client/1.0',
       },
       body: jsonEncode({
         'model': modelName,
         'messages': messages,
-        'temperature': 0.2,
-        'max_tokens': 1024,
+        'temperature': temperature,
+        'max_tokens': maxTokens,
       }),
     );
 

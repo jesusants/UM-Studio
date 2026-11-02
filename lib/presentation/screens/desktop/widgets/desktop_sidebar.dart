@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,6 +8,7 @@ import '../../../../core/utils/fullscreen/fullscreen_helper.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
+import '../../../widgets/admin_env_console_modal.dart';
 import '../../../widgets/unimagdalena_portal_button.dart';
 import '../desktop_theme_tokens.dart';
 
@@ -155,6 +157,38 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                 ),
               ),
               const SizedBox(width: 6),
+              if (kIsWeb && session?.isAdmin == true) ...[
+                TapScale(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    AdminEnvConsoleModal.show(context);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: tokens.accentGreen.o(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: tokens.accentGreen.o(0.50), width: 1.2),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        PulseDot(color: tokens.accentGreen, size: 5),
+                        const SizedBox(width: 4),
+                        Text(
+                          '⚡ Admin',
+                          style: mono(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            color: tokens.accentGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               // Botón Expandible Módulo Estudiantes Unimagdalena (AyRe)
               const UnimagdalenaPortalButton(),
               const SizedBox(width: 6),

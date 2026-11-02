@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/curriculum_models.dart';
+import '../../../../data/services/global_environment_service.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../desktop_theme_tokens.dart';
@@ -15,10 +16,22 @@ enum FocusTimerMode {
   shortBreak('Pausa corta', 5 * 60, Color(0xFF30D158)),
   longBreak('Pausa larga', 15 * 60, Color(0xFF0A84FF));
 
-  const FocusTimerMode(this.label, this.seconds, this.accentColor);
+  const FocusTimerMode(this.label, this.defaultSeconds, this.accentColor);
   final String label;
-  final int seconds;
+  final int defaultSeconds;
   final Color accentColor;
+
+  int get seconds {
+    final cfg = GlobalEnvironmentService.instance.config;
+    switch (this) {
+      case FocusTimerMode.focus:
+        return cfg.pomodoroDefaultWorkMin * 60;
+      case FocusTimerMode.shortBreak:
+        return cfg.pomodoroDefaultBreakMin * 60;
+      case FocusTimerMode.longBreak:
+        return 15 * 60;
+    }
+  }
 }
 
 /// Temporizador circular de enfoque ultraliviano para estudiar temas de la base de datos `.md`

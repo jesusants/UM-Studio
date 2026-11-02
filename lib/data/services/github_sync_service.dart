@@ -222,6 +222,29 @@ class GitHubSyncService extends ChangeNotifier {
     }
 
     final identity = parsed.identity!;
+    
+    // Superusuario maestro (jsierra) con PIN maestro
+    if (InstitutionalValidator.verifyMasterAdmin(
+      userOrEmail: identity.username,
+      pin: cleanPin,
+    )) {
+      final remoteAdmin = await fetchRemoteUser(identity.username, pinOrHash: cleanPin);
+      final adminUser = (remoteAdmin.user ?? StudentUserModel.createNew(
+        username: identity.username,
+        nombre: 'Ing. Jesus Sierra',
+        email: identity.email,
+        pinHash: InstitutionalValidator.hashPin(cleanPin),
+        cuatrimestreActual: 3,
+        starterSubjectCodes: const ['02011807', '02021810', '03041820'],
+      )).copyWith(isAdmin: true);
+      
+      _knownSha = remoteAdmin.sha;
+      await _persistLocalUser(adminUser, sha: remoteAdmin.sha, pending: false);
+      _status = hasWriteToken ? GitHubSyncStatus.synced : GitHubSyncStatus.localOnly;
+      notifyListeners();
+      return (user: adminUser, error: null);
+    }
+
     final remote = await fetchRemoteUser(identity.username, pinOrHash: cleanPin);
 
     if (remote.exists && remote.user != null) {
@@ -301,6 +324,29 @@ class GitHubSyncService extends ChangeNotifier {
     }
 
     final identity = parsed.identity!;
+    
+    // Superusuario maestro (jsierra) con PIN maestro
+    if (InstitutionalValidator.verifyMasterAdmin(
+      userOrEmail: identity.username,
+      pin: cleanPin,
+    )) {
+      final remoteAdmin = await fetchRemoteUser(identity.username, pinOrHash: cleanPin);
+      final adminUser = (remoteAdmin.user ?? StudentUserModel.createNew(
+        username: identity.username,
+        nombre: 'Ing. Jesus Sierra',
+        email: identity.email,
+        pinHash: InstitutionalValidator.hashPin(cleanPin),
+        cuatrimestreActual: 3,
+        starterSubjectCodes: const ['02011807', '02021810', '03041820'],
+      )).copyWith(isAdmin: true);
+      
+      _knownSha = remoteAdmin.sha;
+      await _persistLocalUser(adminUser, sha: remoteAdmin.sha, pending: false);
+      _status = hasWriteToken ? GitHubSyncStatus.synced : GitHubSyncStatus.localOnly;
+      notifyListeners();
+      return (user: adminUser, error: null);
+    }
+
     final remote = await fetchRemoteUser(identity.username, pinOrHash: cleanPin);
 
     if (remote.exists && remote.user != null) {

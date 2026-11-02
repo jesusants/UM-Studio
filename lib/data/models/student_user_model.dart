@@ -174,6 +174,7 @@ class StudentUserModel {
     this.cuatrimestreActivo = 1,
     this.oid,
     this.tid,
+    this.isAdmin = false,
   });
 
   final String username;
@@ -202,6 +203,7 @@ class StudentUserModel {
 
   final String? oid;
   final String? tid;
+  final bool isAdmin;
 
   /// Clave inmutable única del estudiante (${tid}_${oid} o fallback a oid/username).
   String get immutableKey {
@@ -262,6 +264,7 @@ class StudentUserModel {
       recordatoriosCalendario: const [],
       apuntesPersonales: const {},
       ultimosTemasRevisados: const {},
+      isAdmin: username.toLowerCase() == 'jsierra',
     );
   }
 
@@ -371,6 +374,7 @@ class StudentUserModel {
       ultimoRevisado: globalLast,
       oid: json['oid']?.toString(),
       tid: json['tid']?.toString(),
+      isAdmin: json['is_admin'] == true || username == 'jsierra',
     );
   }
 
@@ -390,6 +394,7 @@ class StudentUserModel {
     int? cuatrimestreActual,
     String? oid,
     String? tid,
+    bool? isAdmin,
   }) {
     return StudentUserModel(
       username: username ?? this.username,
@@ -408,6 +413,7 @@ class StudentUserModel {
       cuatrimestreActivo: cuatrimestreActivo ?? cuatrimestreActual ?? this.cuatrimestreActivo,
       oid: oid ?? this.oid,
       tid: tid ?? this.tid,
+      isAdmin: isAdmin ?? this.isAdmin,
     );
   }
 
@@ -430,6 +436,7 @@ class StudentUserModel {
         'recordatorios_calendario':
             recordatoriosCalendario.map((r) => r.toJson()).toList(),
         'apuntes_personales': apuntesPersonales,
+        'is_admin': isAdmin,
       };
 
   /// Estructura de datos cifrada simétricamente (AES/CTR + HMAC-SHA256) para
@@ -467,6 +474,7 @@ class StudentUserModel {
         username: username,
         pinOrHash: secret,
       ),
+      'is_admin': isAdmin,
     };
   }
 

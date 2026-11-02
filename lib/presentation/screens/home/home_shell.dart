@@ -8,6 +8,11 @@ import '../../../core/theme/app_theme.dart';
 import '../../../data/models/curriculum_models.dart';
 import '../../../data/services/github_sync_service.dart';
 import '../../providers/app_scopes.dart';
+import 'package:flutter/foundation.dart';
+import '../../widgets/admin_env_console_modal.dart';
+import '../../widgets/global_broadcast_banner.dart';
+import '../maintenance/maintenance_mode_screen.dart';
+import '../../../data/services/global_environment_service.dart';
 import '../../widgets/header_morph_avatar.dart';
 import '../../widgets/unimagdalena_portal_button.dart';
 import '../../widgets/ios_primitives.dart';
@@ -571,70 +576,85 @@ class _HomeShellState extends State<HomeShell> {
     final isDark = ThemeScope.of(context).isDark;
     final session = SessionScope.maybeOf(context);
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Si el ancho horizontal >= 1024px: Despliega DesktopDashboardScreen a pantalla completa (100vw × 100vh)
-          if (constraints.maxWidth >= 1024) {
-            return Scaffold(
-              backgroundColor: p.background,
-              body: DesktopDashboardScreen(
-                onOpenStudentProfile: _openStudentProfileSheet,
-                onOpenClaseViva: _openClaseViva,
-                onOpenTemario: _openTemario,
-              ),
-            );
-          }
+    return AnimatedBuilder(
+      animation: GlobalEnvironmentService.instance,
+      builder: (context, _) {
+        final envConfig = GlobalEnvironmentService.instance.config;
+        final isAdmin = session?.isAdmin == true;
+        if (envConfig.maintenanceMode && !isAdmin) {
+          return const MaintenanceModeScreen();
+        }
 
-          final screenWidth = constraints.maxWidth;
-          final wide = screenWidth > AppConstants.maxPhoneViewportWidth;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Si el ancho horizontal >= 1024px: Despliega DesktopDashboardScreen a pantalla completa (100vw × 100vh)
+              if (constraints.maxWidth >= 1024) {
+                return Scaffold(
+                  backgroundColor: p.background,
+                  body: DesktopDashboardScreen(
+                    onOpenStudentProfile: _openStudentProfileSheet,
+                    onOpenClaseViva: _openClaseViva,
+                    onOpenTemario: _openTemario,
+                  ),
+                );
+              }
 
-          return Scaffold(
-            backgroundColor: p.background,
-            body: Center(
-              child: Container(
-                width: math.min(screenWidth, AppConstants.maxPhoneViewportWidth),
-                decoration: BoxDecoration(
-                  color: p.background,
-                  border: wide
-                      ? Border.symmetric(
-                          vertical: BorderSide(color: p.cardBorder.o(0.9)),
-                        )
-                      : null,
-                ),
-                child: Column(
-                  children: [
-                    _Header(
-                      syncStatus:
-                          session?.syncService.status ?? GitHubSyncStatus.idle,
-                      onTapIdentity: _openStudentProfileSheet,
-                      onTapMatricula: () => _openMiCuatrimestreModal(isMandatory: false),
+              final screenWidth = constraints.maxWidth;
+              final wide = screenWidth > AppConstants.maxPhoneViewportWidth;
+
+              return Scaffold(
+                backgroundColor: p.background,
+                body: Center(
+                  child: Container(
+                    width: math.min(screenWidth, AppConstants.maxPhoneViewportWidth),
+                    decoration: BoxDecoration(
+                      color: p.background,
+                      border: wide
+                          ? Border.symmetric(
+                              vertical: BorderSide(color: p.cardBorder.o(0.9)),
+                            )
+                          : null,
                     ),
-                    Expanded(
-                      child: PageView(
-                        controller: _pageController,
-                        physics: const BouncingScrollPhysics(),
-                        onPageChanged: (i) => setState(() => _tab = i),
-                        children: [
-                          ResumenTab(onOpenClaseViva: _openClaseViva),
-                          CalendarioTab(onOpenClaseViva: _openClaseViva),
-                          const ClasesTab(),
-                          EstudioTab(
-                            onOpenClaseViva: _openClaseViva,
-                            onOpenTemario: _openTemario,
+                    child: Column(
+                      children: [
+                        _Header(
+                          syncStatus:
+                              session?.syncService.status ?? GitHubSyncStatus.idle,
+                          onTapIdentity: _openStudentProfileSheet,
+                          onTapMatricula: () => _openMiCuatrimestreModal(isMandatory: false),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: GlobalBroadcastBanner(),
+                        ),
+                        Expanded(
+                          child: PageView(
+                            controller: _pageController,
+                            physics: const BouncingScrollPhysics(),
+                            onPageChanged: (i) => setState(() => _tab = i),
+                            children: [
+                              ResumenTab(onOpenClaseViva: _openClaseViva),
+                              CalendarioTab(onOpenClaseViva: _openClaseViva),
+                              const ClasesTab(),
+                              EstudioTab(
+                                onOpenClaseViva: _openClaseViva,
+                                onOpenTemario: _openTemario,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        _BottomNav(current: _tab, onSelect: _goToTab),
+                      ],
                     ),
-                    _BottomNav(current: _tab, onSelect: _goToTab),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -777,6 +797,35 @@ class _Header extends StatelessWidget {
                   ),
                 ),
               ),
+              if (kIsWeb && session?.isAdmin == true) ...[
+                const SizedBox(width: 4),
+                TapScale(
+                  onTap: () => AdminEnvConsoleModal.show(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: p.green.o(0.12),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: p.green.o(0.40)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        PulseDot(color: p.green, size: 5),
+                        const SizedBox(width: 4),
+                        Text(
+                          '⚡ Admin',
+                          style: mono(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            color: p.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(width: 4),
               const ThemeToggleButton(),
               const SizedBox(width: 4),

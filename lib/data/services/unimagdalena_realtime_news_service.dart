@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/noticia_model.dart';
+import 'global_environment_service.dart';
 
 /// Servicio singleton con ChangeNotifier para scraping en tiempo real y auto-refresh
 /// de noticias institucionales del portal oficial de la Universidad del Magdalena.
@@ -147,7 +148,8 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
 
       if (enablePeriodicTimer) {
         _pollingTimer?.cancel();
-        _pollingTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+        final refreshMins = GlobalEnvironmentService.instance.config.newsRefreshMinutes.clamp(1, 60);
+        _pollingTimer = Timer.periodic(Duration(minutes: refreshMins), (_) {
           refreshNews();
         });
       }
@@ -246,10 +248,19 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
   /// Cascada de proxys CORS con cache-busting para evadir restricciones de navegador
   Future<List<NoticiaModel>> _fetchAndParseHtml() async {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final targetUrl =
-        'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias?t=$timestamp';
+    final envConfig = GlobalEnvironmentService.instance.config;
+    final baseUrl = envConfig.newsSourceUrl.isNotEmpty
+        ? envConfig.newsSourceUrl
+        : 'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias';
+    final targetUrl = baseUrl.contains('?')
+        ? '$baseUrl&t=$timestamp'
+        : '$baseUrl?t=$timestamp';
 
-    final proxies = [
+    final proxies = <String>[];
+    if (envConfig.newsCorsProxy.trim().isNotEmpty) {
+      proxies.add('${envConfig.newsCorsProxy}${Uri.encodeComponent(targetUrl)}');
+    }
+    proxies.addAll([
       // Proxy 1: AllOrigins raw
       'https://api.allorigins.win/raw?url=${Uri.encodeComponent(targetUrl)}',
       // Proxy 2: CorsProxy.io
@@ -258,7 +269,7 @@ class UnimagdalenaRealtimeNewsService extends ChangeNotifier {
       'https://api.codetabs.com/v1/proxy?quest=${Uri.encodeComponent(targetUrl)}',
       // Proxy 4: Conexión directa (móvil o si CORS lo permite)
       targetUrl,
-    ];
+    ]);
 
     String? htmlBody;
 

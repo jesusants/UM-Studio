@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../data/services/global_environment_service.dart';
 
 /// Botón interactivo y minimalista estilo cápsula que muestra el escudo oficial
 /// de la Universidad del Magdalena en estado de reposo y, al pasar el cursor
@@ -16,16 +17,15 @@ class UnimagdalenaPortalButton extends StatefulWidget {
   const UnimagdalenaPortalButton({
     super.key,
     this.expandOnHover = true,
-    this.portalUrl =
-        'https://admisiones.unimagdalena.edu.co/mEstudiantes/indexPrinc.jsp?rnd=315581080',
+    this.portalUrl,
     this.onTap,
   });
 
   /// Determina si el botón expande su ancho al recibir hover.
   final bool expandOnHover;
 
-  /// URL oficial de destino (Módulo de Estudiantes / AyRe).
-  final String portalUrl;
+  /// URL oficial de destino (Módulo de Estudiantes / AyRe). Si es null, lee de [GlobalEnvironmentService].
+  final String? portalUrl;
 
   /// Callback opcional que reemplaza la llamada a `launchUrl` (útil para pruebas unitarias).
   final VoidCallback? onTap;
@@ -38,12 +38,16 @@ class UnimagdalenaPortalButton extends StatefulWidget {
 class _UnimagdalenaPortalButtonState extends State<UnimagdalenaPortalButton> {
   bool _isHovered = false;
 
+  String get _effectiveUrl =>
+      widget.portalUrl ??
+      GlobalEnvironmentService.instance.config.portalEstudiantesUrl;
+
   Future<void> _abrirPortal() async {
     if (widget.onTap != null) {
       widget.onTap!();
       return;
     }
-    final uri = Uri.parse(widget.portalUrl);
+    final uri = Uri.parse(_effectiveUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }

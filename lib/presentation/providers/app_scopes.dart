@@ -111,6 +111,10 @@ class InstitutionalSessionController extends ChangeNotifier {
 
   bool get isInitialized => _initialized;
   bool get isAuthenticated => _currentUser != null;
+
+  /// Indica si el usuario activo es el administrador del sistema.
+  bool get isAdmin => _currentUser?.isAdmin == true ||
+      InstitutionalValidator.isSuperAdmin(_currentUser?.username ?? _fallbackEmail);
   StudentUserModel? get currentUser => _currentUser;
   GitHubSyncService get syncService => _syncService;
   MicrosoftEntraAuthService get entraAuthService => _entraAuthService;
