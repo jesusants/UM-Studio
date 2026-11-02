@@ -12,7 +12,7 @@
   "global_banner_enabled": true,
   "global_banner_title": "Bienvenido a UM Studio",
   "global_banner_message": "Consulta tus clases magistrales y temas del corte en curso.",
-  "global_banner_type": "info",
+  "global_banner_type": "warning",
   "news_source_url": "https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias",
   "news_cors_proxy": "https://api.allorigins.win/raw?url=",
   "news_refresh_minutes": 15,
@@ -21,6 +21,6 @@
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
   "maintenance_mode": false,
-  "updated_at": "2026-11-01T23:54:43.510",
+  "updated_at": "2026-11-01T23:56:06.118",
   "updated_by": "jsierra"
 }
