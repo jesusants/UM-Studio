@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -8,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/institutional_validator.dart';
 import '../../data/services/download_queue_service.dart';
 import '../../domain/entities/tema_estudio_entity.dart';
+import '../providers/app_scopes.dart';
 import 'ios_primitives.dart';
 
 /// Compilador vectorial minimalista de presentaciones PDF (< 1.2 MB con Deflate).
@@ -38,16 +40,7 @@ abstract final class SlideDeckPdfCompiler {
       creator: 'UM STUDIO iOS Minimalist Slide Engine',
     );
 
-    final effectiveSlides = slides.isNotEmpty
-        ? slides
-        : [
-            SlideDeckItem(
-              numero: 1,
-              seccion: 'OVERVIEW',
-              titulo: tituloTema,
-              puntos: const ['Core academic presentation for General English.'],
-            ),
-          ];
+    final effectiveSlides = _sanitizeSlidesForPdf(slides, tituloTema);
 
     const pageFormat = PdfPageFormat(842, 474, marginAll: 0);
     final total = effectiveSlides.length;
@@ -201,7 +194,9 @@ abstract final class SlideDeckPdfCompiler {
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
                         pw.Text(
-                          _latin1('UM STUDIO • Universidad del Magdalena • Plan 8108'),
+                          _latin1(
+                            'UM STUDIO • Universidad del Magdalena • Plan 8108',
+                          ),
                           style: pw.TextStyle(
                             font: pw.Font.helvetica(),
                             fontSize: 8.5,
@@ -234,9 +229,85 @@ abstract final class SlideDeckPdfCompiler {
     return bytes;
   }
 
+  static List<SlideDeckItem> _sanitizeSlidesForPdf(
+    List<SlideDeckItem> slides,
+    String fallbackTitle,
+  ) {
+    if (slides.isEmpty) {
+      return [
+        SlideDeckItem(
+          numero: 1,
+          seccion: 'OVERVIEW',
+          titulo: fallbackTitle,
+          puntos: const ['Presentación académica oficial • UM Studio.'],
+        ),
+      ];
+    }
+
+    final result = <SlideDeckItem>[];
+    for (var i = 0; i < slides.length; i++) {
+      final s = slides[i];
+      var cleanTitle = s.titulo.trim();
+      while (cleanTitle.startsWith('#')) {
+        cleanTitle = cleanTitle.substring(1).trim();
+      }
+      if (cleanTitle.endsWith('.md')) {
+        cleanTitle = cleanTitle.replaceAll('.md', '').replaceAll('_', ' ');
+      }
+      if (cleanTitle.isEmpty || cleanTitle.toLowerCase().contains('.md')) {
+        cleanTitle = i == 0 ? fallbackTitle : 'Contenido ${i + 1}';
+      }
+
+      final cleanPuntos = <String>[];
+      for (final p in s.puntos) {
+        var pt = p.trim();
+        while (pt.startsWith('#') ||
+            pt.startsWith('* ') ||
+            pt.startsWith('- ')) {
+          pt = pt.substring(pt.startsWith('#') ? 1 : 2).trim();
+        }
+        if (pt.endsWith('.md')) continue;
+        if (pt.toLowerCase().startsWith('martes,') ||
+            pt.toLowerCase().startsWith('lunes,') ||
+            pt.toLowerCase().startsWith('miércoles,')) {
+          continue;
+        }
+        if (pt.isNotEmpty) cleanPuntos.add(pt);
+      }
+
+      final isJunkHeader = (s.titulo.contains('.md') || s.titulo.startsWith('#')) && cleanPuntos.isEmpty;
+      if (isJunkHeader) continue;
+
+      result.add(
+        SlideDeckItem(
+          numero: result.length + 1,
+          seccion: s.seccion,
+          titulo: cleanTitle,
+          puntos: cleanPuntos.isNotEmpty
+              ? cleanPuntos
+              : const ['Notas de cátedra magistral.'],
+          tabla: s.tabla,
+          ejemplo: s.ejemplo,
+        ),
+      );
+    }
+
+    return result.isNotEmpty
+        ? result
+        : [
+            SlideDeckItem(
+              numero: 1,
+              seccion: 'OVERVIEW',
+              titulo: fallbackTitle,
+              puntos: const ['Presentación académica oficial • UM Studio.'],
+            ),
+          ];
+  }
+
   static pw.Widget _buildPdfTable(List<List<String>> rows) {
     final header = rows.first;
-    final bodyRows = rows.length > 1 ? rows.sublist(1) : const <List<String>>[];
+    final bodyRows =
+        rows.length > 1 ? rows.sublist(1) : const <List<String>>[];
 
     return pw.Table(
       border: pw.TableBorder.all(color: _borderDark, width: 0.8),
@@ -285,8 +356,6 @@ abstract final class SlideDeckPdfCompiler {
     );
   }
 
-  /// Normaliza símbolos Unicode fuera de ISO-8859-1 para mantener fuentes
-  /// vectoriales Type1 puras (0 KB de fuentes incrustadas, 100% compatible con acentos).
   static String _latin1(String raw) {
     final normalized = raw
         .replaceAll('→', '->')
@@ -320,9 +389,8 @@ abstract final class SlideDeckPdfCompiler {
   }
 }
 
-/// Visor de Presentaciones Ultraminimalista estilo iOS para los 5 niveles
-/// de `Inglés General` (sin KaTeX), con exportación vectorial `< 1.2 MB`
-/// conectada a [DownloadQueueService] (máximo 20 descargas simultáneas).
+/// Visor de Presentaciones Ultraminimalista estilo Apple Keynote (Dark OLED / Light Mode)
+/// para asignaturas y Clases Magistrales con renderizado mixto (Texto, KaTeX, Callout Boxes).
 class MinimalSlideViewer extends StatefulWidget {
   const MinimalSlideViewer({
     super.key,
@@ -384,8 +452,8 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
     super.dispose();
   }
 
-  void _goToSlide(int target) {
-    if (target < 0 || target >= widget.slides.length) return;
+  void _goToSlide(int target, int total) {
+    if (target < 0 || target >= total) return;
     HapticFeedback.lightImpact();
     setState(() => _currentSlide = target);
     if (_pageController.hasClients) {
@@ -439,30 +507,119 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
     }
   }
 
+  List<SlideDeckItem> _getSanitizedSlides() {
+    if (widget.slides.isEmpty) {
+      return [
+        SlideDeckItem(
+          numero: 1,
+          seccion: 'CÁTEDRA',
+          titulo: widget.tituloTema,
+          puntos: const ['Cátedra magistral oficial • UM Studio.'],
+        ),
+      ];
+    }
+
+    final List<SlideDeckItem> cleaned = [];
+    for (var i = 0; i < widget.slides.length; i++) {
+      final s = widget.slides[i];
+      var rawTitle = s.titulo.trim();
+      while (rawTitle.startsWith('#')) {
+        rawTitle = rawTitle.substring(1).trim();
+      }
+      if (rawTitle.endsWith('.md')) {
+        rawTitle = rawTitle.replaceAll('.md', '').replaceAll('_', ' ').trim();
+      }
+
+      final cleanPuntos = <String>[];
+      for (final p in s.puntos) {
+        var pt = p.trim();
+        while (pt.startsWith('#') ||
+            pt.startsWith('* ') ||
+            pt.startsWith('- ')) {
+          pt = pt.substring(pt.startsWith('#') ? 1 : 2).trim();
+        }
+        if (pt.endsWith('.md')) continue;
+        if (pt.toLowerCase().startsWith('martes,') ||
+            pt.toLowerCase().startsWith('lunes,') ||
+            pt.toLowerCase().startsWith('miércoles,')) {
+          continue;
+        }
+        if (pt.isNotEmpty) cleanPuntos.add(pt);
+      }
+
+      final isJunkHeader = (s.titulo.contains('.md') || s.titulo.startsWith('#')) && cleanPuntos.isEmpty;
+      if (isJunkHeader) continue;
+
+      var finalTitle = rawTitle;
+      if (cleaned.isEmpty &&
+          (finalTitle.isEmpty ||
+              finalTitle.toLowerCase().contains('.md') ||
+              finalTitle.length < 3)) {
+        finalTitle = widget.tituloTema;
+      }
+
+      cleaned.add(
+        SlideDeckItem(
+          numero: cleaned.length + 1,
+          seccion: s.seccion,
+          titulo: finalTitle.isNotEmpty
+              ? finalTitle
+              : (i == 0 ? widget.tituloTema : 'Contenido ${cleaned.length + 1}'),
+          puntos: cleanPuntos.isNotEmpty
+              ? cleanPuntos
+              : const ['Fundamento conceptual de cátedra magistral.'],
+          tabla: s.tabla,
+          ejemplo: s.ejemplo,
+        ),
+      );
+    }
+
+    return cleaned.isNotEmpty
+        ? cleaned
+        : [
+            SlideDeckItem(
+              numero: 1,
+              seccion: 'CÁTEDRA',
+              titulo: widget.tituloTema,
+              puntos: const ['Cátedra magistral oficial • UM Studio.'],
+            ),
+          ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final slides = widget.slides;
+    final isDark = ThemeScope.maybeOf(context)?.isDark ??
+        (Theme.of(context).brightness == Brightness.dark);
+    final slides = _getSanitizedSlides();
     final total = slides.length;
-
-    if (total == 0) {
-      return const SizedBox.shrink();
-    }
 
     final safeIndex = _currentSlide.clamp(0, total - 1);
     final canGoBack = safeIndex > 0;
     final canGoForward = safeIndex < total - 1;
+    final isMagistral = widget.temaId.contains('_magistral_');
+    final accent = isMagistral ? p.indigo : p.green;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Lienzo de la Diapositiva (#121316 oscuro / #F2F2F7 claro, 1px #1F2228, radius 20px)
+        // Lienzo de la Diapositiva (Keynote Dark OLED / Light Mode)
         Container(
-          height: (MediaQuery.sizeOf(context).height * 0.44).clamp(380.0, 500.0),
+          height:
+              (MediaQuery.sizeOf(context).height * 0.44).clamp(380.0, 500.0),
           decoration: BoxDecoration(
             color: p.card,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: p.cardBorder, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.o(0.55)
+                    : Colors.black.o(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           clipBehavior: Clip.antiAlias,
           child: PageView.builder(
@@ -476,28 +633,50 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
             },
             itemBuilder: (context, index) {
               final slide = slides[index];
-              final slideNumberText =
-                  'SLIDE ${(index + 1).toString().padLeft(2, '0')} / ${total.toString().padLeft(2, '0')}';
+              final isCover = index == 0 && isMagistral;
 
               return Padding(
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Cabecera micro-tipográfica
+                    // Cabecera superior micro-tipográfica (cero overflow)
                     Row(
                       children: [
-                        Dot(color: p.green, size: 6.5),
-                        const SizedBox(width: 7),
-                        Text(
-                          slideNumberText,
-                          style: mono(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.9,
-                            color: p.green,
+                        if (isCover) ...[
+                          Icon(
+                            Icons.school_rounded,
+                            size: 14,
+                            color: accent,
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'CÁTEDRA • ${widget.codigoAsignatura}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: mono(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: accent,
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Dot(color: accent, size: 6.5),
+                          const SizedBox(width: 7),
+                          Text(
+                            'SLIDE ${(index + 1).toString().padLeft(2, '0')} / ${total.toString().padLeft(2, '0')}',
+                            maxLines: 1,
+                            style: mono(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.9,
+                              color: accent,
+                            ),
+                          ),
+                        ],
                         const SizedBox(width: 8),
                         Expanded(
                           child: Align(
@@ -527,90 +706,56 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 11),
+                    const SizedBox(height: 12),
 
-                    // Cuerpo desplazable suave dentro del lienzo (60/120 fps, cero overflow)
+                    // Cuerpo desplazable de la lámina
                     Expanded(
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Título de la diapositiva
                             Text(
                               slide.titulo,
                               softWrap: true,
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: isCover ? 21.5 : 18.5,
                                 height: 1.22,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.35,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.4,
                                 color: p.textPrimary,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 14),
 
-                            // Puntos clave con viñetas esmeralda (#30D158)
-                            for (final punto in slide.puntos)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8.5),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: 6,
-                                        right: 9,
-                                      ),
-                                      child: Dot(color: p.green, size: 6),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        punto,
-                                        softWrap: true,
-                                        style: TextStyle(
-                                          fontSize: 13.2,
-                                          height: 1.42,
-                                          color: p.textBody,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            // Puntos y bloques de la diapositiva
+                            for (var pIdx = 0; pIdx < slide.puntos.length; pIdx++) ...[
+                              _buildPointItem(
+                                context,
+                                slide.puntos[pIdx],
+                                pIdx + 1,
+                                accent,
+                                isDark,
                               ),
+                              const SizedBox(height: 8.5),
+                            ],
 
-                            // Tabla comparativa compacta
+                            // Tabla comparativa si existe
                             if (slide.tabla.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               _CompactSlideTable(rows: slide.tabla),
+                              const SizedBox(height: 10),
                             ],
 
-                            // Ejemplo contextualizado
+                            // Ejemplo contextualizado al pie de la slide
                             if (slide.ejemplo.trim().isNotEmpty) ...[
-                              const SizedBox(height: 10),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 9,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: p.green.o(0.09),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: p.green.o(0.32),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  slide.ejemplo,
-                                  softWrap: true,
-                                  style: TextStyle(
-                                    fontSize: 12.2,
-                                    height: 1.38,
-                                    fontWeight: FontWeight.w500,
-                                    color: p.textPrimary,
-                                  ),
-                                ),
+                              const SizedBox(height: 8),
+                              _buildSlideFooterNote(
+                                context,
+                                slide.ejemplo,
+                                accent,
+                                isDark,
                               ),
                             ],
                           ],
@@ -628,16 +773,14 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
         // Barra de Controles Ultraminimalista (Pie del Visor)
         Row(
           children: [
-            // 1. Botón circular pequeño Atrás (←) 32x32px
             _SlideNavCircleButton(
               key: const Key('slide_prev_button'),
               icon: Icons.chevron_left_rounded,
               enabled: canGoBack,
-              onTap: canGoBack ? () => _goToSlide(safeIndex - 1) : null,
+              onTap: canGoBack ? () => _goToSlide(safeIndex - 1, total) : null,
             ),
             const SizedBox(width: 10),
 
-            // 2. Indicador central discreto en fuente monoespaciada (2 / 6)
             Text(
               '${safeIndex + 1} / $total',
               key: const Key('slide_counter_label'),
@@ -649,83 +792,386 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
             ),
             const SizedBox(width: 10),
 
-            // 3. Botón circular pequeño Adelante (→) 32x32px
             _SlideNavCircleButton(
               key: const Key('slide_next_button'),
               icon: Icons.chevron_right_rounded,
               enabled: canGoForward,
-              onTap: canGoForward ? () => _goToSlide(safeIndex + 1) : null,
+              onTap: canGoForward ? () => _goToSlide(safeIndex + 1, total) : null,
             ),
 
             const SizedBox(width: 10),
 
-            // 4. A la derecha: Botón píldora minimalista Descargar (↓ PDF)
+            // Botón de exportación PDF
             Expanded(
               child: Align(
                 alignment: Alignment.centerRight,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: ListenableBuilder(
-                  listenable: _queue,
-                  builder: (context, _) {
-                    final snap = _queue.stateFor(_downloadTaskId);
-                    final isDone = snap.phase == DownloadTaskPhase.completed;
-                    final isBusy = snap.phase == DownloadTaskPhase.queued ||
-                        snap.phase == DownloadTaskPhase.downloading;
-                    final isErr = snap.phase == DownloadTaskPhase.error;
+                    listenable: _queue,
+                    builder: (context, _) {
+                      final snap = _queue.stateFor(_downloadTaskId);
+                      final isDone = snap.phase == DownloadTaskPhase.completed;
+                      final isBusy = snap.phase == DownloadTaskPhase.queued ||
+                          snap.phase == DownloadTaskPhase.downloading;
+                      final isErr = snap.phase == DownloadTaskPhase.error;
 
-                    final borderColor = isDone
-                        ? p.green.o(0.55)
-                        : isErr
-                            ? p.orange.o(0.55)
-                            : p.cardBorder;
-                    final bgColor = isDone
-                        ? p.green.o(0.13)
-                        : isBusy
-                            ? p.elevated
-                            : p.card;
-                    final textColor = isDone
-                        ? p.green
-                        : isErr
-                            ? p.orange
-                            : p.textPrimary;
+                      final borderColor = isDone
+                          ? accent.o(0.55)
+                          : isErr
+                              ? p.orange.o(0.55)
+                              : p.cardBorder;
+                      final bgColor = isDone
+                          ? accent.o(0.13)
+                          : isBusy
+                              ? p.elevated
+                              : p.card;
+                      final textColor = isDone
+                          ? accent
+                          : isErr
+                              ? p.orange
+                              : p.textPrimary;
 
-                    return TapScale(
-                      onTap: isBusy ? null : _handleDownloadPdf,
-                      child: AnimatedContainer(
-                        key: const Key('slide_download_pdf_button'),
-                        duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 13,
-                          vertical: 7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: bgColor,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: borderColor, width: 1),
-                        ),
-                        child: Text(
-                          snap.buttonLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: mono(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: textColor,
+                      return TapScale(
+                        onTap: isBusy ? null : _handleDownloadPdf,
+                        child: AnimatedContainer(
+                          key: const Key('slide_download_pdf_button'),
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 13,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: bgColor,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: borderColor, width: 1),
+                          ),
+                          child: Text(
+                            snap.buttonLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: mono(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
           ],
         ),
       ],
     );
   }
+
+  Widget _buildPointItem(
+    BuildContext context,
+    String punto,
+    int index,
+    Color accent,
+    bool isDark,
+  ) {
+    final trimmed = punto.trim();
+
+    // Si el punto es una ecuación de visualización completa ($$ ... $$)
+    if (trimmed.startsWith(r'$$') && trimmed.endsWith(r'$$')) {
+      final latex = trimmed.substring(2, trimmed.length - 2).trim();
+      return _FormulaCalloutBox(
+        latex: latex,
+        accentColor: accent,
+        isDark: isDark,
+      );
+    }
+
+    // Puntos normales con numeración estilizada y soporte KaTeX / Bold
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 3.5, right: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2),
+          decoration: BoxDecoration(
+            color: accent.o(0.13),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            index.toString().padLeft(2, '0'),
+            style: mono(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: accent,
+            ),
+          ),
+        ),
+        Expanded(
+          child: _SlideRichText(
+            text: trimmed,
+            textColor: isDark ? const Color(0xFFE5E5EA) : const Color(0xFF1C1C1E),
+            fontSize: 14.5,
+            height: 1.55,
+            accentColor: accent,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSlideFooterNote(
+    BuildContext context,
+    String ejemplo,
+    Color accent,
+    bool isDark,
+  ) {
+    final p = context.palette;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+      decoration: BoxDecoration(
+        color: accent.o(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accent.o(0.3), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lightbulb_outline_rounded, size: 14, color: accent),
+              const SizedBox(width: 5),
+              Text(
+                'NOTA DE APLICACIÓN',
+                style: mono(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: accent,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5),
+          _SlideRichText(
+            text: ejemplo,
+            textColor: p.textPrimary,
+            fontSize: 12.8,
+            height: 1.45,
+            accentColor: accent,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Caja destacada para fórmulas KaTeX dentro de diapositivas (Formula Callout Box)
+class _FormulaCalloutBox extends StatelessWidget {
+  const _FormulaCalloutBox({
+    required this.latex,
+    required this.accentColor,
+    required this.isDark,
+  });
+
+  final String latex;
+  final Color accentColor;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final clean = InstitutionalValidator.sanitizeLatex(latex);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF11131A) : const Color(0xFFF2F4F8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border(
+          left: BorderSide(color: accentColor, width: 3.5),
+          top: BorderSide(
+            color: isDark ? const Color(0xFF1F2228) : const Color(0xFFE2E4E9),
+          ),
+          right: BorderSide(
+            color: isDark ? const Color(0xFF1F2228) : const Color(0xFFE2E4E9),
+          ),
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF1F2228) : const Color(0xFFE2E4E9),
+          ),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Math.tex(
+          clean,
+          mathStyle: MathStyle.display,
+          textStyle: TextStyle(
+            fontSize: 14.5,
+            color: isDark ? Colors.white : p.textPrimary,
+          ),
+          onErrorFallback: (_) => Text(
+            clean,
+            style: mono(fontSize: 12.5, color: p.textPrimary),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Renderizador de texto mixto: maneja negritas `**...**` y expresiones KaTeX inline `$ ... $`.
+class _SlideRichText extends StatelessWidget {
+  const _SlideRichText({
+    required this.text,
+    required this.textColor,
+    this.fontSize = 14.5,
+    this.height = 1.55,
+    this.accentColor,
+  });
+
+  final String text;
+  final Color textColor;
+  final double fontSize;
+  final double height;
+  final Color? accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = _tokenize(text);
+    final isDark = ThemeScope.maybeOf(context)?.isDark ??
+        (Theme.of(context).brightness == Brightness.dark);
+    final spans = <InlineSpan>[];
+
+    for (final token in tokens) {
+      if (token.type == _SlideTokenType.inlineMath) {
+        final cleanTex = InstitutionalValidator.sanitizeLatex(token.content);
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.5),
+              child: Math.tex(
+                cleanTex,
+                mathStyle: MathStyle.text,
+                textStyle: TextStyle(
+                  fontSize: fontSize,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                onErrorFallback: (_) => Text(
+                  cleanTex,
+                  style: mono(fontSize: fontSize - 1, color: textColor),
+                ),
+              ),
+            ),
+          ),
+        );
+      } else if (token.type == _SlideTokenType.bold) {
+        spans.add(
+          TextSpan(
+            text: token.content,
+            style: TextStyle(
+              fontSize: fontSize,
+              height: height,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+        );
+      } else {
+        spans.add(
+          TextSpan(
+            text: token.content,
+            style: TextStyle(
+              fontSize: fontSize,
+              height: height,
+              color: textColor,
+            ),
+          ),
+        );
+      }
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
+      softWrap: true,
+    );
+  }
+
+  List<_SlideToken> _tokenize(String raw) {
+    final pattern = RegExp(
+      r'(\$\$.*?\$\$|\$.*?\$|\*\*.*?\*\*)',
+      dotAll: true,
+    );
+
+    final List<_SlideToken> tokens = [];
+    int lastEnd = 0;
+
+    for (final match in pattern.allMatches(raw)) {
+      if (match.start > lastEnd) {
+        tokens.add(
+          _SlideToken(
+            type: _SlideTokenType.text,
+            content: raw.substring(lastEnd, match.start),
+          ),
+        );
+      }
+
+      final val = match.group(0)!;
+      if (val.startsWith(r'$$') && val.endsWith(r'$$')) {
+        tokens.add(
+          _SlideToken(
+            type: _SlideTokenType.inlineMath,
+            content: val.substring(2, val.length - 2).trim(),
+          ),
+        );
+      } else if (val.startsWith(r'$') && val.endsWith(r'$')) {
+        tokens.add(
+          _SlideToken(
+            type: _SlideTokenType.inlineMath,
+            content: val.substring(1, val.length - 1).trim(),
+          ),
+        );
+      } else if (val.startsWith(r'**') && val.endsWith(r'**')) {
+        tokens.add(
+          _SlideToken(
+            type: _SlideTokenType.bold,
+            content: val.substring(2, val.length - 2),
+          ),
+        );
+      }
+
+      lastEnd = match.end;
+    }
+
+    if (lastEnd < raw.length) {
+      tokens.add(
+        _SlideToken(
+          type: _SlideTokenType.text,
+          content: raw.substring(lastEnd),
+        ),
+      );
+    }
+
+    return tokens;
+  }
+}
+
+enum _SlideTokenType { text, bold, inlineMath }
+
+class _SlideToken {
+  const _SlideToken({
+    required this.type,
+    required this.content,
+  });
+
+  final _SlideTokenType type;
+  final String content;
 }
 
 class _SlideNavCircleButton extends StatelessWidget {

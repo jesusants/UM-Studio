@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../providers/app_scopes.dart';
+import '../../../widgets/academic_solved_exercise_card.dart';
 import '../../../widgets/clase_magistral_adjuntos_widget.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/katex_formula_card.dart';
@@ -572,10 +573,13 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
 
                         // Tarjeta: EJEMPLO DE CÁTEDRA
                         if (currentTema.ejemplo.isNotEmpty) ...[
-                          _ModularTopicCard(
+                          AcademicSolvedExerciseCard(
                             label: 'EJEMPLO DE CÁTEDRA',
                             body: currentTema.ejemplo,
-                            tokens: tokens,
+                            accentColor: currentTema.esNotacionIngenieria
+                                ? tokens.accentIndigo
+                                : tokens.accentGreen,
+                            isDesktop: true,
                           ),
                           const SizedBox(height: 12),
                         ],
@@ -942,11 +946,12 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
 
                           // Ejercicios resueltos / Notas de cátedra
                           if (currentMagistral.ejemplo.isNotEmpty) ...[
-                            _ModularTopicCard(
+                            AcademicSolvedExerciseCard(
                               label:
                                   'EJERCICIO RESUELTO / NOTAS DE CÁTEDRA',
                               body: currentMagistral.ejemplo,
-                              tokens: tokens,
+                              accentColor: tokens.accentIndigo,
+                              isDesktop: true,
                             ),
                             const SizedBox(height: 12),
                           ],

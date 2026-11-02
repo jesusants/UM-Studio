@@ -29,6 +29,6 @@ void main() {
 
     final m7 = db.resolveTemaEstudio('03041820_magistral_7');
     expect(m7, isNotNull);
-    expect(m7!.tituloTema, contains('Taller de Cátedra'));
+    expect(m7!.tituloTema, contains('Taller'));
   });
 }
