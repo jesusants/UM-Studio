@@ -3,9 +3,16 @@
   "nombre": "Mateo Rodríguez",
   "email": "marrodriguez@unimagdalena.edu.co",
   "programa": "Ingeniería Energética",
+  "cuatrimestre_activo": 3,
   "cuatrimestre_actual": 3,
+  "materias_matriculadas": [
+    "02021810",
+    "02031812",
+    "03041820",
+    "03031818"
+  ],
   "pin_hash": "ac4a809a95da52c2ecb3b8c2e5193380435d146237874912fa770fc68e469f96",
-  "progreso_materias": "enc:v1:Oynb7dwTP3T6GMvRU7Zn/uINneBgiv2wlRRspYqEomzrqk7ekTGW4pwDhEAuS9W3X4hZO+Pfips1KtQdFxYtc0F63EaLFJE0wFqbUJADZQN5b8SKw0M+9uipx2v0teZaBZor4ZWijg==",
+  "progreso_materias": "enc:v1:LQE73Wx6MKSRnO4iyVHCd5IMRDZGxtK3ruDy4WZj1+0BT57yQ7CBDoAob4BTruDPLfUknIFbgm2UzpM1HblSmSYRfqhhNcDFZy3PhiguuzoKQ4rbwmJQDfPVPf+id/gyZDUGY2n0TQ==",
   "ultimos_temas_revisados": {
     "01021802": 2,
     "02021810": 9
@@ -15,6 +22,6 @@
     "numero_tema": 9,
     "actualizado_en": "2026-10-31T16:06:28.981"
   },
-  "recordatorios_calendario": "enc:v1:7vOEBmRFxxPYg/nrtbpLQf99PJtpywhpJ/QtlDEHyJxOOw==",
-  "apuntes_personales": "enc:v1:WFosfIYRpDnWovv0e2Rti3Xes8Axbc/XRj3wCd/jNG/Npg=="
+  "recordatorios_calendario": "enc:v1:UxYd9QrCe04m24m8gQnCgCXTwNQElabw9hxiDHkYAwVT/A==",
+  "apuntes_personales": "enc:v1:ECiQd0M76NktrjK7oHOXp6IaASoijfMsLeMLUxxDPOxdzg=="
 }
