@@ -4,12 +4,14 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/curriculum_models.dart';
+import '../../../../data/services/groq_topic_assistant_service.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/academic_solved_exercise_card.dart';
 import '../../../widgets/clase_magistral_adjuntos_widget.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/katex_formula_card.dart';
 import '../../../widgets/minimal_slide_viewer.dart';
+import '../../../widgets/topic_ai_assistant_widget.dart';
 import '../desktop_theme_tokens.dart';
 
 /// Vista de Detalle Panorámica de Asignatura (Master-Detail) en la columna central.
@@ -36,6 +38,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
   int _selectedTopicNumber = 1;
   int _selectedMagistralNumber = 1;
   String _activeEnglishBranch = 'general';
+  bool _isAiChatOpen = false;
 
   @override
   void initState() {
@@ -110,6 +113,39 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
     final currentMagistral = _currentMagistral;
     final progress = session?.subjectProgress(subject.codigo) ?? 0;
 
+    final isTemario = _activeSection == 'temario';
+    final isMagistrales = _activeSection == 'magistrales';
+    final canShowAi = (isTemario && currentTema != null) ||
+        (isMagistrales && currentMagistral != null);
+
+    final activeTopicKey = isMagistrales && currentMagistral != null
+        ? '${subject.codigo}_magistral_${currentMagistral.numeroTema}'
+        : (currentTema != null
+            ? '${subject.codigo}_t${currentTema.numeroTema}'
+            : subject.codigo);
+
+    final activeTopicTitle = isMagistrales && currentMagistral != null
+        ? currentMagistral.titulo
+        : (currentTema?.titulo ?? subject.nombre);
+
+    final activeContext = isMagistrales && currentMagistral != null
+        ? GroqTopicAssistantService.buildTopicContext(
+            titulo: currentMagistral.titulo,
+            objetivo: currentMagistral.objetivo,
+            conceptoClaveLatex: currentMagistral.conceptoClaveLatex,
+            ejemplo: currentMagistral.ejemplo,
+            slides: currentMagistral.slides,
+          )
+        : (currentTema != null
+            ? GroqTopicAssistantService.buildTopicContext(
+                titulo: currentTema.titulo,
+                objetivo: currentTema.objetivo,
+                conceptoClaveLatex: currentTema.conceptoClaveLatex,
+                ejemplo: currentTema.ejemplo,
+                slides: currentTema.slides,
+              )
+            : '');
+
     return Container(
       decoration: BoxDecoration(
         color: tokens.surface,
@@ -124,9 +160,11 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
         ],
       ),
       padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Stack(
         children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
           // 1. Barra de Encabezado con Botón de Regreso & Acciones
           Row(
             children: [
@@ -983,7 +1021,40 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
         ],
       ],
     ),
-  );
+    if (canShowAi)
+      Positioned(
+        right: 0,
+        bottom: 0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isAiChatOpen) ...[
+              TopicAiDesktopFloatingWindow(
+                topicKey: activeTopicKey,
+                asignaturaNombre: subject.nombre,
+                temaTitulo: activeTopicTitle,
+                temaContextoCompleto: activeContext,
+                accentColor: isMagistrales
+                    ? tokens.accentIndigo
+                    : tokens.accentGreen,
+                onClose: () => setState(() => _isAiChatOpen = false),
+              ),
+              const SizedBox(height: 10),
+            ],
+            TopicAiTriggerButton(
+              isOpen: _isAiChatOpen,
+              accentColor: isMagistrales
+                  ? tokens.accentIndigo
+                  : tokens.accentGreen,
+              onTap: () => setState(() => _isAiChatOpen = !_isAiChatOpen),
+            ),
+          ],
+        ),
+      ),
+  ],
+),
+);
   }
 }
 

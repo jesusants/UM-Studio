@@ -10,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/curriculum_models.dart';
+import '../../../data/services/groq_topic_assistant_service.dart';
+import '../../widgets/topic_ai_assistant_widget.dart';
 import '../../../domain/entities/nota_adjunto_entity.dart';
 import '../../../domain/entities/subject_summary.dart';
 import '../../../domain/entities/tema_estudio_entity.dart';
@@ -343,7 +345,9 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
                 constraints: const BoxConstraints(
                   maxWidth: AppConstants.maxPhoneViewportWidth,
                 ),
-                child: Column(
+                child: Stack(
+                  children: [
+                    Column(
                   children: [
                     // A. Barra Superior de Navegación (Persistent Top Bar)
                     const _PersistentTopBar(),
@@ -364,7 +368,7 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
                             physics: const BouncingScrollPhysics(
                               parent: AlwaysScrollableScrollPhysics(),
                             ),
-                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 48),
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 80),
                             children: [
                               // B. Píldora de Estado del Aula
                               _AulaStatusPill(percentage: syncPct),
@@ -433,7 +437,50 @@ class _ClaseVivaPageState extends State<ClaseVivaPage> {
                     ),
                   ],
                 ),
-              ),
+                Positioned(
+                  bottom: 18,
+                  right: 18,
+                  child: StreamBuilder<TemaEstudioEntity>(
+                    stream: _temaStream,
+                    builder: (context, snap) {
+                      final tema = snap.data;
+                      if (tema == null) return const SizedBox.shrink();
+                      final asig = CurriculumScope.maybeOf(context)
+                          ?.database
+                          ?.findAsignatura(
+                            tema.codigoAsignatura.isNotEmpty
+                                ? tema.codigoAsignatura
+                                : widget.temaId,
+                          );
+                      final contextStr =
+                          GroqTopicAssistantService.buildTopicContext(
+                        titulo: tema.tituloTema,
+                        objetivo: tema.objetivo,
+                        conceptoClaveLatex: tema.conceptoClaveLatex,
+                        ejemplo: tema.ejemplo,
+                        slides: tema.slides,
+                      );
+                      final isMagistral = tema.id.contains('_magistral_');
+                      return TopicAiTriggerButton(
+                        accentColor: isMagistral ? p.indigo : p.green,
+                        onTap: () {
+                          showTopicAiBottomSheet(
+                            context: context,
+                            topicKey: _activeTemaKey,
+                            asignaturaNombre: asig?.nombre ??
+                                'Universidad del Magdalena',
+                            temaTitulo: tema.tituloTema,
+                            temaContextoCompleto: contextStr,
+                            accentColor: isMagistral ? p.indigo : p.green,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
             ),
           ),
         ),
