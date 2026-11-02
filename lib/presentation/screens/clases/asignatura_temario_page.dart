@@ -9,6 +9,7 @@ import '../../../core/utils/institutional_validator.dart';
 import '../../../data/models/curriculum_models.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/clase_magistral_adjuntos_widget.dart';
+import '../../widgets/mouse_scrollable_horizontal_bar.dart';
 import '../../widgets/ios_primitives.dart';
 import '../clase_viva/clase_viva_page.dart';
 
@@ -519,59 +520,64 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                           const SizedBox(height: 14),
 
                           // Filtro rápido por Cortes Académicos (Corte 1 - 30%, Corte 2 - 30%, Corte 3 - 40%)
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            physics: const BouncingScrollPhysics(),
-                            child: Row(
-                              children: [
-                                for (final entry in const [
-                                  (0, 'Todos'),
-                                  (1, 'Corte 1 • 30%'),
-                                  (2, 'Corte 2 • 30%'),
-                                  (3, 'Corte 3 • 40%'),
-                                ])
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: TapScale(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        setState(
-                                          () => _selectedCorte = entry.$1,
-                                        );
-                                      },
-                                      child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 180),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 11,
-                                          vertical: 5.5,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: _selectedCorte == entry.$1
-                                              ? accent.o(0.18)
-                                              : p.card,
-                                          borderRadius:
-                                              BorderRadius.circular(999),
-                                          border: Border.all(
-                                            color: _selectedCorte == entry.$1
-                                                ? accent
-                                                : p.cardBorder,
+                          MouseScrollableHorizontalBar(
+                            height: 32,
+                            arrowAccentColor: p.green,
+                            builder: (context, controller) => SingleChildScrollView(
+                              controller: controller,
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: [
+                                  for (final entry in const [
+                                    (0, 'Todos'),
+                                    (1, 'Corte 1 • 30%'),
+                                    (2, 'Corte 2 • 30%'),
+                                    (3, 'Corte 3 • 40%'),
+                                  ])
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: TapScale(
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          setState(
+                                            () => _selectedCorte = entry.$1,
+                                          );
+                                        },
+                                        child: AnimatedContainer(
+                                          duration:
+                                              const Duration(milliseconds: 180),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 11,
+                                            vertical: 5.5,
                                           ),
-                                        ),
-                                        child: Text(
-                                          entry.$2,
-                                          style: mono(
-                                            fontSize: 10.5,
-                                            fontWeight: FontWeight.w600,
+                                          decoration: BoxDecoration(
                                             color: _selectedCorte == entry.$1
-                                                ? accent
-                                                : p.textSecondary,
+                                                ? accent.o(0.18)
+                                                : p.card,
+                                            borderRadius:
+                                                BorderRadius.circular(999),
+                                            border: Border.all(
+                                              color: _selectedCorte == entry.$1
+                                                  ? accent
+                                                  : p.cardBorder,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            entry.$2,
+                                            style: mono(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: _selectedCorte == entry.$1
+                                                  ? accent
+                                                  : p.textSecondary,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
 
@@ -667,59 +673,64 @@ class _AsignaturaTemarioPageState extends State<AsignaturaTemarioPage> {
                             ),
                           ] else ...[
                             // Filtro por Cortes para Clases Magistrales
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              child: Row(
-                                children: [
-                                  for (final entry in const [
-                                    (0, 'Todas'),
-                                    (1, 'Corte 1'),
-                                    (2, 'Corte 2'),
-                                    (3, 'Corte 3'),
-                                  ])
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 8),
-                                      child: TapScale(
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          setState(
-                                            () => _selectedMagistralCorte = entry.$1,
-                                          );
-                                        },
-                                        child: AnimatedContainer(
-                                          duration:
-                                              const Duration(milliseconds: 180),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 11,
-                                            vertical: 5.5,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: _selectedMagistralCorte == entry.$1
-                                                ? p.indigo.o(0.18)
-                                                : p.card,
-                                            borderRadius:
-                                                BorderRadius.circular(999),
-                                            border: Border.all(
-                                              color: _selectedMagistralCorte == entry.$1
-                                                  ? p.indigo
-                                                  : p.cardBorder,
+                            MouseScrollableHorizontalBar(
+                              height: 32,
+                              arrowAccentColor: p.indigo,
+                              builder: (context, controller) => SingleChildScrollView(
+                                controller: controller,
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                child: Row(
+                                  children: [
+                                    for (final entry in const [
+                                      (0, 'Todas'),
+                                      (1, 'Corte 1'),
+                                      (2, 'Corte 2'),
+                                      (3, 'Corte 3'),
+                                    ])
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: TapScale(
+                                          onTap: () {
+                                            HapticFeedback.lightImpact();
+                                            setState(
+                                              () => _selectedMagistralCorte = entry.$1,
+                                            );
+                                          },
+                                          child: AnimatedContainer(
+                                            duration:
+                                                const Duration(milliseconds: 180),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 11,
+                                              vertical: 5.5,
                                             ),
-                                          ),
-                                          child: Text(
-                                            entry.$2,
-                                            style: mono(
-                                              fontSize: 10.5,
-                                              fontWeight: FontWeight.w600,
+                                            decoration: BoxDecoration(
                                               color: _selectedMagistralCorte == entry.$1
-                                                  ? p.indigo
-                                                  : p.textSecondary,
+                                                  ? p.indigo.o(0.18)
+                                                  : p.card,
+                                              borderRadius:
+                                                  BorderRadius.circular(999),
+                                              border: Border.all(
+                                                color: _selectedMagistralCorte == entry.$1
+                                                    ? p.indigo
+                                                    : p.cardBorder,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              entry.$2,
+                                              style: mono(
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w600,
+                                                color: _selectedMagistralCorte == entry.$1
+                                                    ? p.indigo
+                                                    : p.textSecondary,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
 

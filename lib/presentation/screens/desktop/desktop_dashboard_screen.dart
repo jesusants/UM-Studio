@@ -339,20 +339,24 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                     opacity: _col2Opacity,
                     child: SlideTransition(
                       position: _col2Slide,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 240),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        child: _selectedSubject == null
-                            // Modo A: Dashboard General (Reloj + Próximo Hito + Pomodoro)
-                            ? Column(
-                                key: const ValueKey('desktop_mode_dashboard'),
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // Banner de Anuncio Global en Tiempo Real
-                                  const GlobalBroadcastBanner(),
-                                  // Reloj Digital Aislado
-                                  const DesktopLiveClock(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Banner de Anuncio Global en Tiempo Real (Persistente)
+                          const GlobalBroadcastBanner(),
+                          Expanded(
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 240),
+                              switchInCurve: Curves.easeOutCubic,
+                              switchOutCurve: Curves.easeInCubic,
+                              child: _selectedSubject == null
+                                  // Modo A: Dashboard General (Reloj + Próximo Hito + Pomodoro)
+                                  ? Column(
+                                      key: const ValueKey('desktop_mode_dashboard'),
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        // Reloj Digital Aislado
+                                        const DesktopLiveClock(),
                                   const SizedBox(height: 16),
 
                                   // Próximo Hito Académico
@@ -414,6 +418,9 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                                 },
                                 onOpenClaseViva: widget.onOpenClaseViva,
                               ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

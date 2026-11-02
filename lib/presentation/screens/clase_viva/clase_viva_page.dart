@@ -18,6 +18,7 @@ import '../../../domain/entities/tema_estudio_entity.dart';
 import '../../../domain/repositories/i_clase_viva_repository.dart';
 import '../../widgets/academic_solved_exercise_card.dart';
 import '../../widgets/minimal_slide_viewer.dart';
+import '../../widgets/mouse_scrollable_horizontal_bar.dart';
 import '../../providers/app_scopes.dart';
 import '../../widgets/ios_primitives.dart';
 import '../../widgets/katex_formula_card.dart';
@@ -794,49 +795,54 @@ class _OfficialTopicSection extends StatelessWidget {
         // Selector horizontal de Temas si la asignatura/rama tiene múltiples temas en el .md
         if (asig != null && pillTemas.length > 1 && onSelectTopic != null) ...[
           const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                for (final t in pillTemas)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: TapScale(
-                      onTap: () => onSelectTopic!(asig, t.numeroTema),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: t.numeroTema == tema.numeroTema
-                              ? (t.esNotacionIngenieria ? p.indigo : p.green)
-                              : p.card,
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
+          MouseScrollableHorizontalBar(
+            height: 32,
+            arrowAccentColor: p.green,
+            builder: (context, controller) => SingleChildScrollView(
+              controller: controller,
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  for (final t in pillTemas)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: TapScale(
+                        onTap: () => onSelectTopic!(asig, t.numeroTema),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
                             color: t.numeroTema == tema.numeroTema
                                 ? (t.esNotacionIngenieria ? p.indigo : p.green)
-                                : p.cardBorder,
+                                : p.card,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: t.numeroTema == tema.numeroTema
+                                  ? (t.esNotacionIngenieria ? p.indigo : p.green)
+                                  : p.cardBorder,
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          t.badgeTema,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: t.numeroTema == tema.numeroTema
-                                ? (t.esNotacionIngenieria
-                                    ? Colors.white
-                                    : Colors.black)
-                                : p.textSecondary,
+                          child: Text(
+                            t.badgeTema,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: t.numeroTema == tema.numeroTema
+                                  ? (t.esNotacionIngenieria
+                                      ? Colors.white
+                                      : Colors.black)
+                                  : p.textSecondary,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

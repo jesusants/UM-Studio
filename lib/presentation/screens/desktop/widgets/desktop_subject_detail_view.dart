@@ -12,6 +12,7 @@ import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/katex_formula_card.dart';
 import '../../../widgets/minimal_slide_viewer.dart';
 import '../../../widgets/topic_ai_assistant_widget.dart';
+import '../../../widgets/mouse_scrollable_horizontal_bar.dart';
 import '../desktop_theme_tokens.dart';
 
 /// Vista de Detalle Panorámica de Asignatura (Master-Detail) en la columna central.
@@ -40,9 +41,14 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
   String _activeEnglishBranch = 'general';
   bool _isAiChatOpen = false;
 
+  late final ScrollController _temasScrollController;
+  late final ScrollController _magistralesScrollController;
+
   @override
   void initState() {
     super.initState();
+    _temasScrollController = ScrollController();
+    _magistralesScrollController = ScrollController();
     _initSelectedTopic();
   }
 
@@ -51,7 +57,36 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.subject.codigo != widget.subject.codigo) {
       _initSelectedTopic();
+      if (_temasScrollController.hasClients) {
+        _temasScrollController.jumpTo(0.0);
+      }
+      if (_magistralesScrollController.hasClients) {
+        _magistralesScrollController.jumpTo(0.0);
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    _temasScrollController.dispose();
+    _magistralesScrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTopicIndex(int index, {required bool isMagistral}) {
+    final controller =
+        isMagistral ? _magistralesScrollController : _temasScrollController;
+    if (!controller.hasClients) return;
+    final itemWidth = isMagistral ? 120.0 : 80.0;
+    final target = (index * itemWidth - 100.0).clamp(
+      0.0,
+      controller.position.maxScrollExtent,
+    );
+    controller.animateTo(
+      target,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _initSelectedTopic() {
@@ -418,9 +453,12 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
 
           // 4. Selector Horizontal de Temas
           if (temasDisponibles.isNotEmpty) ...[
-            SizedBox(
+            MouseScrollableHorizontalBar(
+              controller: _temasScrollController,
               height: 30,
+              arrowAccentColor: tokens.accentGreen,
               child: ListView.separated(
+                controller: _temasScrollController,
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: temasDisponibles.length,
@@ -436,6 +474,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                     onTap: () {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedTopicNumber = t.numeroTema);
+                      _scrollToTopicIndex(index, isMagistral: false);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
@@ -772,9 +811,12 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
             )
           else ...[
             // Selector Horizontal de Cátedras Magistrales
-            SizedBox(
+            MouseScrollableHorizontalBar(
+              controller: _magistralesScrollController,
               height: 32,
+              arrowAccentColor: tokens.accentIndigo,
               child: ListView.separated(
+                controller: _magistralesScrollController,
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: subject.clasesMagistrales.length,
@@ -788,6 +830,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                     onTap: () {
                       HapticFeedback.selectionClick();
                       setState(() => _selectedMagistralNumber = m.numeroTema);
+                      _scrollToTopicIndex(index, isMagistral: true);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),

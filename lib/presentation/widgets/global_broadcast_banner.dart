@@ -14,9 +14,15 @@ class GlobalBroadcastBanner extends StatelessWidget {
       builder: (context, _) {
         final config = GlobalEnvironmentService.instance.config;
         if (!config.globalBannerEnabled ||
-            config.globalBannerTitle.trim().isEmpty) {
+            (config.globalBannerTitle.trim().isEmpty &&
+                config.globalBannerMessage.trim().isEmpty)) {
           return const SizedBox.shrink();
         }
+
+        final title = config.globalBannerTitle.trim().isNotEmpty
+            ? config.globalBannerTitle.trim()
+            : 'Aviso Oficial';
+        final message = config.globalBannerMessage.trim();
 
         final p = context.palette;
         Color badgeColor;
@@ -61,17 +67,17 @@ class GlobalBroadcastBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      config.globalBannerTitle,
+                      title,
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                         color: badgeColor,
                       ),
                     ),
-                    if (config.globalBannerMessage.trim().isNotEmpty) ...[
+                    if (message.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
-                        config.globalBannerMessage,
+                        message,
                         style: TextStyle(
                           fontSize: 11.5,
                           color: p.textPrimary,

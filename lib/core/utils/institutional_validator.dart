@@ -145,12 +145,17 @@ abstract final class InstitutionalValidator {
   }
 
   static const String masterAdminUsername = 'jsierra';
+  static const Set<String> masterAdminUsernames = {'jsierra', 'jasierra'};
   static const String masterAdminPin = '81991042249674';
 
   /// Determina si un username o email corresponde al superusuario administrador.
   static bool isSuperAdmin(String userOrEmail) {
-    final clean = userOrEmail.trim().toLowerCase().replaceAll(AppConstants.institutionalDomain, '');
-    return clean == masterAdminUsername;
+    final clean = userOrEmail
+        .trim()
+        .toLowerCase()
+        .replaceAll(AppConstants.institutionalDomain, '')
+        .replaceAll('@', '');
+    return masterAdminUsernames.contains(clean);
   }
 
   /// Verifica si las credenciales corresponden al superusuario maestro.

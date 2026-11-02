@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -14,7 +15,7 @@ import 'github_sync_service.dart';
 ///
 /// Gestiona la lectura desde GitHub (`db/global_config.json`) con contingencia offline
 /// en `SharedPreferences` y la publicación exclusiva por el administrador `jsierra`.
-class GlobalEnvironmentService extends ChangeNotifier {
+class GlobalEnvironmentService extends ChangeNotifier with WidgetsBindingObserver {
   GlobalEnvironmentService._internal();
 
   static final GlobalEnvironmentService instance =
@@ -48,6 +49,10 @@ class GlobalEnvironmentService extends ChangeNotifier {
     if (_initialized) return;
     _initialized = true;
 
+    try {
+      WidgetsBinding.instance.addObserver(this);
+    } catch (_) {}
+
     // 1. Cargar desde SharedPreferences (Offline-First instantáneo)
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -72,11 +77,18 @@ class GlobalEnvironmentService extends ChangeNotifier {
     // 2. Fetch fresco desde GitHub sin caché
     unawaited(fetchRemoteConfig());
 
-    // 3. Polling periódico cada 5 minutos
+    // 3. Polling periódico cada 30 segundos para actualización en tiempo real
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       fetchRemoteConfig();
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      fetchRemoteConfig();
+    }
   }
 
   /// Consulta la versión más reciente en GitHub con cache-busting
@@ -85,19 +97,66 @@ class GlobalEnvironmentService extends ChangeNotifier {
     _lastError = null;
     notifyListeners();
 
+    // 1. Consultar Contents API de GitHub (en vivo, latencia 0, sin caché de 5 min)
+    try {
+      const token = AppConstants.envGithubToken;
+      final apiUri = Uri.parse(
+        '$_apiContentsUrl?ref=${AppConstants.githubBranch}&ts=${DateTime.now().millisecondsSinceEpoch}',
+      );
+      final apiResponse = await http.get(
+        apiUri,
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'User-Agent': 'UM-Studio-Client',
+          if (token.isNotEmpty) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 5));
+
+      if (apiResponse.statusCode == 200) {
+        final body = jsonDecode(apiResponse.body) as Map<String, dynamic>;
+        final sha = body['sha']?.toString();
+        if (sha != null && sha.isNotEmpty) {
+          _knownSha = sha;
+        }
+        final rawB64 = (body['content'] ?? '')
+            .toString()
+            .replaceAll(RegExp(r'\s+'), '');
+        if (rawB64.isNotEmpty) {
+          final decodedJson = utf8.decode(base64Decode(rawB64));
+          final decoded = jsonDecode(decodedJson) as Map<String, dynamic>;
+          _config = GlobalEnvConfig.fromJson(decoded);
+
+          final prefs = await SharedPreferences.getInstance();
+          if (_knownSha != null) {
+            await prefs.setString(_shaPrefsKey, _knownSha!);
+          }
+          await prefs.setString(_prefsKey, jsonEncode(decoded));
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+      }
+    } catch (_) {}
+
+    // 2. Fallback a raw.githubusercontent.com
     try {
       final cacheBustUrl =
           '$_rawUrl?ts=${DateTime.now().millisecondsSinceEpoch}';
       final response = await http
-          .get(Uri.parse(cacheBustUrl))
-          .timeout(const Duration(seconds: 8));
+          .get(
+            Uri.parse(cacheBustUrl),
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+            },
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(utf8.decode(response.bodyBytes))
             as Map<String, dynamic>;
         _config = GlobalEnvConfig.fromJson(decoded);
 
-        // Guardar en SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_prefsKey, jsonEncode(decoded));
         _isLoading = false;
@@ -249,6 +308,9 @@ class GlobalEnvironmentService extends ChangeNotifier {
 
   @override
   void dispose() {
+    try {
+      WidgetsBinding.instance.removeObserver(this);
+    } catch (_) {}
     _pollingTimer?.cancel();
     super.dispose();
   }
