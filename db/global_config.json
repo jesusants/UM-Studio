@@ -9,7 +9,7 @@
   "periodo_academico_actual": "2026-III",
   "corte_activo_global": 1,
   "portal_estudiantes_url": "https://admisiones.unimagdalena.edu.co/mEstudiantes/indexPrinc.jsp?rnd=315581080",
-  "global_banner_enabled": false,
+  "global_banner_enabled": true,
   "global_banner_title": "Bienvenido a UM Studio",
   "global_banner_message": "Consulta tus clases magistrales y temas del corte en curso.",
   "global_banner_type": "info",
@@ -21,6 +21,6 @@
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
   "maintenance_mode": false,
-  "updated_at": "2026-11-01T23:54:38.056",
+  "updated_at": "2026-11-01T23:54:43.510",
   "updated_by": "jsierra"
 }
