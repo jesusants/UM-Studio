@@ -11,7 +11,7 @@
     "03031818"
   ],
   "pin_hash": "8065cbfad8d59076a8f882da19667e06cc663fb51c5404330e2a873f6934173f",
-  "progreso_materias": "enc:v1:JTAh7kmg8BhU0xhoH4WP8jirWG0FRLVboxgGLxn4bSyGZZfq1y5J2LODbocACr4=",
+  "progreso_materias": "enc:v1:B63MFaqszcLzd1IzxN47+BDpjeBRPbZzV6A2f36Lji/rVHJLu6o3FZnfjnC96LE=",
   "ultimos_temas_revisados": {
     "03041820": 11
   },
@@ -20,7 +20,7 @@
     "numero_tema": 11,
     "actualizado_en": "2026-11-02T22:41:41.203"
   },
-  "recordatorios_calendario": "enc:v1:8gAZxwAEIxRNVrziZL0L8Ey2Kvc1/HnVcZMT8aGhpJDZ6Q==",
-  "apuntes_personales": "enc:v1:Dk+UJvgptZA9yy4q8jBU10KjDb03c/GUEYvgWvdKhOcIdQ==",
+  "recordatorios_calendario": "enc:v1:UQJXg8kf7XHcDjQQTvwoDbLpjV2Jyi6o6zcp5m7eynmueg==",
+  "apuntes_personales": "enc:v1:+T3zLsjEhveLzoLEiaF71UXkwE1bAu+jgtUvT1ly5JIJiw==",
   "is_admin": false
 }
