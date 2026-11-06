@@ -1,0 +1,21 @@
+{
+  "username": "jasierras",
+  "nombre": "Jesus Antonio Sierra Saltarin",
+  "email": "jasierras@unimagdalena.edu.co",
+  "programa": "Ingeniería Energética",
+  "cuatrimestre_activo": 2,
+  "cuatrimestre_actual": 2,
+  "materias_matriculadas": [
+    "02021810",
+    "03041819",
+    "01021803",
+    "03031818",
+    "02031812"
+  ],
+  "pin_hash": "70a60076d7ddd626362129ea1b4f836d2736af553f2104f016fc05b7a5736c00",
+  "progreso_materias": "enc:v1:yTUiAxqD6yfcJJKy59t0BVtVZAvgc1w/f58Xn/+JPr5g4hM4B7tKWLkCz2RSqzWsjbFp7FxUw1rZfJsH7WzZUC/HGKMyfoii+jomI1WnMhCEbIUq27UqJ/RlfM9qSWTxKV0Tf/UVsA==",
+  "ultimos_temas_revisados": {},
+  "recordatorios_calendario": "enc:v1:HQHp7mlkFW8KnPQ04rsL2raVQ1YShCcBrDkz9E1i77Lz4Q==",
+  "apuntes_personales": "enc:v1:SHWDj8tLXr5NpjA05P9gNdS4EYsIr3Px6zoTL5g7EFd6kA==",
+  "is_admin": false
+}
