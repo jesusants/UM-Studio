@@ -1,7 +1,7 @@
 {
   "ai_enabled": true,
   "ai_provider": "groq",
-  "ai_model_name": "llama-3.3-70b-versatile",
+  "ai_model_name": "llama-3.1-8b-instant",
   "ai_api_key_override": "",
   "ai_temperature": 0.2,
   "ai_max_tokens": 1280,
@@ -21,6 +21,6 @@
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
   "maintenance_mode": false,
-  "updated_at": "2026-11-06T09:52:33.859",
+  "updated_at": "2026-11-06T10:06:14.903",
   "updated_by": "jasierra"
 }
