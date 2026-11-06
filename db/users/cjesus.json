@@ -3,9 +3,13 @@
   "nombre": "Jesús Cierra",
   "email": "cjesus@unimagdalena.edu.co",
   "programa": "Ingeniería Energética",
-  "cuatrimestre_actual": 3,
+  "cuatrimestre_activo": 2,
+  "cuatrimestre_actual": 2,
+  "materias_matriculadas": [
+    "02021810"
+  ],
   "pin_hash": "8065cbfad8d59076a8f882da19667e06cc663fb51c5404330e2a873f6934173f",
-  "progreso_materias": "enc:v1:DVRzncoAXnfWXBkMCdG7NJDu9MG6eVM+Pf0lgqELVjhTiv1KtW/aXz5umEpfa7oQddFVExAxgXyxtRn/lHRlVqgFNpkTq4Vx3trqKQKz4/9DDIS8NG/veNa6A2Q7JzwtbmGotonkuw==",
+  "progreso_materias": "enc:v1:bFSr5GTHhfjftOpwWOUzYw4/29DxcIe+ybZMvCSqJsrciFmgRqmPpRljIQ2XZ89VMfeAAoSwH9zT3SKbMwS/WKtS2XpGWiRJnkaz5i1bwCwAeYNhPPD7BwMluqSloBaXk8fBgDBezQ==",
   "ultimos_temas_revisados": {
     "02011808": 1
   },
@@ -14,6 +18,7 @@
     "numero_tema": 1,
     "actualizado_en": "2026-10-31T12:14:02.513"
   },
-  "recordatorios_calendario": "enc:v1:zETgCxAyFqdtVtjBZXJoAL90l5r6CAtzGhb41Lzuv+BPXQ==",
-  "apuntes_personales": "enc:v1:VPxWTPDhtfKG4FmlXht64kabdOy+W7Dye4cE3K0ao5CC/A=="
+  "recordatorios_calendario": "enc:v1:PE4zLxuWrm34vjKbyO/5rytLArpWsWHfzAob225L7qlOJg==",
+  "apuntes_personales": "enc:v1:yRAMDuE+saIeNaf0+Z50z3c/FUhTVRjeK7eV9PdnJEGeaA==",
+  "is_admin": false
 }
