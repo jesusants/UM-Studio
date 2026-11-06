@@ -9,8 +9,8 @@
   "periodo_academico_actual": "2026-III",
   "corte_activo_global": 1,
   "portal_estudiantes_url": "https://admisiones.unimagdalena.edu.co/mEstudiantes/indexPrinc.jsp?rnd=315581080",
-  "global_banner_enabled": false,
-  "global_banner_title": "Bienvenido a UM Studio",
+  "global_banner_enabled": true,
+  "global_banner_title": "Clases Magistrales Física Mecánica Subidas!!!",
   "global_banner_message": "NUEVO ASISTENTE DE IA PARA CADA TEMA, USALO Y DISFRUTA",
   "global_banner_type": "info",
   "news_source_url": "https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias",
@@ -21,6 +21,6 @@
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
   "maintenance_mode": false,
-  "updated_at": "2026-11-06T09:47:35.482",
+  "updated_at": "2026-11-06T09:48:12.913",
   "updated_by": "jasierra"
 }
