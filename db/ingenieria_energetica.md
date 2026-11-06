@@ -6140,6 +6140,740 @@ malla_curricular:
                 puntos:
                   - "Pérdidas de carga distribuidas h_f = f (L/D) (v^2/2g)."
                   - "Factor f de Moody y cuantificación de potencia disipada en tuberías forzadas."
+        clases_magistrales:
+          - numero_tema: 1
+            corte: 1
+            modalidad: "magistral"
+            titulo: "Cinemática Diferencial 1D, Encuentro MRUA y Lanzamiento de Proyectiles"
+            objetivo: "Dominar la descripción del movimiento rectilíneo mediante cálculo diferencial, resolución de problemas de encuentro cinemático y balística en dos dimensiones a partir de los desarrollos del tablero docente."
+            concepto_clave_latex: "v(t) = \\frac{dx}{dt} \\quad ; \\quad a(t) = \\frac{dv}{dt} = \\frac{d^2x}{dt^2} \\quad ; \\quad y(x) = x\\tan\\theta_0 - \\frac{g x^2}{2v_0^2\\cos^2\\theta_0}"
+            ejemplo: |
+              Problema 01 (Cinemática Diferencial Unidimensional): Una partícula se desplaza a lo largo del eje $x$ con una función de posición dada por $x(t) = 3t^3 - 4t^2 + 5t - 2$ (donde $x$ está en metros y $t$ en segundos). Calcule: a) La ecuación de velocidad $v(t)$ y aceleración $a(t)$. b) La posición, velocidad y aceleración en $t = 2\text{ s}$. c) El instante en el que la aceleración es nula ($a = 0$).
+              Paso 1: Derivar la función de posición respecto al tiempo para obtener la velocidad instantánea:
+              $$v(t) = \frac{dx}{dt} = \frac{d}{dt}(3t^3 - 4t^2 + 5t - 2) = 9t^2 - 8t + 5\text{ m/s}$$
+              Paso 2: Derivar la velocidad respecto al tiempo para obtener la aceleración instantánea:
+              $$a(t) = \frac{dv}{dt} = \frac{d}{dt}(9t^2 - 8t + 5) = 18t - 8\text{ m/s}^2$$
+              Paso 3: Evaluar las funciones cinemáticas en $t = 2\text{ s}$:
+              - Posición: $x(2) = 3(2)^3 - 4(2)^2 + 5(2) - 2 = 3(8) - 4(4) + 10 - 2 = 24 - 16 + 10 - 2 = 16\text{ m}$.
+              - Velocidad: $v(2) = 9(2)^2 - 8(2) + 5 = 9(4) - 16 + 5 = 36 - 16 + 5 = 25\text{ m/s}$.
+              - Aceleración: $a(2) = 18(2) - 8 = 36 - 8 = 28\text{ m/s}^2$.
+              Paso 4: Igualar la aceleración a cero para hallar el instante de inflexión:
+              $$18t - 8 = 0 \implies 18t = 8 \implies t = \frac{8}{18} = \frac{4}{9} \approx 0.444\text{ s}$$
+              
+              Problema 02 (Lanzamiento Parabólico desde Altura con Impacto Angular): Se dispara un proyectil con una rapidez inicial $v_0 = 25\text{ m/s}$ y un ángulo de elevación $\theta_0 = 37^\circ$ ($\sin 37^\circ \approx 0.60$, $\cos 37^\circ \approx 0.80$) desde la azotea de un edificio de altura $h = 20\text{ m}$. Considerando $g = 9.8\text{ m/s}^2$, calcule: a) El tiempo total de vuelo hasta impactar el suelo. b) El alcance horizontal máximo $x_{\max}$. c) La velocidad vectorial de impacto y su magnitud.
+              Paso 1: Descomponer la velocidad inicial en sus componentes cartesianas:
+              $$v_{0x} = v_0\cos\theta_0 = 25(0.80) = 20.0\text{ m/s}$$
+              $$v_{0y} = v_0\sin\theta_0 = 25(0.60) = 15.0\text{ m/s}$$
+              Paso 2: Formular la ecuación de posición vertical colocando el origen en la base del edificio ($y_0 = 20\text{ m}$):
+              $$y(t) = y_0 + v_{0y}t - \frac{1}{2}gt^2 = 20 + 15t - 4.9t^2$$
+              Condición de impacto contra el suelo ($y = 0$):
+              $$-4.9t^2 + 15t + 20 = 0 \implies 4.9t^2 - 15t - 20 = 0$$
+              Resolviendo la ecuación cuadrática:
+              $$t = \frac{-(-15) \pm \sqrt{(-15)^2 - 4(4.9)(-20)}}{2(4.9)} = \frac{15 \pm \sqrt{225 + 392}}{9.8} = \frac{15 + 24.84}{9.8} \approx 4.065\text{ s}$$
+              Paso 3: Calcular el alcance horizontal máximo usando la velocidad uniforme en $x$:
+              $$x_{\max} = v_{0x} \cdot t_{\text{vuelo}} = (20.0\text{ m/s})(4.065\text{ s}) = 81.3\text{ m}$$
+              Paso 4: Determinar las componentes de la velocidad final en el impacto:
+              $$v_{fx} = v_{0x} = 20.0\text{ m/s}$$
+              $$v_{fy} = v_{0y} - gt = 15.0 - (9.8)(4.065) = 15.0 - 39.84 = -24.84\text{ m/s}$$
+              Magnitud de la rapidez de impacto contra el piso:
+              $$v_f = \sqrt{v_{fx}^2 + v_{fy}^2} = \sqrt{(20.0)^2 + (-24.84)^2} = \sqrt{400 + 617} = \sqrt{1017} \approx 31.89\text{ m/s}$$
+            bloque_sugerido: "Pomodoro 50/10 • Cinemática diferencial y balística de proyectiles"
+            slides:
+              - numero: 1
+                seccion: "INTRODUCCIÓN"
+                titulo: "Cinemática Unidimensional y Vectorial"
+                puntos:
+                  - "**Unidad 1 y 2:** Cinemática de la Partícula • Física Mecánica."
+                  - "**Objetivo:** Describir con rigor matemático el estado de movimiento mediante posición, velocidad y aceleración."
+                  - "La cinemática prescinde de las causas dinámicas (fuerzas) y modela geométricamente las trayectorias."
+                  - "$$\\vec{r}(t) = x(t)\\hat{i} + y(t)\\hat{j} + z(t)\\hat{k}$$"
+              - numero: 2
+                seccion: "CÁLCULO DIFERENCIAL"
+                titulo: "Derivadas Temporales de Posición y Velocidad"
+                puntos:
+                  - "La velocidad instantánea es la derivada temporal de primer orden del vector posición:"
+                  - "$$\\vec{v}(t) = \\lim_{\\Delta t \\to 0} \\frac{\\Delta \\vec{r}}{\\Delta t} = \\frac{d\\vec{r}}{dt}$$"
+                  - "La aceleración instantánea es la derivada temporal de segundo orden de la posición:"
+                  - "$$\\vec{a}(t) = \\frac{d\\vec{v}}{dt} = \\frac{d^2\\vec{r}}{dt^2}$$"
+                  - "Un cambio en la dirección de $\\vec{v}$ genera aceleración transversal incluso con rapidez constante."
+              - numero: 3
+                seccion: "CÁLCULO INTEGRAL"
+                titulo: "Deducción de Ecuaciones de Movimiento"
+                puntos:
+                  - "Integrando la aceleración constante $a = \\text{cte}$ se obtienen las relaciones canónicas de MRUA:"
+                  - "$$v(t) = v_0 + \\int_0^t a\\,dt = v_0 + a t$$"
+                  - "Integrando la función de velocidad se deduce la ecuación cuadrática de posición:"
+                  - "$$x(t) = x_0 + \\int_0^t (v_0 + a t)\\,dt = x_0 + v_0 t + \\frac{1}{2}a t^2$$"
+                  - "Eliminando el parámetro temporal $t$: $v^2 = v_0^2 + 2a(x - x_0)$."
+              - numero: 4
+                seccion: "ENCUENTRO MRUA"
+                titulo: "Condición de Cruce y Persecución Cinemática"
+                puntos:
+                  - "Dos móviles en trayectoria compartida coinciden cuando sus posiciones espaciales se igualan:"
+                  - "$$x_A(t_{\\text{enc}}) = x_B(t_{\\text{enc}})$$"
+                  - "Para un móvil en MRUA y otro en MRU, la ecuación resultante es cuadrática en $t$:"
+                  - "$$\\frac{1}{2}a_A t^2 + (v_{0A} - v_B) t + (x_{0A} - x_{0B}) = 0$$"
+                  - "El discriminante $\\Delta > 0$ garantiza la existencia de instantes físicos reales de encuentro."
+              - numero: 5
+                seccion: "BALÍSTICA 2D"
+                titulo: "Principio de Independencia de Movimientos"
+                puntos:
+                  - "Galileo Galilei formuló la superposición ortogonal independiente para el tiro parabólico:"
+                  - "Eje horizontal ($x$): Movimiento Rectilíneo Uniforme sin aceleración ($a_x = 0$):"
+                  - "$$v_x(t) = v_0\\cos\\theta_0 \\quad ; \\quad x(t) = (v_0\\cos\\theta_0)t$$"
+                  - "Eje vertical ($y$): Movimiento Rectilíneo Uniformemente Acelerado por la gravedad ($a_y = -g$):"
+                  - "$$v_y(t) = v_0\\sin\\theta_0 - g t \\quad ; \\quad y(t) = y_0 + (v_0\\sin\\theta_0)t - \\frac{1}{2}gt^2$$"
+              - numero: 6
+                seccion: "TRAYECTORIA"
+                titulo: "Ecuación Cartesiana Parabólica de la Trayectoria"
+                puntos:
+                  - "Despejando el tiempo $t = \\frac{x}{v_0\\cos\\theta_0}$ y sustituyendo en $y(t)$:"
+                  - "$$y(x) = x\\tan\\theta_0 - \\left[\\frac{g}{2v_0^2\\cos^2\\theta_0}\\right] x^2$$"
+                  - "Representa una parábola cóncava hacia abajo con vértice en la cúspide de máxima altura."
+                  - "En la altura máxima $y_{\\max}$, la componente vertical de la velocidad se anula temporalmente: $v_y = 0$."
+                  - "$$h_{\\max} = \\frac{v_0^2\\sin^2\\theta_0}{2g}$$"
+              - numero: 7
+                seccion: "ALCANCE"
+                titulo: "Tiempo de Vuelo y Alcance Horizontal Máximo"
+                puntos:
+                  - "En terreno horizontal nivelado ($y = 0$), el tiempo de vuelo completo es:"
+                  - "$$t_{\\text{vuelo}} = \\frac{2v_0\\sin\\theta_0}{g}$$"
+                  - "Sustituyendo en la ecuación horizontal se obtiene el alcance máximo:"
+                  - "$$R = \\frac{v_0^2\\sin(2\\theta_0)}{g}$$"
+                  - "El alcance máximo teórico se alcanza para un ángulo de disparo de $\\theta_0 = 45^\\circ$."
+              - numero: 8
+                seccion: "SÍNTESIS VECTORIAL"
+                titulo: "Vector Velocidad y Ángulo de Impacto"
+                puntos:
+                  - "La velocidad instantánea tangencial a la trayectoria en cualquier punto es:"
+                  - "$$\\vec{v}(t) = (v_0\\cos\\theta_0)\\hat{i} + (v_0\\sin\\theta_0 - gt)\\hat{j}$$"
+                  - "La rapidez total es la norma euclidiana del vector velocidad:"
+                  - "$$v(t) = \\sqrt{v_x(t)^2 + v_y(t)^2}$$"
+                  - "El ángulo de impacto con la horizontal cumple: $\\tan\\phi = \\frac{|v_y|}{v_x}$."
+          - numero_tema: 2
+            corte: 1
+            modalidad: "magistral"
+            titulo: "Dinámica Circular, Curvas Peraltadas y Fuerzas Centrales en el Tablero"
+            objetivo: "Analizar las fuerzas reales que originan la aceleración centrípeta en trayectorias curvilíneas: curvas planas sin peralte, curvas peraltadas con fricción, masa en círculo vertical, colina convexa y el rotor cilíndrico de parque."
+            concepto_clave_latex: "a_c = \\frac{v^2}{R} = \\omega^2 R \\quad ; \\quad v_{\\text{plana}} = \\sqrt{\\mu_s g R} \\quad ; \\quad v_{\\text{peralte}} = \\sqrt{g R \\left(\\frac{\\sin\\theta + \\mu_s\\cos\\theta}{\\cos\\theta - \\mu_s\\sin\\theta}\\right)} \\quad ; \\quad \\omega_{\\text{rotor}} = \\sqrt{\\frac{g}{\\mu_s R}}"
+            ejemplo: |
+              Problema 01 (Curva Peraltada con Fricción Estática): Una autopista tiene una curva de radio de curvatura $R = 100\text{ m}$ con un ángulo de peralte transversal $\theta = 20^\circ$. El coeficiente de rozamiento estático entre los neumáticos y el asfalto es $\mu_s = 0.30$. Considerando $g = 9.8\text{ m/s}^2$, calcule: a) La rapidez nominal a la que se puede tomar la curva sin depender de la fricción. b) La rapidez máxima permitida $v_{\max}$ sin derrapar hacia el borde exterior superior de la calzada.
+              Paso 1: Establecer los ejes coordenados inerciales: eje $x$ horizontal hacia el centro de curvatura (aceleración centrípeta) y eje $y$ vertical perpendicular.
+              Paso 2: Condición de no fricción ($f_s = 0$, rapidez nominal de diseño):
+              $$N\sin\theta = m\frac{v^2}{R} \quad ; \quad N\cos\theta = mg$$
+              Dividiendo ambas ecuaciones:
+              $$\tan\theta = \frac{v^2}{Rg} \implies v_{\text{nom}} = \sqrt{Rg\tan\theta} = \sqrt{(100)(9.8)\tan(20^\circ)} = \sqrt{980(0.36397)} = \sqrt{356.69} \approx 18.89\text{ m/s} = 68.0\text{ km/h}$$
+              Paso 3: Para la velocidad máxima $v_{\max}$, la tendencia de derrape es hacia arriba del plano, por lo que la fuerza de fricción estática $f_s = \mu_s N$ apunta hacia abajo a lo largo de la inclinación del peralte.
+              Ecuaciones dinámicas:
+              $$\sum F_y = N\cos\theta - f_s\sin\theta - mg = 0 \implies N(\cos\theta - \mu_s\sin\theta) = mg \implies N = \frac{mg}{\cos\theta - \mu_s\sin\theta}$$
+              $$\sum F_x = N\sin\theta + f_s\cos\theta = m\frac{v_{\max}^2}{R} \implies N(\sin\theta + \mu_s\cos\theta) = m\frac{v_{\max}^2}{R}$$
+              Paso 4: Sustituir la normal $N$ y despejar $v_{\max}$:
+              $$\frac{mg(\sin\theta + \mu_s\cos\theta)}{\cos\theta - \mu_s\sin\theta} = m\frac{v_{\max}^2}{R} \implies v_{\max} = \sqrt{g R \left(\frac{\sin\theta + \mu_s\cos\theta}{\cos\theta - \mu_s\sin\theta}\right)}$$
+              Evaluando numéricamente:
+              $$\sin(20^\circ) = 0.34202 \; , \; \cos(20^\circ) = 0.93969$$
+              $$\text{Numerador} = 0.34202 + (0.30)(0.93969) = 0.34202 + 0.28191 = 0.62393$$
+              $$\text{Denominador} = 0.93969 - (0.30)(0.34202) = 0.93969 - 0.10261 = 0.83708$$
+              $$\frac{0.62393}{0.83708} = 0.74536$$
+              $$v_{\max} = \sqrt{(9.8)(100)(0.74536)} = \sqrt{730.46} \approx 27.03\text{ m/s} = 97.3\text{ km/h}$$
+              
+              Problema 02 (Atracción de Feria / El Rotor Cilíndrico): En una atracción mecánica de parque, personas de masa $m$ se ubican contra la pared rugosa interior de un cilindro hueco de radio $R = 3.5\text{ m}$. El cilindro gira sobre su eje vertical central a velocidad angular $\omega$. El coeficiente de fricción estática entre la ropa del pasajero y la pared es $\mu_s = 0.45$. Calcule: a) La velocidad angular mínima $\omega_{\min}$ en rad/s requerida para que el piso móvil descienda sin que las personas caigan. b) La frecuencia de giro mínima en revoluciones por minuto (r.p.m.).
+              Paso 1: Trazar el DCL del pasajero con el piso retirado:
+              - Eje vertical: Peso hacia abajo ($W = mg$) y fuerza de rozamiento estático hacia arriba ($f_s$).
+              - Eje horizontal radial: Fuerza normal ejercida por la pared hacia el centro de giro ($N = F_c$).
+              Paso 2: Formular las condiciones de equilibrio y aceleración centrípeta:
+              $$\sum F_y = f_s - mg = 0 \implies f_s = mg$$
+              $$\sum F_r = N = m a_c = m \omega^2 R$$
+              Paso 3: Aplicar la condición límite de fricción estática de Coulomb ($f_s \le \mu_s N$):
+              $$mg \le \mu_s (m \omega^2 R) \implies g \le \mu_s \omega^2 R \implies \omega^2 \ge \frac{g}{\mu_s R}$$
+              $$\omega_{\min} = \sqrt{\frac{g}{\mu_s R}} = \sqrt{\frac{9.8}{(0.45)(3.5)}} = \sqrt{\frac{9.8}{1.575}} = \sqrt{6.222} \approx 2.494\text{ rad/s}$$
+              Paso 4: Convertir la velocidad angular a frecuencia en r.p.m.:
+              $$n = \omega \left(\frac{60}{2\pi}\right) = 2.494 \cdot \frac{60}{2\pi} = \frac{149.66}{6.2832} \approx 23.82\text{ r.p.m.}$$
+            bloque_sugerido: "Pomodoro 50/10 • Dinámica curvilínea, peralte y fuerzas radiales"
+            slides:
+              - numero: 1
+                seccion: "DINÁMICA RADIAL"
+                titulo: "Fuerza Centrípeta y Marco Inercial"
+                puntos:
+                  - "La fuerza centrípeta no es una interacción física adicional, sino la fuerza neta radial:"
+                  - "$$\\sum \\vec{F}_r = m a_c \\hat{u}_r = m \\left(\\frac{v^2}{R}\\right) \\hat{u}_r = m (\\omega^2 R) \\hat{u}_r$$"
+                  - "Siempre apunta hacia el centro instantáneo de curvatura de la trayectoria."
+                  - "En marcos no inerciales (rotatorios) surge la fuerza centrífuga ficticia de inercia."
+              - numero: 2
+                seccion: "CURVA PLANA"
+                titulo: "Límite de Fricción Estática sin Derrape"
+                puntos:
+                  - "En una calzada horizontal sin peralte, la única fuerza centrípeta disponible es la fricción lateral:"
+                  - "$$\\sum F_r = f_s = m \\frac{v^2}{R} \\quad ; \\quad \\sum F_y = N - mg = 0 \\implies N = mg$$"
+                  - "Condición de no deslizamiento: $f_s \\le \\mu_s N = \\mu_s mg$."
+                  - "Rapidez máxima sin derrapar en curva plana:"
+                  - "$$v_{\\max} = \\sqrt{\\mu_s g R}$$"
+              - numero: 3
+                seccion: "CURVA PERALTADA"
+                titulo: "Geometría de Inclinación y Aportes Normales"
+                puntos:
+                  - "El ángulo de peralte $\\theta$ orienta la normal de modo que su componente horizontal suministra fuerza centrípeta:"
+                  - "$$N_x = N\\sin\\theta \\quad ; \\quad N_y = N\\cos\\theta$$"
+                  - "Rapidez nominal de diseño (donde la fricción requerida es exactamente cero, $f_s = 0$):"
+                  - "$$v_{\\text{nominal}} = \\sqrt{g R \\tan\\theta}$$"
+                  - "A esta velocidad un vehículo no sufre desgaste lateral de neumáticos."
+              - numero: 4
+                seccion: "MODELO RIGUROSO"
+                titulo: "Deducción de Rapidez Máxima con Fricción"
+                puntos:
+                  - "Al rebasar la velocidad nominal, el vehículo tiende a deslizar hacia la parte exterior alta:"
+                  - "La fricción estática $f_s = \\mu_s N$ apunta hacia abajo a lo largo del plano inclinado:"
+                  - "$$\\sum F_x = N\\sin\\theta + f_s\\cos\\theta = m \\frac{v^2}{R}$$"
+                  - "$$\\sum F_y = N\\cos\\theta - f_s\\sin\\theta - mg = 0$$"
+                  - "$$v_{\\max} = \\sqrt{g R \\left(\\frac{\\sin\\theta + \\mu_s\\cos\\theta}{\\cos\\theta - \\mu_s\\sin\\theta}\\right)}$$"
+              - numero: 5
+                seccion: "CÍRCULO VERTICAL"
+                titulo: "Tensiones Críticas en Movimiento Vertical"
+                puntos:
+                  - "Masa atada a una cuerda inextensible en plano vertical de radio $R$:"
+                  - "Cúspide superior (punto más alto): $T_{\\text{top}} + mg = m \\frac{v_{\\text{top}}^2}{R}$."
+                  - "Velocidad mínima crítica en la cúspide para no destensar la cuerda ($T \\ge 0$): $v_{\\text{crit}} = \\sqrt{g R}$."
+                  - "Fondo inferior (punto más bajo): $T_{\\text{bottom}} - mg = m \\frac{v_{\\text{bottom}}^2}{R}$."
+                  - "En el fondo la tensión soporta el peso y la inercia centrípeta máxima: $T_{\\text{bottom}} = m(g + \\frac{v^2}{R})$."
+              - numero: 6
+                seccion: "CIMA CONVEXA"
+                titulo: "Pérdida de Contacto en Colina Curva"
+                puntos:
+                  - "Vehículo cruzando la cresta convexa de una colina de curvatura de radio $R$:"
+                  - "$$\\sum F_r = mg - N = m \\frac{v^2}{R} \\implies N = m\\left(g - \\frac{v^2}{R}\\right)$$"
+                  - "A mayor rapidez, la fuerza normal disminuye y los pasajeros experimentan sensación de ingravidez."
+                  - "Condición límite de despegue y vuelo libre ($N = 0$):"
+                  - "$$v_{\\text{despegue}} = \\sqrt{g R}$$"
+              - numero: 7
+                seccion: "EL ROTOR"
+                titulo: "Fricción Vertical y Fuerza Normal Centrípeta"
+                puntos:
+                  - "Atracción mecánica cilíndrica de parque donde se retira el suelo durante el giro:"
+                  - "La fuerza normal perpendicular de la pared proporciona la aceleración centrípeta:"
+                  - "$$N = m \\omega^2 R$$"
+                  - "La fricción vertical sostiene el peso contra la atracción de la gravedad: $f_s = mg$."
+                  - "Velocidad angular mínima de sustentación:"
+                  - "$$\\omega_{\\min} = \\sqrt{\\frac{g}{\\mu_s R}}$$"
+              - numero: 8
+                seccion: "FRECUENCIA"
+                titulo: "Conversión Angular a Ciclos por Minuto"
+                puntos:
+                  - "Relación fundamental entre velocidad angular $\\omega$, período $T$ y frecuencia $f$:"
+                  - "$$\\omega = 2\\pi f = \\frac{2\\pi}{T} \\quad [\\text{rad/s}]$$"
+                  - "Conversión a frecuencia de giro en revoluciones por minuto ($n$ en r.p.m.):"
+                  - "$$n = \\frac{60\\,\\omega}{2\\pi} = \\frac{30\\,\\omega}{\\pi}$$"
+                  - "El radio $R$ y el coeficiente $\\mu_s$ dictan directamente la potencia del motor del rotor."
+          - numero_tema: 3
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Leyes de Newton, Modelo de Fricción de Coulomb y Bloque en Pared Vertical"
+            objetivo: "Deducir la segunda ley a partir de la variación del momentum, aplicar el modelo de fricción estática y cinética de Coulomb, y resolver el caso riguroso del bloque presionado contra una pared vertical por una fuerza inclinada."
+            concepto_clave_latex: "\\sum \\vec{F} = \\frac{d\\vec{p}}{dt} = m\\vec{a} + \\dot{m}\\vec{v} \\quad ; \\quad f_s \\le \\mu_s N \\quad ; \\quad f_k = \\mu_k N \\quad ; \\quad F_{\\text{mín}} = \\frac{mg}{\\sin\\theta + \\mu_s\\cos\\theta}"
+            ejemplo: |
+              Problema 01 (Bloque Presionado contra Pared Vertical - Caso Caída Inminente): Un bloque de masa $m = 5.0\text{ kg}$ se presiona contra una pared vertical rugosa mediante una fuerza externa $F$ que forma un ángulo $\theta = 30^\circ$ sobre la horizontal. El coeficiente de fricción estática entre el bloque y la pared es $\mu_s = 0.40$ y el cinético es $\mu_k = 0.30$. Considerando $g = 9.8\text{ m/s}^2$: a) Formule las ecuaciones de equilibrio estático. b) Determine la magnitud mínima de $F$ ($F_{\min}$) requerida para evitar que el bloque resbale hacia abajo.
+              Paso 1: Descomponer la fuerza aplicada $F$ en los ejes coordenados (eje $x$ horizontal perpendicular a la pared, eje $y$ vertical hacia arriba):
+              $$F_x = F\cos\theta \quad ; \quad F_y = F\sin\theta$$
+              Paso 2: Ecuación de fuerzas horizontales: La pared reacciona con una fuerza normal $N$ hacia afuera:
+              $$\sum F_x = F\cos\theta - N = 0 \implies N = F\cos\theta$$
+              Paso 3: Caso de caída inminente: El bloque tiende a caer hacia abajo, por lo que la fuerza de fricción estática máxima actúa verticalmente hacia arriba ($f_s = \mu_s N = \mu_s F\cos\theta$).
+              Ecuación de fuerzas verticales:
+              $$\sum F_y = F_y + f_s - mg = 0 \implies F\sin\theta + \mu_s F\cos\theta - mg = 0$$
+              Paso 4: Factorizar $F$ y despejar la fuerza mínima:
+              $$F(\sin\theta + \mu_s\cos\theta) = mg \implies F_{\min} = \frac{mg}{\sin\theta + \mu_s\cos\theta}$$
+              Sustituyendo los datos numéricos ($mg = (5.0)(9.8) = 49.0\text{ N}$, $\sin 30^\circ = 0.50$, $\cos 30^\circ = 0.8660$):
+              $$\text{Denominador} = 0.50 + (0.40)(0.8660) = 0.50 + 0.3464 = 0.8464$$
+              $$F_{\min} = \frac{49.0}{0.8464} \approx 57.89\text{ N}$$
+              
+              Problema 02 (Bloque Presionado contra Pared Vertical - Caso Subida Inminente): Para el mismo bloque anterior ($m = 5.0\text{ kg}$, $\theta = 30^\circ$, $\mu_s = 0.40$), calcule la fuerza máxima $F_{\max}$ que se puede aplicar sin provocar que el bloque comience a deslizar hacia arriba por la pared.
+              Paso 1: Para el caso de subida inminente, el componente vertical $F\sin\theta$ supera al peso y el bloque tiende a subir, por lo que la fricción estática máxima se opone actuando hacia abajo ($f_s = -\mu_s N$).
+              Paso 2: Formular la ecuación de equilibrio vertical:
+              $$\sum F_y = F\sin\theta - f_s - mg = 0 \implies F\sin\theta - \mu_s F\cos\theta - mg = 0$$
+              Paso 3: Factorizar $F$ y despejar la fuerza máxima:
+              $$F(\sin\theta - \mu_s\cos\theta) = mg \implies F_{\max} = \frac{mg}{\sin\theta - \mu_s\cos\theta}$$
+              Paso 4: Evaluar con los valores numéricos:
+              $$\text{Denominador} = 0.50 - (0.40)(0.8660) = 0.50 - 0.3464 = 0.1536$$
+              $$F_{\max} = \frac{49.0}{0.1536} \approx 318.99\text{ N}$$
+              Conclusión: El bloque permanece en reposo absoluto contra la pared para cualquier fuerza $F$ en el intervalo $[57.89\text{ N}, 318.99\text{ N}]$.
+            bloque_sugerido: "Pomodoro 50/10 • Fricción estática límite y bloques en paredes verticales"
+            slides:
+              - numero: 1
+                seccion: "LEYES DE NEWTON"
+                titulo: "Masa, Inercia y Principios Fundamentales"
+                puntos:
+                  - "**Primera Ley (Inercia):** Todo cuerpo preserva su estado de reposo o MRU a menos que una fuerza neta actúe sobre él."
+                  - "La masa inercial cuantifica la resistencia intrínseca a cambios en el estado de movimiento."
+                  - "**Tercera Ley (Acción y Reacción):** A toda acción corresponde una reacción igual y opuesta:"
+                  - "$$\\vec{F}_{1/2} = -\\vec{F}_{2/1} \\implies |\\vec{F}_{1/2}| = |\\vec{F}_{2/1}|$$"
+                  - "Actúan simultáneamente en cuerpos distintos y nunca se cancelan entre sí."
+              - numero: 2
+                seccion: "SEGUNDA LEY"
+                titulo: "Deducción Rigurosa y Flujo Másico"
+                puntos:
+                  - "La Segunda Ley general se define mediante la derivada de la cantidad de movimiento $\\vec{p} = m\\vec{v}$:"
+                  - "$$\\sum \\vec{F} = \\frac{d\\vec{p}}{dt} = \\frac{d(m\\vec{v})}{dt} = m\\frac{d\\vec{v}}{dt} + \\vec{v}\\frac{dm}{dt}$$"
+                  - "Definiendo el flujo másico como $\\dot{m} = \\frac{dm}{dt}$:"
+                  - "$$\\sum \\vec{F} = m\\vec{a} + \\dot{m}\\vec{v}$$"
+                  - "Para sistemas cerrados de masa constante ($\\dot{m} = 0$), se recupera la clásica $\\sum \\vec{F} = m\\vec{a}$."
+              - numero: 3
+                seccion: "FRICCIÓN COULOMB"
+                titulo: "Modelo de Fricción Estática y Cinética"
+                puntos:
+                  - "La fuerza de rozamiento surge de rugosidades microscópicas y enlaces adhesivos entre superficies:"
+                  - "Fricción Estática (cuerpo en reposo): $f_s \\le f_{s,\\max} = \\mu_s N$."
+                  - "La fuerza estática se autoajusta exactamente a la fuerza aplicada hasta alcanzar su límite $\\mu_s N$."
+                  - "Fricción Cinética (deslizamiento relativo): $f_k = \\mu_k N$."
+                  - "En general: $\\mu_k < \\mu_s$, por lo que mantener el movimiento requiere menor fuerza que iniciarlo."
+              - numero: 4
+                seccion: "DCL Y NORMAL"
+                titulo: "Influencia de Fuerzas Inclinadas en el Apoyo"
+                puntos:
+                  - "La fuerza normal no siempre equivale al peso $mg$, depende de las cargas externas transversales:"
+                  - "Fuerza inclinada hacia abajo con ángulo $\\theta$: $N = mg + F\\sin\\theta$ (aumenta la normal y la fricción)."
+                  - "Fuerza inclinada hacia arriba con ángulo $\\theta$: $N = mg - F\\sin\\theta$ (alivia la normal y reduce la fricción)."
+                  - "Si $F\\sin\\theta > mg$, el bloque se levanta perdiendo contacto con el piso ($N = 0$)."
+              - numero: 5
+                seccion: "PARED VERTICAL"
+                titulo: "Equilibrio con Fuerza Inclinada"
+                puntos:
+                  - "Bloque sostenido contra una pared vertical por una fuerza $F$ inclinada un ángulo $\\theta$:"
+                  - "Eje horizontal perpendicular: la pared empuja con la normal $N = F\\cos\\theta$."
+                  - "Eje vertical de soporte: la fricción $f$ y la componente $F\\sin\\theta$ combaten la gravedad $mg$."
+                  - "$$\\sum F_x = F\\cos\\theta - N = 0 \\quad ; \\quad \\sum F_y = F\\sin\\theta \\pm f_s - mg = 0$$"
+              - numero: 6
+                seccion: "CAÍDA INMINENTE"
+                titulo: "Fuerza Mínima de Retención ($F_{\\min}$)"
+                puntos:
+                  - "Si la fuerza aplicada es insuficiente, el bloque tiende a deslizarse hacia abajo:"
+                  - "La fricción estática actúa en su máxima capacidad hacia arriba: $f_s = +\\mu_s N = \\mu_s F\\cos\\theta$."
+                  - "$$F\\sin\\theta + \\mu_s F\\cos\\theta = mg$$"
+                  - "$$F_{\\min} = \\frac{mg}{\\sin\\theta + \\mu_s\\cos\\theta}$$"
+                  - "Cualquier fuerza inferior a $F_{\\min}$ provocará la caída acelerada del bloque."
+              - numero: 7
+                seccion: "SUBIDA INMINENTE"
+                titulo: "Fuerza Máxima de Empuje ($F_{\\max}$)"
+                puntos:
+                  - "Si la fuerza $F$ es excesivamente grande, empuja el bloque hacia arriba por la pared:"
+                  - "La fricción estática máxima se opone apuntando hacia abajo: $f_s = -\\mu_s N = -\\mu_s F\\cos\\theta$."
+                  - "$$F\\sin\\theta - \\mu_s F\\cos\\theta = mg$$"
+                  - "$$F_{\\max} = \\frac{mg}{\\sin\\theta - \\mu_s\\cos\\theta}$$"
+                  - "Requiere que $\\tan\\theta > \\mu_s$ para que el denominador sea físicamente positivo."
+              - numero: 8
+                seccion: "ZONA DE REPOSO"
+                titulo: "Estabilidad Estática y Verificación"
+                puntos:
+                  - "El bloque permanece en reposo estático sin deslizar en la pared si y solo si:"
+                  - "$$F_{\\min} \\le F \\le F_{\\max}$$"
+                  - "Si $F < F_{\\min}$, el bloque cae con aceleración: $a_y = \\frac{mg - F\\sin\\theta - \\mu_k F\\cos\\theta}{m}$."
+                  - "Si $F > F_{\\max}$, el bloque sube con aceleración: $a_y = \\frac{F\\sin\\theta - mg - \\mu_k F\\cos\\theta}{m}$."
+          - numero_tema: 4
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Dinámica en Plano Inclinado, Cuerpos Conectados y Fuerzas de Contacto"
+            objetivo: "Modelar sistemas mecánicos acoplados en planos inclinados con rozamiento, cables inextensibles con masa colgante y bloques adyacentes en contacto aplicando la tercera ley de Newton."
+            concepto_clave_latex: "N = mg\\cos\\theta \\quad ; \\quad f_k = \\mu_k mg\\cos\\theta \\quad ; \\quad a = \\frac{m_2 g - m_1 g(\\sin\\theta + \\mu_k\\cos\\theta)}{m_1 + m_2} \\quad ; \\quad F_{\\text{contacto}} = m_2 a + f_{k2}"
+            ejemplo: |
+              Problema 01 (Bloque en Plano Inclinado Conectado a Masa Colgante): Un bloque $m_1 = 10.0\text{ kg}$ reposa sobre un plano inclinado a $\theta = 30^\circ$ con coeficientes $\mu_s = 0.30$ y $\mu_k = 0.20$. El bloque se conecta mediante una cuerda ligera y polea ideal a una masa colgante $m_2$. Considerando $g = 9.8\text{ m/s}^2$: a) Determine la masa mínima $m_2$ para que $m_1$ no deslice hacia abajo del plano. b) Si $m_2 = 12.0\text{ kg}$, verifique que el sistema acelera subiendo por el plano y calcule la aceleración $a$ y la tensión $T$ de la cuerda.
+              Paso 1: Fuerzas sobre $m_1$ en el plano inclinado:
+              $$W_{1x} = m_1 g\sin\theta = (10)(9.8)\sin 30^\circ = 49.0\text{ N}$$
+              $$W_{1y} = m_1 g\cos\theta = (10)(9.8)\cos 30^\circ = 84.87\text{ N} \implies N_1 = 84.87\text{ N}$$
+              $$f_{s1,\max} = \mu_s N_1 = (0.30)(84.87) = 25.46\text{ N}$$
+              Paso 2: Condición de reposo límite frente a deslizamiento hacia abajo:
+              $$\sum F_x = T + f_s - W_{1x} = 0 \implies T = W_{1x} - f_{s1,\max} = 49.0 - 25.46 = 23.54\text{ N}$$
+              Para la masa colgante en equilibrio: $T = m_2 g \implies m_{2,\min} = \frac{23.54}{9.8} \approx 2.40\text{ kg}$.
+              Paso 3: Si $m_2 = 12.0\text{ kg}$, el peso colgante es $W_2 = (12)(9.8) = 117.6\text{ N}$.
+              Como $W_2 > W_{1x} + f_{s1,\max} = 49.0 + 25.46 = 74.46\text{ N}$, el sistema acelera con $m_1$ subiendo por el plano inclinado y $m_2$ bajando.
+              Fuerza de fricción cinética opuesta al ascenso: $f_{k1} = \mu_k N_1 = (0.20)(84.87) = 16.97\text{ N}$.
+              Paso 4: Ecuaciones dinámicas acopladas:
+              Para $m_1$ (sube): $T - m_1 g\sin\theta - f_{k1} = m_1 a \implies T - 49.0 - 16.97 = 10 a \implies T - 65.97 = 10 a$
+              Para $m_2$ (baja): $m_2 g - T = m_2 a \implies 117.6 - T = 12 a$
+              Paso 5: Sumar ambas ecuaciones para eliminar la tensión $T$:
+              $$117.6 - 65.97 = (10 + 12) a \implies 51.63 = 22 a \implies a = \frac{51.63}{22} \approx 2.347\text{ m/s}^2$$
+              Paso 6: Calcular la tensión de la cuerda:
+              $$T = 117.6 - 12(2.347) = 117.6 - 28.16 = 89.44\text{ N}$$
+              
+              Problema 02 (Dos Bloques en Contacto en Plano Inclinado con Fricción): Dos bloques $m_1 = 4.0\text{ kg}$ y $m_2 = 2.0\text{ kg}$ se colocan en contacto continuo sobre un plano inclinado a $\theta = 35^\circ$ con coeficiente de fricción cinética $\mu_k = 0.15$. Se aplica una fuerza externa constante $F = 60.0\text{ N}$ paralela al plano sobre la cara inferior de $m_1$, empujando ambos bloques hacia arriba. Calcule: a) La aceleración del sistema conjunto. b) La fuerza de contacto interna ejercida por $m_1$ sobre $m_2$.
+              Paso 1: Normales y componentes del peso en cada bloque ($\sin 35^\circ = 0.5736$, $\cos 35^\circ = 0.8192$):
+              $$N_1 = m_1 g\cos\theta = (4.0)(9.8)(0.8192) = 32.11\text{ N} \implies f_{k1} = \mu_k N_1 = (0.15)(32.11) = 4.82\text{ N}$$
+              $$N_2 = m_2 g\cos\theta = (2.0)(9.8)(0.8192) = 16.06\text{ N} \implies f_{k2} = \mu_k N_2 = (0.15)(16.06) = 2.41\text{ N}$$
+              $$W_{1x} = m_1 g\sin\theta = (4.0)(9.8)(0.5736) = 22.48\text{ N}$$
+              $$W_{2x} = m_2 g\sin\theta = (2.0)(9.8)(0.5736) = 11.24\text{ N}$$
+              Paso 2: Ecuación del sistema global combinado ($M = m_1 + m_2 = 6.0\text{ kg}$):
+              $$\sum F_x = F - (W_{1x} + W_{2x}) - (f_{k1} + f_{k2}) = M a$$
+              $$60.0 - (22.48 + 11.24) - (4.82 + 2.41) = 6.0 a$$
+              $$60.0 - 33.72 - 7.23 = 6.0 a \implies 19.05 = 6.0 a \implies a = \frac{19.05}{6.0} = 3.175\text{ m/s}^2$$
+              Paso 3: Aislar el bloque $m_2$ para determinar la fuerza de contacto $F_{1/2}$ ejercida por $m_1$:
+              $$\sum F_{x2} = F_{1/2} - W_{2x} - f_{k2} = m_2 a$$
+              $$F_{1/2} = m_2 a + W_{2x} + f_{k2} = (2.0)(3.175) + 11.24 + 2.41 = 6.35 + 13.65 = 20.0\text{ N}$$
+              Comprobación en $m_1$: $F - F_{2/1} - W_{1x} - f_{k1} = 60.0 - 20.0 - 22.48 - 4.82 = 12.70\text{ N} = (4.0\text{ kg})(3.175\text{ m/s}^2)$ (idéntico).
+            bloque_sugerido: "Pomodoro 50/10 • Cuerpos conectados y planos inclinados con fricción"
+            slides:
+              - numero: 1
+                seccion: "PLANO INCLINADO"
+                titulo: "Descomposición Vectorial del Peso"
+                puntos:
+                  - "Sistema coordenado rotado: eje $x$ paralelo al plano inclinado, eje $y$ perpendicular a la superficie."
+                  - "La gravedad se proyecta según el ángulo de inclinación $\\theta$:"
+                  - "$$W_x = mg\\sin\\theta \\quad (\\text{fuerza motora de descenso}) \\quad ; \\quad W_y = mg\\cos\\theta$$"
+                  - "La fuerza normal perpendicular de reacción es: $N = mg\\cos\\theta$."
+              - numero: 2
+                seccion: "FRICCIÓN EN PLANO"
+                titulo: "Fuerza de Rozamiento en Superficie Inclinada"
+                puntos:
+                  - "La fuerza máxima de fricción estática depende de la normal rotada:"
+                  - "$$f_{s,\\max} = \\mu_s mg\\cos\\theta$$"
+                  - "Ángulo crítico de reposo $\\theta_c$ (donde un bloque inicia deslizamiento por su propio peso):"
+                  - "$$mg\\sin\\theta_c = \\mu_s mg\\cos\\theta_c \\implies \\tan\\theta_c = \\mu_s$$"
+                  - "Permite medir experimentalmente el coeficiente $\\mu_s$ midiendo la inclinación límite."
+              - numero: 3
+                seccion: "CUERPOS CONECTADOS"
+                titulo: "Sistemas Acoplados por Cuerdas y Poleas"
+                puntos:
+                  - "Una cuerda ideal inextensible transmite la misma tensión $T$ en toda su longitud."
+                  - "Las aceleraciones de ambos cuerpos tienen la misma magnitud: $|a_1| = |a_2| = a$."
+                  - "Se plantea la segunda ley de Newton de forma independiente para cada cuerpo:"
+                  - "Cuerpo que sube: $T - W_{1x} - f_k = m_1 a$ ; Cuerpo que baja: $W_2 - T = m_2 a$."
+              - numero: 4
+                seccion: "TENSIÓN Y ACELERACIÓN"
+                titulo: "Eliminación de Fuerzas Internas"
+                puntos:
+                  - "Sumando miembro a miembro las ecuaciones dinámicas se cancela la tensión interna $T$:"
+                  - "$$a = \\frac{m_2 g - m_1 g(\\sin\\theta + \\mu_k\\cos\\theta)}{m_1 + m_2}$$"
+                  - "Si el numerador es positivo ($> 0$), el sistema acelera en el sentido supuesto."
+                  - "La tensión efectiva resultante es un valor intermedio entre ambos pesos."
+              - numero: 5
+                seccion: "BLOQUES EN CONTACTO"
+                titulo: "Fuerzas de Interacción y Tercera Ley"
+                puntos:
+                  - "Dos o más bloques en contacto frontal sobre una superficie empujados por una fuerza exterior $F$:"
+                  - "Entre ellos surge una fuerza de contacto normal mutua perpendicular a sus caras adyacentes."
+                  - "Por Tercera Ley de Newton: $\\vec{F}_{1/2} = -\\vec{F}_{2/1}$ ($|F_{1/2}| = |F_{2/1}|$)."
+                  - "Aceleran juntos como una unidad monolítica: $a_1 = a_2 = a$."
+              - numero: 6
+                seccion: "MÉTODO DEL SISTEMA"
+                titulo: "Cálculo Global de Aceleración Conjunta"
+                puntos:
+                  - "Considerando todos los bloques como un único sistema de masa consolidada $M = \\sum m_i$:"
+                  - "Las fuerzas de contacto internas se cancelan en la sumatoria exterior:"
+                  - "$$\\sum F_{\\text{ext}} = F - \\sum W_{ix} - \\sum f_{ki} = \\left(\\sum m_i\\right) a$$"
+                  - "$$a = \\frac{F - \\sum W_{ix} - \\sum f_{ki}}{\\sum m_i}$$"
+              - numero: 7
+                seccion: "FUERZA DE CONTACTO"
+                titulo: "Aislamiento del Bloque Delantero"
+                puntos:
+                  - "Para calcular la fuerza de contacto $F_{1/2}$, se aísla el bloque que recibe el empuje ($m_2$):"
+                  - "$$\\sum F_{x2} = F_{1/2} - W_{2x} - f_{k2} = m_2 a$$"
+                  - "$$F_{1/2} = m_2 a + W_{2x} + f_{k2}$$"
+                  - "La fuerza interna siempre es menor que la fuerza externa total aplicada $F$."
+              - numero: 8
+                seccion: "VERIFICACIÓN"
+                titulo: "Consistencia Dinámica y Reglas de Signo"
+                puntos:
+                  - "Comprobación obligatoria en el bloque trasero ($m_1$):"
+                  - "$$F - F_{2/1} - W_{1x} - f_{k1} = m_1 a$$"
+                  - "Ambas formulaciones deben arrojar con precisión matemática idéntico valor para la aceleración."
+                  - "Garantiza el blindaje analítico en exámenes de física mecánica."
+          - numero_tema: 5
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Estática de la Partícula, Nudos Concurrentes y Sistemas de Cables"
+            objetivo: "Aplicar la primera condición de equilibrio a nudos centrales concurrentes con cables a diferentes ángulos, determinando tensiones mecánicas y condiciones de equilibrio estático con rozamiento."
+            concepto_clave_latex: "\\sum F_x = 0 \\implies T_2\\cos\\theta_2 - T_1\\cos\\theta_1 = 0 \\quad ; \\quad \\sum F_y = 0 \\implies T_1\\sin\\theta_1 + T_2\\sin\\theta_2 - W = 0"
+            ejemplo: |
+              Problema 01 (Equilibrio Estático de Nudo Central con Masa Suspendida): Una masa puntual de $m = 100.0\text{ kg}$ ($W = mg = 980.0\text{ N}$) cuelga en reposo de un nudo central $O$. El nudo se mantiene en equilibrio mediante dos cables tensados fijados al techo: el cable 1 forma un ángulo $\theta_1 = 37^\circ$ con la horizontal hacia la izquierda y el cable 2 forma un ángulo $\theta_2 = 53^\circ$ con la horizontal hacia la derecha. (Considere $\cos 37^\circ = \sin 53^\circ \approx 0.80$, $\sin 37^\circ = \cos 53^\circ \approx 0.60$). Calcule las tensiones $T_1$ y $T_2$ en cada uno de los cables.
+              Paso 1: Trazar el DCL en el nudo central $O$:
+              - Cable 1: Tensión $T_1$ apuntando hacia arriba y a la izquierda ($\theta_1 = 37^\circ$).
+              - Cable 2: Tensión $T_2$ apuntando hacia arriba y a la derecha ($\theta_2 = 53^\circ$).
+              - Cable vertical inferior: Tensión $T_3 = W = mg = 980.0\text{ N}$ hacia abajo.
+              Paso 2: Ecuación de equilibrio en el eje horizontal ($x$):
+              $$\sum F_x = T_2\cos(53^\circ) - T_1\cos(37^\circ) = 0$$
+              $$T_2(0.60) - T_1(0.80) = 0 \implies 0.60 T_2 = 0.80 T_1 \implies T_2 = \frac{0.80}{0.60} T_1 = \frac{4}{3} T_1$$
+              Paso 3: Ecuación de equilibrio en el eje vertical ($y$):
+              $$\sum F_y = T_1\sin(37^\circ) + T_2\sin(53^\circ) - W = 0$$
+              $$T_1(0.60) + T_2(0.80) = 980.0$$
+              Paso 4: Sustituir $T_2 = \frac{4}{3} T_1$ en la ecuación vertical:
+              $$0.60 T_1 + (0.80)\left(\frac{4}{3} T_1\right) = 980.0$$
+              $$\frac{3}{5} T_1 + \frac{4}{5}\left(\frac{4}{3}\right) T_1 = 980.0 \implies \left(\frac{9}{15} + \frac{16}{15}\right) T_1 = 980.0$$
+              $$\frac{25}{15} T_1 = \frac{5}{3} T_1 = 980.0 \implies T_1 = 980.0 \cdot \frac{3}{5} = 588.0\text{ N}$$
+              Paso 5: Calcular la tensión $T_2$:
+              $$T_2 = \frac{4}{3}(588.0) = 4 \cdot 196.0 = 784.0\text{ N}$$
+              
+              Problema 02 (Nudo Acoplado a Bloque Horizontal con Rozamiento): El cable 1 del nudo anterior se extiende horizontalmente hacia la izquierda y se conecta a un bloque de masa $M = 80.0\text{ kg}$ situado sobre una mesa rugosa con coeficiente de fricción estática $\mu_s = 0.50$. El cable 2 continúa formando $\theta_2 = 53^\circ$ con el techo y del nudo cuelga la masa $m = 100.0\text{ kg}$. Determine si el bloque permanece en reposo o si desliza por la mesa.
+              Paso 1: Del equilibrio vertical del nudo con cable horizontal ($\theta_1 = 0^\circ$):
+              $$\sum F_y = T_2\sin(53^\circ) - mg = 0 \implies T_2(0.80) = 980.0 \implies T_2 = \frac{980.0}{0.80} = 1225.0\text{ N}$$
+              Paso 2: Del equilibrio horizontal del nudo:
+              $$\sum F_x = T_2\cos(53^\circ) - T_1 = 0 \implies T_1 = T_2(0.60) = (1225.0)(0.60) = 735.0\text{ N}$$
+              Paso 3: Evaluar la fuerza de fricción estática máxima del bloque $M$:
+              $$N = M g = (80.0)(9.8) = 784.0\text{ N}$$
+              $$f_{s,\max} = \mu_s N = (0.50)(784.0) = 392.0\text{ N}$$
+              Paso 4: Comparar la tensión demandada con la fricción máxima:
+              Como $T_1 = 735.0\text{ N} > f_{s,\max} = 392.0\text{ N}$, el bloque NO PUEDE soportar la carga en reposo y DESLIZA aceleradamente hacia la derecha.
+            bloque_sugerido: "Pomodoro 50/10 • Estática de cables concurrentes y condiciones de equilibrio"
+            slides:
+              - numero: 1
+                seccion: "EQUILIBRIO"
+                titulo: "Primera Condición de Equilibrio Estático"
+                puntos:
+                  - "Una partícula se encuentra en equilibrio estático si su aceleración es idénticamente nula:"
+                  - "$$\\sum \\vec{F} = \\vec{0} \\iff \\sum F_x = 0 \\quad ; \\quad \\sum F_y = 0 \\quad ; \\quad \\sum F_z = 0$$"
+                  - "Implica que la velocidad permanece constante (en reposo relativo: $\\vec{v} = \\vec{0}$)."
+                  - "Constituye la base del diseño de estructuras estáticas y sistemas de amarre."
+              - numero: 2
+                seccion: "NUDO CONCURRENTE"
+                titulo: "Aislamiento del Punto de Confluencia"
+                puntos:
+                  - "En redes de cables, el nudo se modela como una partícula ideal sin dimensiones ni masa:"
+                  - "Todas las líneas de acción de las fuerzas se intersectan en un único punto común (concurrencia)."
+                  - "Los cables solo transmiten esfuerzos de tracción (tensión saliendo del nudo)."
+                  - "Un cable ideal nunca soporta compresión ni flexión."
+              - numero: 3
+                seccion: "DESCOMPOSICIÓN"
+                titulo: "Proyección Trigonométrica en Ejes Cartesianos"
+                puntos:
+                  - "Para un cable $i$ orientado con ángulo $\\theta_i$ respecto a la horizontal:"
+                  - "Componente horizontal: $T_{ix} = T_i \\cos\\theta_i$."
+                  - "Componente vertical: $T_{iy} = T_i \\sin\\theta_i$."
+                  - "La sumatoria horizontal balancea tracciones opuestas: $T_2\\cos\\theta_2 = T_1\\cos\\theta_1$."
+                  - "La sumatoria vertical soporta el peso gravitatorio total: $T_1\\sin\\theta_1 + T_2\\sin\\theta_2 = W$."
+              - numero: 4
+                seccion: "SISTEMA LINEAL"
+                titulo: "Solución Algebraica y Matriz de Tensiones"
+                puntos:
+                  - "El balance vectorial genera un sistema lineal de dos ecuaciones con dos incógnitas ($T_1, T_2$):"
+                  - "$$\\begin{pmatrix} -\\cos\\theta_1 & \\cos\\theta_2 \\\\ \\sin\\theta_1 & \\sin\\theta_2 \\end{pmatrix} \\begin{pmatrix} T_1 \\\\ T_2 \\end{pmatrix} = \\begin{pmatrix} 0 \\\\ W \\end{pmatrix}$$"
+                  - "Por regla de Cramer o sustitución se obtienen valores unívocos de tensión."
+                  - "El cable más empinado (mayor ángulo vertical) asume la mayor porción de carga."
+              - numero: 5
+                seccion: "ACOPLAMIENTO"
+                titulo: "Conexión a Cuerpos sobre Superficies"
+                puntos:
+                  - "Cuando uno de los cables se conecta a un cuerpo sobre una mesa o rampa:"
+                  - "La tensión $T_1$ calculada actúa como fuerza horizontal desestabilizadora sobre el cuerpo."
+                  - "El cuerpo resiste mediante fricción estática con el suelo: $f_s \\le \\mu_s N$."
+                  - "Si $T_1 > \\mu_s N$, el equilibrio se rompe y el sistema colapsa dinámicamente."
+              - numero: 6
+                seccion: "SENSIBILIDAD ANGULAR"
+                titulo: "Amplificación de Tensión por Ángulos Bajos"
+                puntos:
+                  - "Si los cables de sujeción son casi horizontales ($\\theta \\to 0^\\circ$):"
+                  - "$$\\sin\\theta \\approx 0 \\implies T = \\frac{W}{2\\sin\\theta} \\to \\infty$$"
+                  - "Tensar un cable con masa central de forma perfectamente horizontal exige tensión infinita."
+                  - "Principio fundamental de seguridad en líneas eléctricas de transmisión y tirolinas."
+              - numero: 7
+                seccion: "TEOREMA DE LAMY"
+                titulo: "Resolución Geométrica de Tres Fuerzas Concurrentes"
+                puntos:
+                  - "Para tres fuerzas coplanares en equilibrio ($\\vec{F}_1 + \\vec{F}_2 + \\vec{F}_3 = \\vec{0}$):"
+                  - "Forman un triángulo vectorial cerrado en el plano."
+                  - "$$\\frac{F_1}{\\sin\\alpha} = \\frac{F_2}{\\sin\\beta} = \\frac{F_3}{\\sin\\gamma}$$"
+                  - "Donde cada ángulo es el opuesto a la fuerza respectiva en el diagrama libre."
+              - numero: 8
+                seccion: "REGLAS DE REVISIÓN"
+                titulo: "Verificación Dimensional y Estabilidad"
+                puntos:
+                  - "Toda tensión calculada debe tener unidades de fuerza ($[\\text{N}] = [\\text{kg}\\cdot\\text{m/s}^2]$)."
+                  - "Verificar que $T_i > 0$ estrictamente (los cables no empujan)."
+                  - "Comprobar sumas cuadráticas: $|\\vec{T}_1 + \\vec{T}_2| = W$."
+          - numero_tema: 6
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Trabajo Mecánico, Producto Escalar y Teorema Trabajo - Energía Cinética"
+            objetivo: "Comprender la definición rigurosa del trabajo mecánico como producto escalar, realizar su deducción analítica desde la integral de Newton y aplicar el teorema trabajo-energía a bloques con fuerzas disipativas."
+            concepto_clave_latex: "W = \\int_{\\vec{r}_i}^{\\vec{r}_f} \\vec{F} \\cdot d\\vec{r} \\quad ; \\quad W_{\\text{neto}} = \\Delta K = \\frac{1}{2}m v_f^2 - \\frac{1}{2}m v_i^2 \\quad ; \\quad W_F = |\\vec{F}||\\Delta\\vec{r}|\\cos\\phi"
+            ejemplo: |
+              Problema 01 (Deducción Integral del Teorema de Fuerzas Vivas): A partir de la Segunda Ley de Newton para una partícula de masa constante $m$ en trayectoria rectilínea $F_{\text{neta}} = m a$, demuestre formalmente que el trabajo neto equivale al cambio de energía cinética $\Delta K$.
+              Paso 1: Expresar la aceleración como la derivada temporal de la velocidad:
+              $$a = \frac{dv}{dt}$$
+              Paso 2: Expresar el trabajo neto infinitesimal a lo largo del diferencial de posición $dx$:
+              $$dW = F_{\text{neta}} \, dx = m \left(\frac{dv}{dt}\right) dx$$
+              Paso 3: Aplicar la regla de la cadena aprovechando la definición de velocidad $v = \frac{dx}{dt}$ ($dx = v\,dt$):
+              $$dW = m \left(\frac{dx}{dt}\right) dv = m v \, dv$$
+              Paso 4: Integrar desde la velocidad inicial $v_i$ hasta la velocidad final $v_f$:
+              $$W_{\text{neto}} = \int_{x_i}^{x_f} F_{\text{neta}} \, dx = \int_{v_i}^{v_f} m v \, dv = m \left[ \frac{v^2}{2} \right]_{v_i}^{v_f} = \frac{1}{2}m v_f^2 - \frac{1}{2}m v_i^2 = \Delta K$$
+              Queda rigurosamente demostrado el Teorema del Trabajo y la Energía Cinética.
+              
+              Problema 02 (Bloque Lanzado en Plano Inclinado con Fricción): Un bloque de masa $m = 4.0\text{ kg}$ se lanza hacia arriba de un plano inclinado con ángulo $\theta = 30^\circ$ con una rapidez inicial $v_i = 8.0\text{ m/s}$. El coeficiente de fricción cinética entre el bloque y la superficie es $\mu_k = 0.25$. Considerando $g = 9.8\text{ m/s}^2$: a) Formule el trabajo realizado por cada fuerza individual en función de la distancia recorrida $d$. b) Mediante el Teorema Trabajo-Energía, calcule la distancia $d$ que recorre sobre el plano antes de detenerse momentáneamente ($v_f = 0$).
+              Paso 1: Normal y fuerzas sobre el bloque a lo largo del plano:
+              $$N = mg\cos(30^\circ) = (4.0)(9.8)(0.8660) = 33.95\text{ N}$$
+              $$f_k = \mu_k N = (0.25)(33.95) = 8.49\text{ N}$$
+              Paso 2: Trabajo de las fuerzas individuales a lo largo de la distancia de ascenso $d$:
+              - Trabajo de la fuerza normal: $W_N = N \cdot d \cdot \cos(90^\circ) = 0\text{ J}$ (perpendicular al desplazamiento).
+              - Trabajo de la gravedad (peso): $W_g = -mg\sin(30^\circ) \cdot d = -(4.0)(9.8)(0.50) d = -19.6 d\text{ J}$.
+              - Trabajo de la fricción cinética: $W_{fk} = -f_k \cdot d = -8.49 d\text{ J}$ (siempre opuesta al movimiento).
+              Paso 3: Trabajo neto total:
+              $$W_{\text{neto}} = W_g + W_{fk} = -19.6 d - 8.49 d = -28.09 d\text{ J}$$
+              Paso 4: Igualar al cambio de energía cinética $\Delta K$:
+              $$\Delta K = \frac{1}{2}m v_f^2 - \frac{1}{2}m v_i^2 = 0 - \frac{1}{2}(4.0)(8.0)^2 = -2(64) = -128.0\text{ J}$$
+              $$W_{\text{neto}} = \Delta K \implies -28.09 d = -128.0 \implies d = \frac{128.0}{28.09} \approx 4.557\text{ m}$$
+            bloque_sugerido: "Pomodoro 50/10 • Integrales de trabajo y teorema de fuerzas vivas"
+            slides:
+              - numero: 1
+                seccion: "DEFINICIÓN"
+                titulo: "El Trabajo como Producto Escalar"
+                puntos:
+                  - "El trabajo mecánico es la transferencia escalar de energía efectuada por una fuerza:"
+                  - "Para fuerza constante y desplazamiento rectilíneo $\\Delta\\vec{r}$:"
+                  - "$$W = \\vec{F} \\cdot \\Delta\\vec{r} = |\\vec{F}| |\\Delta\\vec{r}| \\cos\\phi \\quad [\\text{Joules, J}]$$"
+                  - "Donde $\\phi$ es el ángulo entre el vector fuerza $\\vec{F}$ y el vector desplazamiento $\\Delta\\vec{r}$."
+                  - "1 Joule = $1\\text{ N} \\cdot 1\\text{ m} = 1\\text{ kg}\\cdot\\text{m}^2/\\text{s}^2$."
+              - numero: 2
+                seccion: "SIGNO DE TRABAJO"
+                titulo: "Trabajo Motor, Resistente y Trabajo Nulo"
+                puntos:
+                  - "Trabajo Motor o Positivo ($0^\\circ \\le \\phi < 90^\\circ$): La fuerza favorece activamente el movimiento ($W > 0$)."
+                  - "Trabajo Resistente o Negativo ($90^\\circ < \\phi \\le 180^\\circ$): La fuerza se opone al movimiento ($W < 0$, ej. fricción)."
+                  - "Trabajo Nulo ($\\phi = 90^\\circ$): Fuerzas perpendiculares no realizan trabajo ($W = 0$, ej. normal, tensión en péndulo)."
+                  - "La fuerza centrípeta nunca realiza trabajo porque siempre es perpendicular a la velocidad."
+              - numero: 3
+                seccion: "FUERZA VARIABLE"
+                titulo: "Integral de Trabajo a lo largo de Trayectorias"
+                puntos:
+                  - "Para fuerzas de magnitud o dirección variable:"
+                  - "$$W = \\int_{\\vec{r}_i}^{\\vec{r}_f} \\vec{F} \\cdot d\\vec{r} = \\int_{x_i}^{x_f} F_x\\,dx + \\int_{y_i}^{y_f} F_y\\,dy + \\int_{z_i}^{z_f} F_z\\,dz$$"
+                  - "Gráficamente corresponde al área bajo la curva en el diagrama Fuerza vs Posición ($F$ vs $x$)."
+                  - "Para un resorte de Hooke ($F = -kx$): $W_{\\text{resorte}} = -\\frac{1}{2}k(x_f^2 - x_i^2)$."
+              - numero: 4
+                seccion: "TEOREMA"
+                titulo: "El Teorema del Trabajo y la Energía Cinética"
+                puntos:
+                  - "Deducción generalizada a partir de la Segunda Ley de Newton:"
+                  - "$$W_{\\text{neto}} = \\sum W_i = \\Delta K = K_f - K_i$$"
+                  - "Donde la energía cinética traslacional se define como:"
+                  - "$$K = \\frac{1}{2}m v^2$$"
+                  - "Si el trabajo neto es positivo, la rapidez aumenta; si es negativo, el cuerpo se desacelera."
+              - numero: 5
+                seccion: "TRABAJO NETO"
+                titulo: "Sumatoria Escalar vs Integral Vectorial"
+                puntos:
+                  - "El trabajo neto puede calcularse por dos caminos equivalentes:"
+                  - "1. Calculando la fuerza neta resultante y luego su trabajo: $W_{\\text{neto}} = \\vec{F}_{\\text{neta}} \\cdot \\Delta\\vec{r}$."
+                  - "2. Calculando el trabajo de cada fuerza y sumándolos algebraicamente: $W_{\\text{neto}} = W_{F1} + W_{F2} + W_g + W_N + W_{fk}$."
+                  - "La segunda opción simplifica el análisis al operar con magnitudes escalares puras."
+              - numero: 6
+                seccion: "DISIPACIÓN"
+                titulo: "Trabajo Negativo de la Fricción Cinética"
+                puntos:
+                  - "La fuerza de rozamiento cinético siempre se opone al desplazamiento instantáneo ($\\phi = 180^\\circ$):"
+                  - "$$W_{fk} = f_k \\cdot d \\cdot \\cos(180^\\circ) = -f_k \\cdot d = -\\mu_k N d$$"
+                  - "Este trabajo negativo cuantifica la energía mecánica que se degrada irreversiblemente en energía térmica."
+              - numero: 7
+                seccion: "DISTANCIA FRENADO"
+                titulo: "Determinación de Parada de un Vehículo"
+                puntos:
+                  - "Aplicación al frenado de emergencia con ruedas bloqueadas en superficie horizontal:"
+                  - "$$W_{\\text{neto}} = -\\mu_k mg d = 0 - \\frac{1}{2}mv_0^2 \\implies d = \\frac{v_0^2}{2\\mu_k g}$$"
+                  - "La distancia de frenado es proporcional al cuadrado de la velocidad ($d \\propto v_0^2$)."
+                  - "Duplicar la rapidez cuadruplica la distancia requerida para detener el vehículo."
+              - numero: 8
+                seccion: "POTENCIA"
+                titulo: "Rapidez de Transferencia Energética"
+                puntos:
+                  - "La potencia mecánica mide el trabajo efectuado por unidad de tiempo:"
+                  - "Potencia instantánea: $P = \\frac{dW}{dt} = \\vec{F} \\cdot \\frac{d\\vec{r}}{dt} = \\vec{F} \\cdot \\vec{v} \\quad [\\text{Watts, W}]$."
+                  - "1 Watt = $1\\text{ J/s} = 1\\text{ kg}\\cdot\\text{m}^2/\\text{s}^3$."
+                  - "Caballo de fuerza: $1\\text{ HP} \\approx 745.7\\text{ W} \\approx 746\\text{ W}$."
+          - numero_tema: 7
+            corte: 2
+            modalidad: "magistral"
+            titulo: "Fuerzas Conservativas, No Conservativas y Conservación de la Energía Mecánica"
+            objetivo: "Diferenciar fuerzas conservativas y disipativas mediante la integral de trayectoria cerrada, modelar energías potenciales gravitatoria y elástica, y formular el balance general de energía mecánica con trabajo no conservativo."
+            concepto_clave_latex: "\\oint \\vec{F}_C \\cdot d\\vec{r} = 0 \\quad ; \\quad \\oint \\vec{f}_k \\cdot d\\vec{r} = -2 f_k s \\neq 0 \\quad ; \\quad W_{FNC} = \\Delta EM = EM_f - EM_i \\quad ; \\quad EM = \\frac{1}{2}mv^2 + mgy + \\frac{1}{2}kx^2"
+            ejemplo: |
+              Problema 01 (Bloque Deslizándose en Rampa Curva sin Fricción): Un bloque de masa $m = 2.0\text{ kg}$ parte del reposo ($v_i = 0$) desde la cúspide de una rampa con perfil curvo arbitrario a una altura inicial $h = 3.6\text{ m}$ sobre el suelo horizontal (nivel de referencia). Asumiendo que la superficie no presenta fricción y $g = 9.8\text{ m/s}^2$: a) Demuestre mediante la conservación de la energía mecánica que la rapidez final $v_f$ al pie de la rampa es independiente de la masa y de la geometría de la curva. b) Calcule el valor numérico de $v_f$.
+              Paso 1: Identificar las fuerzas que actúan sobre el bloque: el peso (fuerza conservativa) y la fuerza normal (perpendicular a la trayectoria instantánea).
+              Como la normal no realiza trabajo ($W_N = 0$) y no hay fricción, no hay fuerzas no conservativas:
+              $$W_{FNC} = 0 \implies \Delta EM = 0 \implies EM_i = EM_f$$
+              Paso 2: Formular la energía mecánica total en el punto inicial (en la cúspide, $y_i = h$, $v_i = 0$):
+              $$EM_i = EC_i + EP_i = \frac{1}{2}m v_i^2 + m g y_i = 0 + m g h = m g h$$
+              Paso 3: Formular la energía mecánica total en el punto final (al pie, $y_f = 0$, $v_f = ?$):
+              $$EM_f = EC_f + EP_f = \frac{1}{2}m v_f^2 + m g y_f = \frac{1}{2}m v_f^2 + 0 = \frac{1}{2}m v_f^2$$
+              Paso 4: Igualar energías mecánicas y simplificar algebraicamente la masa $m$:
+              $$m g h = \frac{1}{2} m v_f^2 \implies g h = \frac{1}{2} v_f^2 \implies v_f = \sqrt{2gh}$$
+              La rapidez depende exclusivamente del desnivel gravitatorio vertical $h$.
+              Paso 5: Evaluación numérica:
+              $$v_f = \sqrt{2(9.8\text{ m/s}^2)(3.6\text{ m})} = \sqrt{70.56} = 8.40\text{ m/s}$$
+              
+              Problema 02 (Resorte Comprimido y Pista Rugosa con Disipación): Un bloque de masa $m = 1.5\text{ kg}$ se coloca contra un resorte de constante elástica $k = 400.0\text{ N/m}$, comprimiéndolo una distancia $x_i = 0.20\text{ m}$ desde su longitud natural. El sistema parte del reposo. Al liberarse, el bloque se separa del resorte y recorre una pista horizontal con coeficiente de fricción cinética $\mu_k = 0.35$ hasta detenerse por completo ($v_f = 0$). Calcule la distancia $d$ que recorre sobre la pista rugosa.
+              Paso 1: Aplicar el teorema de la energía mecánica con fuerzas no conservativas:
+              $$W_{FNC} = \Delta EM = EM_f - EM_i$$
+              Paso 2: Determinar la energía mecánica inicial ($v_i = 0$, $y = 0$, resorte comprimido $x_i$):
+              $$EM_i = \frac{1}{2}k x_i^2 = \frac{1}{2}(400.0)(0.20)^2 = 200.0(0.04) = 8.0\text{ J}$$
+              Paso 3: Determinar la energía mecánica final ($v_f = 0$, resorte descomprimido $x_f = 0$):
+              $$EM_f = 0\text{ J}$$
+              Paso 4: Calcular el trabajo realizado por la fuerza no conservativa de rozamiento a lo largo de la distancia $d$:
+              $$N = mg = (1.5)(9.8) = 14.7\text{ N} \implies f_k = \mu_k N = (0.35)(14.7) = 5.145\text{ N}$$
+              $$W_{FNC} = -f_k \cdot d = -5.145 d$$
+              Paso 5: Igualar el trabajo disipativo al cambio de energía mecánica:
+              $$-5.145 d = EM_f - EM_i = 0 - 8.0 = -8.0\text{ J}$$
+              $$d = \frac{8.0}{5.145} \approx 1.555\text{ m}$$
+            bloque_sugerido: "Pomodoro 50/10 • Conservación de la energía mecánica y disipación por fricción"
+            slides:
+              - numero: 1
+                seccion: "CONSERVATIVAS"
+                titulo: "Criterio de Independencia de Trayectoria"
+                puntos:
+                  - "Una fuerza es conservativa si el trabajo que realiza entre dos puntos $A$ y $B$ no depende del camino seguido:"
+                  - "El trabajo en cualquier trayectoria cerrada (ciclo completo) es idénticamente nulo:"
+                  - "$$\\oint \\vec{F}_C \\cdot d\\vec{r} = 0$$"
+                  - "Ejemplos fundamentales: Fuerza gravitacional (peso), fuerza elástica del resorte de Hooke."
+              - numero: 2
+                seccion: "NO CONSERVATIVAS"
+                titulo: "Fuerzas Disipativas y Trabajo en Ciclo"
+                puntos:
+                  - "Una fuerza es no conservativa o disipativa si el trabajo depende de la longitud del camino recorrido:"
+                  - "Demostración de la fricción en ciclo cerrado ida y vuelta ($a \\to b \\to a$ con distancia $s$):"
+                  - "Ida: $(W_{Fr})_{a \\to b} = -Fr \\cdot s$ ; Retorno: $(W_{Fr})_{b \\to a} = -Fr \\cdot s$."
+                  - "Trayectoria cerrada total: $\\oint \\vec{f}_k \\cdot d\\vec{r} = -2 Fr \\cdot s \\neq 0$."
+                  - "La fricción siempre disipa energía mecánica en forma de energía térmica irreversible."
+              - numero: 3
+                seccion: "ENERGÍA POTENCIAL"
+                titulo: "Relación con Fuerzas Conservativas"
+                puntos:
+                  - "Toda fuerza conservativa permite definir una función escalar de energía potencial $U$:"
+                  - "$$\\Delta U = U_f - U_i = -W_C = -\\int_{\\vec{r}_i}^{\\vec{r}_f} \\vec{F}_C \\cdot d\\vec{r}$$"
+                  - "Diferencialmente: $\\vec{F}_C = -\\nabla U$ ($F_x = -\\frac{dU}{dx}$)."
+                  - "Energía potencial gravitacional: $U_g = m g y$."
+                  - "Energía potencial elástica: $U_e = \\frac{1}{2} k x^2$."
+              - numero: 4
+                seccion: "ENERGÍA MECÁNICA"
+                titulo: "Definición Total del Sistema"
+                puntos:
+                  - "La energía mecánica total $EM$ de una partícula es la suma de su energía cinética y potenciales:"
+                  - "$$EM = EC + EP = \\frac{1}{2}m v^2 + m g y + \\frac{1}{2}k x^2$$"
+                  - "Desarrollo por componentes de estado inicial y final:"
+                  - "$$EM_i = \\frac{1}{2}m v_i^2 + m g y_i + \\frac{1}{2}k x_i^2$$"
+                  - "$$EM_f = \\frac{1}{2}m v_f^2 + m g y_f + \\frac{1}{2}k x_f^2$$"
+              - numero: 5
+                seccion: "TEOREMA GENERAL"
+                titulo: "Balance Energético con Fuerzas No Conservativas"
+                puntos:
+                  - "Descomponiendo el trabajo neto total en conservativo y no conservativo:"
+                  - "$$W_{\\text{neto}} = W_{FC} + W_{FNC} = \\Delta K$$"
+                  - "Como $W_{FC} = -\\Delta U$:"
+                  - "$$W_{FNC} = \\Delta K + \\Delta U = \\Delta EM = EM_f - EM_i$$"
+                  - "El trabajo de las fuerzas no conservativas equivale exactamente a la variación de energía mecánica."
+              - numero: 6
+                seccion: "CONSERVACIÓN"
+                titulo: "Principio de Conservación de la Energía Mecánica"
+                puntos:
+                  - "Si en el sistema solo actúan fuerzas conservativas ($W_{FNC} = 0$):"
+                  - "$$0 = \\Delta EM \\implies EM_i = EM_f = \\text{constante}$$"
+                  - "$$\\frac{1}{2}m v_i^2 + m g y_i + \\frac{1}{2}k x_i^2 = \\frac{1}{2}m v_f^2 + m g y_f + \\frac{1}{2}k x_f^2$$"
+                  - "La energía no se crea ni se destruye, se transforma continuamente entre cinética y potencial."
+              - numero: 7
+                seccion: "RAMPAS CURVAS"
+                titulo: "Independencia de la Geometría en la Caída"
+                puntos:
+                  - "Para un cuerpo en rampa curva arbitraria sin fricción partiendo del reposo a altura $h$:"
+                  - "$$m g h = \\frac{1}{2}m v_f^2 \\implies v_f = \\sqrt{2gh}$$"
+                  - "La rapidez final es idéntica a la de una caída libre vertical pura de la misma altura."
+                  - "La fuerza normal actúa de ligadura geométrica pero nunca altera la magnitud de la rapidez."
+              - numero: 8
+                seccion: "RESORTES Y PISTAS"
+                titulo: "Balance Mixto y Longitud de Disipación"
+                puntos:
+                  - "Bloque comprimiendo un resorte y lanzado sobre una pista rugosa hasta frenar:"
+                  - "$$W_{FNC} = -f_k \\cdot d = 0 - \\frac{1}{2}k x_i^2 \\implies d = \\frac{k x_i^2}{2\\mu_k mg}$$"
+                  - "Toda la energía elástica almacenada inicialmente se transfiere como calor por rozamiento."
+                  - "Metodología universal para resolver sistemas físicos complejos sin integrar ecuaciones diferenciales."
       - codigo: "03041819"
         nombre: "Fundamentos de la Electricidad I"
         creditos: 2
