@@ -9,16 +9,17 @@
     "02021810"
   ],
   "pin_hash": "8065cbfad8d59076a8f882da19667e06cc663fb51c5404330e2a873f6934173f",
-  "progreso_materias": "enc:v1:/QG9BoSdO8eTYditIYKBz83gDrBUkkEahx///dLcfxejAqWYuGg1hXki9lyihCDaBanKNJ5wFqYjmRhGkbSLvVV5vW4YC8h/e80G6qrFQXDrCOxT73KeCQGgx1PHycb99LCOnagfVg==",
+  "progreso_materias": "enc:v1:une2HqHhoS04F/O+AY7uhdfjr96X5XWz5WggZIT5ZWPXv8m5C2FG5OZpsY1OgyRwuKNvb14iCIFPjrW/lltc8J/W4Pf/gr95sTYMPihXRFSfyp7bg6x0x+lH4ea4TwQjfoe3PUVSRA==",
   "ultimos_temas_revisados": {
-    "02011807": 4
+    "02011807": 4,
+    "02021810": 1
   },
   "ultimo_revisado": {
-    "codigo_materia": "02011807",
-    "numero_tema": 4,
-    "actualizado_en": "2026-10-30T23:27:33.262"
+    "codigo_materia": "02021810",
+    "numero_tema": 1,
+    "actualizado_en": "2026-11-07T01:04:12.124"
   },
-  "recordatorios_calendario": "enc:v1:T/bmZrAGNI1Y6kZl29Epque9MgGHD47H1cK2ujMf8rhVBDGc+X934A8FvDSR17uG3fDgIjuEeyIrNOLGcEPKGuZITE+n9/LtxQGQy1KnQrD1HnmPXV7u1AQgq/nJXttCVW2fiLMVgArbBBLzBbiqkQBYSICkh0qRNFR3BG73ynaYADwl4dY7H29GBt9tZFY5ayMThYoVRpiZKALgnP3dRapJvMERaSGrcqXDEQdgEE8jAwe8J82ct6KmCavkuXx0iqK943R+eWurALjoitZYkxFa0lb2FO5e13UPrLVTlyc3rAUDfEnpn/kOqtwjTkyh7uQTloP1Xl6yIsrK9kW908cNOO3cIizrv5M40wOhmnS/crr9D+5K0Z+iDSlwKF2V45tdcmZBCifm8y26l6HfiF0=",
-  "apuntes_personales": "enc:v1:2RjNs44I9FUcKsbo9ceTYiFRaAZRVX6EWbtTFjTCnXKtbw==",
+  "recordatorios_calendario": "enc:v1:VPeGJqUJlCHNAay999892FXP415JdP+SCyzTAsTPTKfzroQismBtW8hxdKnby2lEEmjNLm3NG1/+D0MeguL6JT7y5Hx5RzT0kFDgn/FrHWjrSI4YUT+PoGi4Vb+hFPLSA/WmAiIKpr8fyGyQDZq3kGk8TUBBu84ZGqpJM+wtnuc17y2X1lyTERAUExsU/ZlvtEpHWIK9GWWE40FQwM7FMo2sLUBVfOGRw+oFDEPrqVCpEtUZ4gCg1WeeCcZnXWcuhc8MzaEf9/CyaZxGkCscWnWy1tvDmgmDY+xsjUDftZsRaYh5Z7BcgiIOXE8p7RzXC+vWAX4H+uJUk5vxyUQeDwi41U//aZV+CR4itW4ni2AV+2qj4MbHzbGARsPlZVUC8wvusHQz9wVIA9dmPX2CCj8=",
+  "apuntes_personales": "enc:v1:fDWhOSsEZGpUdBVu6GpT5aV7lFXOU8/fJPyAF20WMg70AA==",
   "is_admin": false
 }
