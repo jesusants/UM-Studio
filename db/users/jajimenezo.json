@@ -3,15 +3,13 @@
   "nombre": "Cacha De Jesu",
   "email": "jajimenezo@unimagdalena.edu.co",
   "programa": "Ingeniería Energética",
+  "cuatrimestre_activo": 2,
   "cuatrimestre_actual": 2,
+  "materias_matriculadas": [
+    "02021810"
+  ],
   "pin_hash": "8065cbfad8d59076a8f882da19667e06cc663fb51c5404330e2a873f6934173f",
-  "progreso_materias": {
-    "02011808": 50,
-    "02021811": 60,
-    "03041820": 35,
-    "03021815": 35,
-    "01021804": 35
-  },
+  "progreso_materias": "enc:v1:/QG9BoSdO8eTYditIYKBz83gDrBUkkEahx///dLcfxejAqWYuGg1hXki9lyihCDaBanKNJ5wFqYjmRhGkbSLvVV5vW4YC8h/e80G6qrFQXDrCOxT73KeCQGgx1PHycb99LCOnagfVg==",
   "ultimos_temas_revisados": {
     "02011807": 4
   },
@@ -20,17 +18,7 @@
     "numero_tema": 4,
     "actualizado_en": "2026-10-30T23:27:33.262"
   },
-  "recordatorios_calendario": [
-    {
-      "id": "rem_1793420801646000",
-      "titulo": "Parcial Fundamentos de Electricidad II",
-      "subtitulo": "Salón C-102 • Antiderivadas, Integral Indefinida y Método de Sustitución",
-      "fecha": "2026-11-02",
-      "hora": "10:00",
-      "tipo": "parcial",
-      "codigo_materia": "03041820",
-      "completado": false
-    }
-  ],
-  "apuntes_personales": {}
+  "recordatorios_calendario": "enc:v1:T/bmZrAGNI1Y6kZl29Epque9MgGHD47H1cK2ujMf8rhVBDGc+X934A8FvDSR17uG3fDgIjuEeyIrNOLGcEPKGuZITE+n9/LtxQGQy1KnQrD1HnmPXV7u1AQgq/nJXttCVW2fiLMVgArbBBLzBbiqkQBYSICkh0qRNFR3BG73ynaYADwl4dY7H29GBt9tZFY5ayMThYoVRpiZKALgnP3dRapJvMERaSGrcqXDEQdgEE8jAwe8J82ct6KmCavkuXx0iqK943R+eWurALjoitZYkxFa0lb2FO5e13UPrLVTlyc3rAUDfEnpn/kOqtwjTkyh7uQTloP1Xl6yIsrK9kW908cNOO3cIizrv5M40wOhmnS/crr9D+5K0Z+iDSlwKF2V45tdcmZBCifm8y26l6HfiF0=",
+  "apuntes_personales": "enc:v1:2RjNs44I9FUcKsbo9ceTYiFRaAZRVX6EWbtTFjTCnXKtbw==",
+  "is_admin": false
 }
