@@ -12,7 +12,7 @@
     "03031818"
   ],
   "pin_hash": "ac4a809a95da52c2ecb3b8c2e5193380435d146237874912fa770fc68e469f96",
-  "progreso_materias": "enc:v1:R1kfu7xiMTyalM8ojwjnzp+qkiP07LuWZy6iFK6dyFyM1YwDmUhSj34Bs1v9JUJXtDRJrYQRcuVEpBx3uL+z9RUqCt8ZCxQ/YspqVDF+y4ggN+du9BcGK+mR4scXy3vnO8YaK8blMX4qK4nl1QUhFT0UgjeB2fZASRKUlyTqfCWAbX/u87C2v8OVweZHExdaiAjFjkKV6FYWk2vYWjfC",
+  "progreso_materias": "enc:v1:aFch3UWxWSxXHxTGBtf1obwOVF1W/XfLjTF5zUSDAJQBo1lP6QWsBcQpHoJ2yCp6PVHPzR3KJ9bmBoI0rVAIgL4om2qjwILFhLEizC4s9ssjGP8eKHzldp/dCL8E+kUsUfnuthsUzAyPJO1+dWzOK8z3KMd07BNEkX+py1GGOzkWbeahBiyqJuwjGeBxy1wJ8LBjy2mgyGcx4qoX7pt2",
   "ultimos_temas_revisados": {
     "01021802": 2,
     "02021810": 9
@@ -22,7 +22,7 @@
     "numero_tema": 9,
     "actualizado_en": "2026-10-31T16:06:28.981"
   },
-  "recordatorios_calendario": "enc:v1:94xBKGqCOnWZMG1pPDmFOpgCKxtgQyrZtdjXnUl6Pw6HbQ==",
-  "apuntes_personales": "enc:v1:/oFhokvVH6eIVper8kzhhC3ssVktRpyBksQINO2LeLwoHg==",
+  "recordatorios_calendario": "enc:v1:t7xtRQQJldRusJYitxS5V9EOCp3vQq6Bf756i2kPWsz0dA==",
+  "apuntes_personales": "enc:v1:D9eNC9WQGUb4nGdHn0ok6rGDxyTCDIIHDUm6H378GPCwlw==",
   "is_admin": false
 }
