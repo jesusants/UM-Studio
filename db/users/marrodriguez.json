@@ -6,13 +6,13 @@
   "cuatrimestre_activo": 3,
   "cuatrimestre_actual": 3,
   "materias_matriculadas": [
-    "02021810",
+    "03031818",
     "02031812",
-    "03041820",
-    "03031818"
+    "02021810",
+    "03041820"
   ],
   "pin_hash": "ac4a809a95da52c2ecb3b8c2e5193380435d146237874912fa770fc68e469f96",
-  "progreso_materias": "enc:v1:H3p0m4y1xbDit2Oo+Kzx/8pXG30vKAtoYy2YbypcF7m1xyJW4GZEfeY/O51CmAdG/pU/8KOQ5QBHDmZ4NWd4Vd8afA/FRQEZuX7DfoAog95fgcaC4G7qhGqCqiwQSskGNk9WZSYd1u4Uthpdrp02nEUVhKCMNMSACcZZpjsRndL4NtKPvTcjW9c6m68k3rOr3NyT2HB0gJy3SS3lj2oL",
+  "progreso_materias": "enc:v1:jPKHO7VuPY5TNuPXYefV0zflHr1G8fuvOXecGqYFW6/plf0FgURMjcR5D5fylnnarTnZ0l6bPu14oJvDbl/gL4nnKlhYYhXsnIw0bVx1EvIfMEDyBP9NbjbOT79Ra8BSZGycudaMgeQx+rqinGaSmss8yKV13H+7ggQW74qpTpsECVuqpwcyzAcDcaWJcWFqtcdHFCyQ653HHD+mD6q1",
   "ultimos_temas_revisados": {
     "01021802": 2,
     "02021810": 9
@@ -22,7 +22,7 @@
     "numero_tema": 9,
     "actualizado_en": "2026-10-31T16:06:28.981"
   },
-  "recordatorios_calendario": "enc:v1:FxUbUSn20I6qy0GIIsk6mjDJicAtWuJhYmPi+e+BgRuBVw==",
-  "apuntes_personales": "enc:v1:8o/YmoCw19bwKaQFwg4s8rTLFpQpyTfRoZto8VaAhn6r8w==",
+  "recordatorios_calendario": "enc:v1:XmVHnvhZfhNIIXx2EsZiCSBPPhdqzLGvcI7abWQ8wYJN6g==",
+  "apuntes_personales": "enc:v1:kNZzScZt50+6DtFwluBGgiOMhy2v9AgPlAFf8kOapJbiVw==",
   "is_admin": false
 }
