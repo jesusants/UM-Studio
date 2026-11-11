@@ -12,18 +12,18 @@
     "03041820"
   ],
   "pin_hash": "ac4a809a95da52c2ecb3b8c2e5193380435d146237874912fa770fc68e469f96",
-  "progreso_materias": "enc:v1:sbk5TXmXXafLNkEmtqhRmFFJyq/Bi498BKAM9TlOBksIt2Lmw5LREkKMUnH/iV1CPaF2HpjCwAfjX3eGun389RFHDQqR2AmLmNT8ZdroQ7ipKI+M2MZzuT0TRiZyBqOlvxsRfwJwlDR8K5bvjSvq2MH0h+tM1sPPZTY04/NkSZJL5QyY9bVtg4gaW6/TTTfSW6elbp+pqm17vFx6VdBG",
+  "progreso_materias": "enc:v1:RlOggApWRzrWWqz9/9JDzrf5PpDWW3dc8L6oQx5685OuvcyNfKm+Rx0PQmTg3VtKLlz3ODbsiCfzjpQ+OzVdub9CFZ7Q36GymZquNFavp077ve/l+jpLyjIAMdmHToc0bhRJo8j/SlwoooL5RzOCT2BOr3W4UgEYBwm3KfKF7ZNPaiDpOO3AX7h/mc5IxhCSIuKSaNWkM5tu56zdsqvf",
   "ultimos_temas_revisados": {
     "01021802": 2,
     "02021810": 9,
-    "04021825": 3
+    "04021825": 4
   },
   "ultimo_revisado": {
     "codigo_materia": "04021825",
-    "numero_tema": 3,
-    "actualizado_en": "2026-11-11T14:42:26.621"
+    "numero_tema": 4,
+    "actualizado_en": "2026-11-11T14:42:29.298"
   },
-  "recordatorios_calendario": "enc:v1:WJU8TBu2AUnFveFHZHFKp0pTfKWdL+1u2fGkWYG0l1dI8w==",
-  "apuntes_personales": "enc:v1:Irh1Xfmx1q+sTFeVRy74YWi2+BRqtDEhEcFj7ZTWCLdd7Q==",
+  "recordatorios_calendario": "enc:v1:fH5/4BeldiZaNnLGAP3kQDXo92O9jH/A93ciGv6eR1BoCA==",
+  "apuntes_personales": "enc:v1:zgo7Ssc0ac4KnkSIBy3TCK3ZDSqFsFCBqP6abPsdKe3ROw==",
   "is_admin": false
 }
