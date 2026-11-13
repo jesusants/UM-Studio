@@ -61,8 +61,8 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
   ];
 
   final List<String> _aiModels = const [
-    'gemini-2.5-flash-lite',
-    'gemini-2.0-flash-lite',
+    'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
     'gemini-2.5-flash',
   ];
 

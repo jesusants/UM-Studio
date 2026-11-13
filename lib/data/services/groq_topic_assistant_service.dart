@@ -23,8 +23,8 @@ class TopicAssistantService {
     return _defaultApiKey;
   }
 
-  static const String _primaryModel = 'gemini-2.5-flash-lite';
-  static const String _fallbackModel = 'gemini-2.0-flash-lite';
+  static const String _primaryModel = 'gemini-3.5-flash-lite';
+  static const String _fallbackModel = 'gemini-3.5-flash';
 
   /// Ensambla un contexto estructurado y denso del tema para el asistente
   static String buildTopicContext({
@@ -154,7 +154,9 @@ REGLAS INNEGOCIABLES:
     });
 
     final configuredModel = globalConfig.aiModelName.trim();
-    final selectedPrimary = configuredModel.startsWith('gemini-')
+    final selectedPrimary = (configuredModel.startsWith('gemini-') &&
+            configuredModel != 'gemini-2.0-flash-lite' &&
+            configuredModel != 'gemini-2.5-flash-lite')
         ? configuredModel
         : _primaryModel;
 

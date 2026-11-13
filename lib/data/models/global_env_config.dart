@@ -2,7 +2,7 @@ class GlobalEnvConfig {
   const GlobalEnvConfig({
     this.aiEnabled = true,
     this.aiProvider = 'gemini',
-    this.aiModelName = 'gemini-2.5-flash-lite',
+    this.aiModelName = 'gemini-3.5-flash-lite',
     this.aiApiKeyOverride = '',
     this.aiTemperature = 0.2,
     this.aiMaxTokens = 1024,
@@ -62,7 +62,7 @@ class GlobalEnvConfig {
     return GlobalEnvConfig(
       aiEnabled: json['ai_enabled'] ?? true,
       aiProvider: (json['ai_provider'] ?? 'gemini').toString(),
-      aiModelName: (json['ai_model_name'] ?? 'gemini-2.5-flash-lite').toString(),
+      aiModelName: (json['ai_model_name'] ?? 'gemini-3.5-flash-lite').toString(),
       aiApiKeyOverride: (json['ai_api_key_override'] ?? '').toString(),
       aiTemperature: (json['ai_temperature'] is num)
           ? (json['ai_temperature'] as num).toDouble()
