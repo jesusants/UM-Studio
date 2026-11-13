@@ -11,7 +11,7 @@
     "03041820"
   ],
   "pin_hash": "70a60076d7ddd626362129ea1b4f836d2736af553f2104f016fc05b7a5736c00",
-  "progreso_materias": "enc:v1:K7HR67kMTGGOK1OGoZnnOq2Pn0oIDrMjeCMtOSN/qeSjmQYUor3jH+wDPn+R2/fGVxBdnBt+7vqyAEdpdzPp6EWqeuQQFBvnLrKp9l6EZJRvsWqiKp94AeuNMqsjxVwlr95W3ZcZprO8K9ed+ADFoO8xq1xhnEMmI8KbZep2kQJKOOk/TZAfsRH2X1Z2231EuxHAPJpN475a973h3LJ+7HbC6rZquDde3sS21vC6frHb1VD7YU8URUHUrpD/RICZSnApWLkWjJfl/g==",
+  "progreso_materias": "enc:v1:XMwqXSjEfkB1KdRLhB2vKg/BImIdJzUYaRecD4oolMnR3AXGCCsvRVzHoEzIE4shOLuMoflJRI+qDfzMHW9RMrxAUJ7qld396GUIWIYJr2wCrQUhx/vll215NRI7QijV2+fYPOBByQ4weBkmqg1XIIalYdGGRwu/gqIwH7mzDipfkgtGIYDYS8oL06cQkE/Eji9qyIPufQIb78Q1Bs3se1EtfZnzAqxws7rZvhSBzLkPyD+rdKYZge+ybcyjqv46UvDrL4cro9tXhQ==",
   "ultimos_temas_revisados": {
     "02011807": 1,
     "03011813": 1,
@@ -19,7 +19,7 @@
     "01021804": 1,
     "01021803": 6,
     "04011822": 1,
-    "03041820": 1,
+    "03041820": 6,
     "06011843": 1,
     "06021851": 1,
     "02011808": 1,
@@ -27,10 +27,10 @@
   },
   "ultimo_revisado": {
     "codigo_materia": "03041820",
-    "numero_tema": 1,
-    "actualizado_en": "2026-11-13T02:02:31.040"
+    "numero_tema": 6,
+    "actualizado_en": "2026-11-13T02:47:30.150"
   },
-  "recordatorios_calendario": "enc:v1:RNod14XXyP7mkKoOPtSTp9oNKykm5jTqPxkwly8YbtKi3o8tCBxq7S3agxrKPX8dT9a6nMuLc9/yPoSls6VOkLzjqiPn0CzKWA1JPxViaW1AcVqlNwpcquKvRcvW/ezydnk3obBj/AAzvevAsW36FoZ95z0pJfwBQjbN4G7+u4EUHQGJ9vU4Y7H4sk2iBI+ryuPTMouOefS1IHWiEveBPVnnMa95SckJz6GsyxxsLzfV7mEX7Sr9bAWTKViEtq26YTo=",
-  "apuntes_personales": "enc:v1:Ji7PcqgYqrX+0dn5hQhoFzoorDuJ3roxu7VEljDwVV99XylJT29/aCHDXopxAzbmRuS8zex4",
+  "recordatorios_calendario": "enc:v1:R2RKPvgP+KQriTooueT8JdKKQ6LaSLHFxsyLIV0B7qaIVLlBMaSyzk37HqQfUD3nd0LWuYd/fpzHgw17+hfJE91wXGmPydcyycqOPM22A99PWfUYXsFH2Xbu1R3vIqsnY1F2Y+Bj4b46oLzcueBfYvoKaYdQOZgz9ypydML2zlvTT2NYUpnRKNSmuaqKHC4+y9gDwpJqnbjejQB+wGrqbTvH1SQXQQl6eizvk9JWxub+rG3m7zCS4+v6KI6mwv6pKe0=",
+  "apuntes_personales": "enc:v1:Cj8yB6hyNKE9Z8/m6mq4qnsVLr8ksMWZZlT/wHNWZ7HFOgYggfSxcdW3UlVa0OZKh3Wwjyji",
   "is_admin": false
 }
