@@ -17,6 +17,7 @@ import '../../../domain/entities/subject_summary.dart';
 import '../../../domain/entities/tema_estudio_entity.dart';
 import '../../../domain/repositories/i_clase_viva_repository.dart';
 import '../../widgets/academic_solved_exercise_card.dart';
+import '../../widgets/conservative_energy_sim_widget.dart';
 import '../../widgets/minimal_slide_viewer.dart';
 import '../../widgets/mouse_scrollable_horizontal_bar.dart';
 import '../../providers/app_scopes.dart';
@@ -916,6 +917,13 @@ class _OfficialTopicSection extends StatelessWidget {
             const SizedBox(height: 12),
           ],
         ],
+
+        // D.2.5 Simulador Computacional 2.5D (Física Mecánica - Cátedra 7)
+        if (tema.id == '02021810_magistral_7' ||
+            (tema.codigoAsignatura == '02021810' &&
+                tema.modalidad == 'magistral' &&
+                tema.numeroTema == 7))
+          const ConservativeEnergySimWidget(isDesktop: false),
 
         // D.3 Tarjeta Modular: EJEMPLO DE CÁTEDRA (radius: 18px)
         AcademicSolvedExerciseCard(

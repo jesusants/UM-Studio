@@ -8,6 +8,7 @@ import '../../../../data/services/groq_topic_assistant_service.dart';
 import '../../../providers/app_scopes.dart';
 import '../../../widgets/academic_solved_exercise_card.dart';
 import '../../../widgets/clase_magistral_adjuntos_widget.dart';
+import '../../../widgets/conservative_energy_sim_widget.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/katex_formula_card.dart';
 import '../../../widgets/minimal_slide_viewer.dart';
@@ -1024,6 +1025,11 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                             ),
                             const SizedBox(height: 12),
                           ],
+
+                          // Simulador Computacional 2.5D (Física Mecánica - Cátedra 7)
+                          if (subject.codigo == '02021810' &&
+                              currentMagistral.numeroTema == 7)
+                            const ConservativeEnergySimWidget(isDesktop: true),
 
                           // Ejercicios resueltos / Notas de cátedra
                           if (currentMagistral.ejemplo.isNotEmpty) ...[
