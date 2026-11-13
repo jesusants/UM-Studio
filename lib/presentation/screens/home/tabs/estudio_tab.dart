@@ -269,7 +269,6 @@ class _EstudioTabState extends State<EstudioTab> {
           for (final asignatura in filtered) ...[
             _CurriculumSubjectCard(
               asignatura: asignatura,
-              progressPercent: session?.subjectProgress(asignatura.codigo) ?? 0,
               lastReviewedTopicNum: session?.lastReviewedTopicFor(
                 asignatura.codigo,
               ),
@@ -356,7 +355,6 @@ class _FilterPill extends StatelessWidget {
 class _CurriculumSubjectCard extends StatelessWidget {
   const _CurriculumSubjectCard({
     required this.asignatura,
-    required this.progressPercent,
     required this.lastReviewedTopicNum,
     required this.isPinned,
     required this.isCurrentSemester,
@@ -365,7 +363,6 @@ class _CurriculumSubjectCard extends StatelessWidget {
   });
 
   final AsignaturaModel asignatura;
-  final int progressPercent;
   final int? lastReviewedTopicNum;
   final bool isPinned;
   final bool isCurrentSemester;
@@ -376,7 +373,6 @@ class _CurriculumSubjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final accent = asignatura.accentColor;
-    final active = isPinned || isCurrentSemester;
 
     TemaClaseVivaModel? reviewedTopic;
     if (lastReviewedTopicNum != null) {
@@ -430,17 +426,8 @@ class _CurriculumSubjectCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '$progressPercent%',
-                  style: mono(
-                    fontSize: 12,
-                    fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                    color: active ? p.textPrimary : p.textSecondary,
-                  ),
-                ),
                 if (onTogglePin != null) ...[
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: onTogglePin,
                     child: Icon(
@@ -495,12 +482,6 @@ class _CurriculumSubjectCard extends StatelessWidget {
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 11),
-            ProgressBar(
-              value: (progressPercent / 100).clamp(0.04, 1.0),
-              color: accent,
-              height: 6,
             ),
           ],
         ),

@@ -446,15 +446,6 @@ class ResumenTab extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '+10% Avance',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: p.indigo,
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -470,7 +461,7 @@ class ResumenTab extends StatelessWidget {
                     session.completeStudyBlock(codigoMateria: leadCode);
                     showIosToast(
                       context,
-                      '+10% de avance en $leadTitle',
+                      'Bloque de estudio completado en $leadTitle',
                       accentColor: p.indigo,
                     );
                   } else {
@@ -486,7 +477,7 @@ class ResumenTab extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
-                    'Completar bloque de estudio (+10% Avance)',
+                    'Completar bloque de estudio',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

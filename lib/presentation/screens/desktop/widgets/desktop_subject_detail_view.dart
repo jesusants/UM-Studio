@@ -167,7 +167,6 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
         : subject.temas;
     final currentTema = _currentTema;
     final currentMagistral = _currentMagistral;
-    final progress = session?.subjectProgress(subject.codigo) ?? 0;
 
     final isTemario = _activeSection == 'temario';
     final isMagistrales = _activeSection == 'magistrales';
@@ -334,32 +333,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                         _sidePanelMode == 'ai' ? 'none' : 'ai',
                   ),
                 ),
-                const SizedBox(width: 6),
               ],
-              // Píldora de avance de la materia
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: tokens.accentGreen.o(0.12),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: tokens.accentGreen.o(0.35)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Dot(color: tokens.accentGreen, size: 6),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Avance: $progress%',
-                      style: mono(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: tokens.accentGreen,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -807,7 +781,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                                           if (context.mounted) {
                                             showIosToast(
                                               context,
-                                              '+10% de avance en ${subject.nombre}',
+                                              'Bloque de estudio completado en ${subject.nombre}',
                                               accentColor: tokens.accentGreen,
                                             );
                                           }
@@ -822,7 +796,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                                             borderRadius: BorderRadius.circular(10),
                                           ),
                                           child: const Text(
-                                            'Completar bloque (+10%)',
+                                            'Completar bloque de estudio',
                                             style: TextStyle(
                                               fontSize: 11.5,
                                               fontWeight: FontWeight.w600,

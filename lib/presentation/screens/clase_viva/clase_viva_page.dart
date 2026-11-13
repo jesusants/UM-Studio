@@ -960,15 +960,6 @@ class _OfficialTopicSection extends StatelessWidget {
                         style: sectionMicroStyle(p),
                       ),
                     ),
-                    if (tema.codigoAsignatura.isNotEmpty && session != null)
-                      Text(
-                        'Avance: ${session.subjectProgress(tema.codigoAsignatura)}%',
-                        style: mono(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w600,
-                          color: p.green,
-                        ),
-                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -994,7 +985,7 @@ class _OfficialTopicSection extends StatelessWidget {
                             if (context.mounted) {
                               showIosToast(
                                 context,
-                                '+10% de avance en ${tema.nombreAsignatura}',
+                                'Bloque de estudio completado en ${tema.nombreAsignatura}',
                                 accentColor: p.green,
                               );
                             }
@@ -1007,7 +998,7 @@ class _OfficialTopicSection extends StatelessWidget {
                               borderRadius: BorderRadius.circular(11),
                             ),
                             child: const Text(
-                              'Completar bloque (+10%)',
+                              'Completar bloque de estudio',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,

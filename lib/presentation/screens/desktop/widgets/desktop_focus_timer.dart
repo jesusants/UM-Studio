@@ -141,7 +141,7 @@ class DesktopFocusTimerState extends State<DesktopFocusTimer> {
       if (mounted) {
         showIosToast(
           context,
-          '¡Bloque de estudio completado! +10% de avance registrado',
+          '¡Bloque de estudio completado!',
           accentColor: const Color(0xFF30D158),
         );
       }

@@ -361,14 +361,11 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                         final subject = widget.subjects[index];
                         final isSelected =
                             widget.selectedSubject?.codigo == subject.codigo;
-                        final progress =
-                            session?.subjectProgress(subject.codigo) ?? 0;
 
                         return StaggeredEntranceItem(
                           index: index,
                           child: _SubjectDesktopCard(
                             subject: subject,
-                            progress: progress,
                             isSelected: isSelected,
                             tokens: tokens,
                             onTap: () {
@@ -576,14 +573,12 @@ class _ThemeTogglePill extends StatelessWidget {
 class _SubjectDesktopCard extends StatefulWidget {
   const _SubjectDesktopCard({
     required this.subject,
-    required this.progress,
     required this.isSelected,
     required this.tokens,
     required this.onTap,
   });
 
   final AsignaturaModel subject;
-  final int progress;
   final bool isSelected;
   final DesktopThemeTokens tokens;
   final VoidCallback onTap;
@@ -617,7 +612,7 @@ class _SubjectDesktopCardState extends State<_SubjectDesktopCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(14),
@@ -664,7 +659,7 @@ class _SubjectDesktopCardState extends State<_SubjectDesktopCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 6),
               Text(
                 subject.nombre,
                 maxLines: 2,
@@ -676,33 +671,6 @@ class _SubjectDesktopCardState extends State<_SubjectDesktopCard> {
                   height: 1.25,
                   color: isSelected ? t.accentGreen : t.textPrimary,
                 ),
-              ),
-              const SizedBox(height: 7),
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: LinearProgressIndicator(
-                        value: (widget.progress / 100).clamp(0.0, 1.0),
-                        minHeight: 4,
-                        backgroundColor: t.border,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          widget.progress > 0 ? t.accentGreen : t.border,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${widget.progress}%',
-                    style: mono(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      color: widget.progress > 0 ? t.accentGreen : t.textTertiary,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
