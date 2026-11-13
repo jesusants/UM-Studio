@@ -11,7 +11,7 @@
     "03041820"
   ],
   "pin_hash": "70a60076d7ddd626362129ea1b4f836d2736af553f2104f016fc05b7a5736c00",
-  "progreso_materias": "enc:v1:FsXKbcCWgeWWhRFQ0tHl6cbo1WtU+gjAMIImzLblgRTCoiiUyblUeNa+Zk7xFE3NnduCVGnIiYTCiz2oUw7+eadUWkS8s5vw+NTNRhdxAz/5UoSAd8JQkRSc0Jv/myrFIvLjU6AtnMZr4KQ4nzX8GZq6YDFB4O1E7jP+MTwNWwk4J2c71m5VGBIzyMtnMbILzXX7F2uhI0KyP+bzvpOEJdlMJoFtg/THzJtA5EVEzUxXTpENwJZh6aT5y6HraBkt4nu4pjbv2SIyCg==",
+  "progreso_materias": "enc:v1:U05iXcv9kRQt9I4HzoLVvDtCfzvlhwnKYXA5BsQgKj0cFLkotux3nZiy3iE9Vpfr3S4ef5UqYLPg7EbIZIPD9x2V7QSxoGHnGVVGo5nvXgg8szGVoJtHKdOsESzB3u3C1dwDmZHLM/p2yc3/kXIRlVir+Ej0uphXYzrqq+B7fQ32MPtGZSIx2EqKw7wkKasMADxDU3cpZGEQqtncXJgz9Cd8o6txif9yKUjL0iw0+JFbBlhtUtqTX5tVVLo6cryA0Z/BY5FVhj2BiQ==",
   "ultimos_temas_revisados": {
     "02011807": 1,
     "03011813": 1,
@@ -30,7 +30,7 @@
     "numero_tema": 1,
     "actualizado_en": "2026-11-13T02:02:31.040"
   },
-  "recordatorios_calendario": "enc:v1:90AigsJyS/u7akYGNEjDe1DjQ+J3ucBsBEhb+2quiOe1Vwy85jAAsLPuFJzC+DeBgaXw/pnL6//3rzNPVchfcuB39QGx7Q8+u6a8g9E2buzqSwc6wEilVQjX1J+BkrjH5XGaOLKZc2u3CAJfh8kqlOR1pBLiZQIr2AeytKV7LcbDRFv3msPNa92PT1M+E0H0oOUu7d2gRipNUYYsnJkz48HELgntt6AkTlblt7aDjkco2gkjnv54e1CsSKiA2KZC7fg=",
-  "apuntes_personales": "enc:v1:Rghns4i5zZ/f/fPluwqvdyupgUn4L9dalNhUOBk2sbu7ildO9+ylgUckGtE8jXPLaQf5ZEH9gQ296iki1uu0MpMHXSdDecuUJU1jyY7B",
+  "recordatorios_calendario": "enc:v1:dj4YDs2kSP5+Q3sUiEx8ebRN3y54Z3uqD2AqUhiaYDTMW1XOKf+AjYFqB4jIBp6WUzvvH+eirG152W21cSUs/UdeNl1bIJkTVPTthcHvO8IzjiN007m3qrQgUxp556iRK4Mqdz4D4T7rE2bvZ9/OWWO4GER7QEEjstI4jAch5YS341EHQmmkHCF4s3Dp5VRXN2Zgzj4VMT54bBy5uwMg7N1Skcuh3XoMkbqw4QO69VMGopYaprJB9nwD7JoEt73aGpE=",
+  "apuntes_personales": "enc:v1:5Of7NEWDHNl+C+DXvBD389znmMVGqHYxLtyfSq8dQHE5tXxwwtJMBYqF4dnh72NZTDvxG0DJw2NAt5t2r65PrTj7sZnytHii0s3G86kkNw==",
   "is_admin": false
 }
