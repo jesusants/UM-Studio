@@ -1,10 +1,10 @@
 {
   "ai_enabled": true,
   "ai_provider": "gemini",
-  "ai_model_name": "gemini-3.5-flash-lite",
+  "ai_model_name": "gemini-2.5-flash-lite",
   "ai_api_key_override": "",
   "ai_temperature": 0.2,
-  "ai_max_tokens": 1536,
+  "ai_max_tokens": 2560,
   "ai_custom_system_prompt": "",
   "periodo_academico_actual": "2026-III",
   "corte_activo_global": 1,
@@ -21,6 +21,6 @@
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
   "maintenance_mode": false,
-  "updated_at": "2026-11-13T01:14:19.823",
+  "updated_at": "2026-11-13T01:37:30.723",
   "updated_by": "jasierra"
 }
