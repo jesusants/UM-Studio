@@ -14,8 +14,8 @@ import 'desktop_theme_tokens.dart';
 import 'widgets/desktop_focus_timer.dart';
 import 'widgets/desktop_live_clock.dart';
 import 'widgets/desktop_news_feed.dart';
-import '../../widgets/global_broadcast_banner.dart';
 import 'widgets/desktop_sidebar.dart';
+import 'widgets/desktop_spotlight_search.dart';
 import 'widgets/desktop_subject_detail_view.dart';
 
 /// Pantalla completa de escritorio (Command Center / Ambient Dashboard)
@@ -83,6 +83,21 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
 
   int _selectedCuatrimestre = 2;
   AsignaturaModel? _selectedSubject;
+  int? _initialTemaNumero;
+  bool _initialMagistral = false;
+
+  Future<void> _openSpotlight(MarkdownCurriculumService? curriculum) async {
+    final hit = await DesktopSpotlightSearch.show(
+      context,
+      curriculum: curriculum,
+    );
+    if (hit == null || !mounted) return;
+    setState(() {
+      _selectedSubject = hit.subject;
+      _initialTemaNumero = hit.temaNumero;
+      _initialMagistral = hit.isMagistral;
+    });
+  }
 
   @override
   void initState() {
@@ -164,6 +179,67 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent) {
+      final isCtrlOrCmd = HardwareKeyboard.instance.isControlPressed ||
+          HardwareKeyboard.instance.isMetaPressed;
+      final isAlt = HardwareKeyboard.instance.isAltPressed;
+
+      // Ctrl+K / Cmd+K: Buscador Spotlight Global
+      if (isCtrlOrCmd && event.logicalKey == LogicalKeyboardKey.keyK) {
+        final curriculum = CurriculumScope.maybeOf(context);
+        _openSpotlight(curriculum);
+        return KeyEventResult.handled;
+      }
+
+      final focusedWidget = FocusManager.instance.primaryFocus?.context?.widget;
+      final isTyping = focusedWidget is EditableText;
+
+      // Esc: Volver al Dashboard si hay una materia seleccionada
+      if (event.logicalKey == LogicalKeyboardKey.escape) {
+        if (_selectedSubject != null) {
+          setState(() {
+            _selectedSubject = null;
+            _initialTemaNumero = null;
+            _initialMagistral = false;
+          });
+          return KeyEventResult.handled;
+        }
+      }
+
+      if (isTyping) return KeyEventResult.ignored;
+
+      // Alt + 1..9: Cambiar rápidamente entre materias activas
+      if (isAlt) {
+        final digitMap = <LogicalKeyboardKey, int>{
+          LogicalKeyboardKey.digit1: 0,
+          LogicalKeyboardKey.digit2: 1,
+          LogicalKeyboardKey.digit3: 2,
+          LogicalKeyboardKey.digit4: 3,
+          LogicalKeyboardKey.digit5: 4,
+          LogicalKeyboardKey.digit6: 5,
+          LogicalKeyboardKey.digit7: 6,
+          LogicalKeyboardKey.digit8: 7,
+          LogicalKeyboardKey.digit9: 8,
+        };
+        final idx = digitMap[event.logicalKey];
+        if (idx != null) {
+          final session = SessionScope.maybeOf(context);
+          final curriculum = CurriculumScope.maybeOf(context);
+          final subjects = _resolveSubjectsForCuatrimestre(
+            curriculum,
+            session,
+            _selectedCuatrimestre,
+          );
+          if (idx < subjects.length) {
+            setState(() {
+              _selectedSubject = subjects[idx];
+              _initialTemaNumero = null;
+              _initialMagistral = false;
+            });
+            return KeyEventResult.handled;
+          }
+        }
+      }
+
       // T: Alternar Modo Claro / Modo Oscuro
       if (event.logicalKey == LogicalKeyboardKey.keyT) {
         final themeController = ThemeScope.maybeOf(context);
@@ -175,14 +251,6 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
       if (event.logicalKey == LogicalKeyboardKey.keyF) {
         FullscreenHelper.toggle();
         return KeyEventResult.handled;
-      }
-
-      // Esc: Volver al Dashboard si hay una materia seleccionada
-      if (event.logicalKey == LogicalKeyboardKey.escape) {
-        if (_selectedSubject != null) {
-          setState(() => _selectedSubject = null);
-          return KeyEventResult.handled;
-        }
       }
 
       // P: Alternar visibilidad del temporizador Pomodoro
@@ -320,7 +388,11 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                         subjects: cuatSubjects,
                         selectedSubject: _selectedSubject,
                         onSelectSubject: (subject) {
-                          setState(() => _selectedSubject = subject);
+                          setState(() {
+                            _selectedSubject = subject;
+                            _initialTemaNumero = null;
+                            _initialMagistral = false;
+                          });
                         },
                         onOpenStudentProfile: widget.onOpenStudentProfile,
                         onEditMatricula: widget.onOpenMiCuatrimestre,
@@ -342,8 +414,62 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Banner de Anuncio Global en Tiempo Real (Persistente)
-                          const GlobalBroadcastBanner(),
+                          // Píldora discreta de Buscador Rápido estilo Spotlight (Ctrl+K)
+                          TapScale(
+                            onTap: () => _openSpotlight(curriculum),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 9,
+                              ),
+                              decoration: BoxDecoration(
+                                color: tokens.surface,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: tokens.border),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.search_rounded,
+                                    size: 16,
+                                    color: tokens.textSecondary,
+                                  ),
+                                  const SizedBox(width: 9),
+                                  Expanded(
+                                    child: Text(
+                                      'Buscar materia, tema o cátedra magistral...',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        color: tokens.textSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 7,
+                                      vertical: 2.5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: tokens.surfaceElevated,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: tokens.border),
+                                    ),
+                                    child: Text(
+                                      '⌘K / Ctrl+K',
+                                      style: mono(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: tokens.textTertiary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                           Expanded(
                             child: AnimatedSwitcher(
                               duration: const Duration(milliseconds: 240),
@@ -356,7 +482,9 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
                                       children: [
                                         // Reloj Digital Aislado
-                                        const DesktopLiveClock(),
+                                        const RepaintBoundary(
+                                          child: DesktopLiveClock(),
+                                        ),
                                   const SizedBox(height: 16),
 
                                   // Próximo Hito Académico
@@ -383,17 +511,23 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                                       switchInCurve: Curves.easeOutCubic,
                                       switchOutCurve: Curves.easeInCubic,
                                       child: _showFocusTimer
-                                          ? DesktopFocusTimer(
-                                              key: _timerKey,
-                                              activeSubjects: cuatSubjects,
-                                              onHideTimer: () => _setTimerVisibility(false),
-                                              onOpenClaseViva: (code) {
-                                                final matched = cuatSubjects.firstWhere(
-                                                  (s) => s.codigo == code,
-                                                  orElse: () => leadSubject ?? cuatSubjects.first,
-                                                );
-                                                setState(() => _selectedSubject = matched);
-                                              },
+                                          ? RepaintBoundary(
+                                              child: DesktopFocusTimer(
+                                                key: _timerKey,
+                                                activeSubjects: cuatSubjects,
+                                                onHideTimer: () =>
+                                                    _setTimerVisibility(false),
+                                                onOpenClaseViva: (code) {
+                                                  final matched =
+                                                      cuatSubjects.firstWhere(
+                                                    (s) => s.codigo == code,
+                                                    orElse: () => leadSubject ??
+                                                        cuatSubjects.first,
+                                                  );
+                                                  setState(() =>
+                                                      _selectedSubject = matched);
+                                                },
+                                              ),
                                             )
                                           : _DesktopTimerHiddenCard(
                                               key: const ValueKey('desktop_timer_hidden_card'),
@@ -413,8 +547,14 @@ class _DesktopDashboardScreenState extends State<DesktopDashboardScreen>
                             : DesktopSubjectDetailView(
                                 key: ValueKey('detail_${_selectedSubject!.codigo}'),
                                 subject: _selectedSubject!,
+                                initialTemaNumero: _initialTemaNumero,
+                                initialMagistral: _initialMagistral,
                                 onBackToDashboard: () {
-                                  setState(() => _selectedSubject = null);
+                                  setState(() {
+                                    _selectedSubject = null;
+                                    _initialTemaNumero = null;
+                                    _initialMagistral = false;
+                                  });
                                 },
                                 onOpenClaseViva: widget.onOpenClaseViva,
                               ),

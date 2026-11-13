@@ -9,6 +9,7 @@ import '../../../providers/app_scopes.dart';
 import '../../../widgets/academic_solved_exercise_card.dart';
 import '../../../widgets/clase_magistral_adjuntos_widget.dart';
 import '../../../widgets/conservative_energy_sim_widget.dart';
+import '../../../widgets/interactive_engineering_chart.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/katex_formula_card.dart';
 import '../../../widgets/minimal_slide_viewer.dart';
@@ -24,11 +25,15 @@ class DesktopSubjectDetailView extends StatefulWidget {
     required this.subject,
     required this.onBackToDashboard,
     required this.onOpenClaseViva,
+    this.initialTemaNumero,
+    this.initialMagistral = false,
   });
 
   final AsignaturaModel subject;
   final VoidCallback onBackToDashboard;
   final ValueChanged<String> onOpenClaseViva;
+  final int? initialTemaNumero;
+  final bool initialMagistral;
 
   @override
   State<DesktopSubjectDetailView> createState() =>
@@ -40,29 +45,36 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
   int _selectedTopicNumber = 1;
   int _selectedMagistralNumber = 1;
   String _activeEnglishBranch = 'general';
-  bool _isAiChatOpen = false;
+  String _sidePanelMode = 'none'; // 'none' | 'ai' | 'chart'
 
   late final ScrollController _temasScrollController;
   late final ScrollController _magistralesScrollController;
+  late final ScrollController _bodyScrollController;
 
   @override
   void initState() {
     super.initState();
     _temasScrollController = ScrollController();
     _magistralesScrollController = ScrollController();
+    _bodyScrollController = ScrollController();
     _initSelectedTopic();
   }
 
   @override
   void didUpdateWidget(covariant DesktopSubjectDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.subject.codigo != widget.subject.codigo) {
+    if (oldWidget.subject.codigo != widget.subject.codigo ||
+        oldWidget.initialTemaNumero != widget.initialTemaNumero ||
+        oldWidget.initialMagistral != widget.initialMagistral) {
       _initSelectedTopic();
       if (_temasScrollController.hasClients) {
         _temasScrollController.jumpTo(0.0);
       }
       if (_magistralesScrollController.hasClients) {
         _magistralesScrollController.jumpTo(0.0);
+      }
+      if (_bodyScrollController.hasClients) {
+        _bodyScrollController.jumpTo(0.0);
       }
     }
   }
@@ -71,6 +83,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
   void dispose() {
     _temasScrollController.dispose();
     _magistralesScrollController.dispose();
+    _bodyScrollController.dispose();
     super.dispose();
   }
 
@@ -91,15 +104,22 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
   }
 
   void _initSelectedTopic() {
+    _activeSection = widget.initialMagistral && widget.subject.tieneClasesMagistrales
+        ? 'magistrales'
+        : 'temario';
     final temas = widget.subject.esIngles
         ? widget.subject.temasPorModalidad(_activeEnglishBranch)
         : widget.subject.temas;
-    if (temas.isNotEmpty) {
+    if (widget.initialTemaNumero != null && !widget.initialMagistral) {
+      _selectedTopicNumber = widget.initialTemaNumero!;
+    } else if (temas.isNotEmpty) {
       _selectedTopicNumber = temas.first.numeroTema;
     } else {
       _selectedTopicNumber = 1;
     }
-    if (widget.subject.clasesMagistrales.isNotEmpty) {
+    if (widget.initialTemaNumero != null && widget.initialMagistral) {
+      _selectedMagistralNumber = widget.initialTemaNumero!;
+    } else if (widget.subject.clasesMagistrales.isNotEmpty) {
       _selectedMagistralNumber =
           widget.subject.clasesMagistrales.first.numeroTema;
     } else {
@@ -196,11 +216,13 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
         ],
       ),
       padding: const EdgeInsets.all(20),
-      child: Stack(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
           // 1. Barra de Encabezado con Botón de Regreso & Acciones
           Row(
             children: [
@@ -255,6 +277,65 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                 ),
               ),
               const Spacer(),
+              if (canShowAi) ...[
+                TapScale(
+                  onTap: () => setState(
+                    () => _sidePanelMode =
+                        _sidePanelMode == 'chart' ? 'none' : 'chart',
+                  ),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _sidePanelMode == 'chart'
+                          ? tokens.accentIndigo.o(0.18)
+                          : tokens.surfaceElevated,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: _sidePanelMode == 'chart'
+                            ? tokens.accentIndigo
+                            : tokens.border,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.insights_rounded,
+                          size: 13,
+                          color: _sidePanelMode == 'chart'
+                              ? tokens.accentIndigo
+                              : tokens.textSecondary,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Lab. Gráfico',
+                          style: mono(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: _sidePanelMode == 'chart'
+                                ? tokens.accentIndigo
+                                : tokens.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                TopicAiTriggerButton(
+                  isOpen: _sidePanelMode == 'ai',
+                  accentColor: isMagistrales
+                      ? tokens.accentIndigo
+                      : tokens.accentGreen,
+                  onTap: () => setState(
+                    () => _sidePanelMode =
+                        _sidePanelMode == 'ai' ? 'none' : 'ai',
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
               // Píldora de avance de la materia
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -509,7 +590,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
             const SizedBox(height: 14),
           ],
 
-          // 5. Contenido Desplazable del Tema Seleccionado (Scroll interno suave)
+          // 5. Contenido Desplazable del Tema Seleccionado (Ancho ergonómico max 860px)
           Expanded(
             child: currentTema == null
                 ? Center(
@@ -518,11 +599,24 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                       style: TextStyle(color: tokens.textSecondary),
                     ),
                   )
-                : SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+                : Scrollbar(
+                    controller: _bodyScrollController,
+                    thickness: 5,
+                    radius: const Radius.circular(999),
+                    child: SingleChildScrollView(
+                      controller: _bodyScrollController,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 860),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 240),
+                            switchInCurve: Curves.easeOutCubic,
+                            child: Column(
+                              key: ValueKey('temario_${currentTema.numeroTema}_$_activeEnglishBranch'),
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
                         // Título del Tema
                         Container(
                           padding: const EdgeInsets.all(14),
@@ -747,6 +841,10 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                       ],
                     ),
                   ),
+                ),
+              ),
+            ),
+          ),
           ),
         ] else ...[
           // MODO CLASES MAGISTRALES EN ESCRITORIO
@@ -872,11 +970,24 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                         style: TextStyle(color: tokens.textSecondary),
                       ),
                     )
-                  : SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
+                  : Scrollbar(
+                      controller: _bodyScrollController,
+                      thickness: 5,
+                      radius: const Radius.circular(999),
+                      child: SingleChildScrollView(
+                        controller: _bodyScrollController,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(right: 6),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 860),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 240),
+                              switchInCurve: Curves.easeOutCubic,
+                              child: Column(
+                                key: ValueKey('mag_${currentMagistral.numeroTema}'),
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
                           // Cabecera de la Cátedra
                           Container(
                             padding: const EdgeInsets.all(16),
@@ -1065,45 +1176,83 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                         ],
                       ),
                     ),
+                  ),
+                ),
+              ),
+            ),
             ),
           ],
         ],
       ],
     ),
-    if (canShowAi)
-      Positioned(
-        right: 0,
-        bottom: 0,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_isAiChatOpen) ...[
-              TopicAiDesktopFloatingWindow(
-                topicKey: activeTopicKey,
-                asignaturaNombre: subject.nombre,
-                temaTitulo: activeTopicTitle,
-                temaContextoCompleto: activeContext,
-                accentColor: isMagistrales
-                    ? tokens.accentIndigo
-                    : tokens.accentGreen,
-                onClose: () => setState(() => _isAiChatOpen = false),
+          ),
+          if (canShowAi && _sidePanelMode != 'none') ...[
+            const SizedBox(width: 14),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOutCubic,
+              width: 350,
+              decoration: BoxDecoration(
+                color: tokens.surfaceElevated,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: tokens.border),
               ),
-              const SizedBox(height: 10),
-            ],
-            TopicAiTriggerButton(
-              isOpen: _isAiChatOpen,
-              accentColor: isMagistrales
-                  ? tokens.accentIndigo
-                  : tokens.accentGreen,
-              onTap: () => setState(() => _isAiChatOpen = !_isAiChatOpen),
+              child: _sidePanelMode == 'ai'
+                  ? TopicAiDesktopFloatingWindow(
+                      topicKey: activeTopicKey,
+                      asignaturaNombre: subject.nombre,
+                      temaTitulo: activeTopicTitle,
+                      temaContextoCompleto: activeContext,
+                      accentColor: isMagistrales
+                          ? tokens.accentIndigo
+                          : tokens.accentGreen,
+                      onClose: () => setState(() => _sidePanelMode = 'none'),
+                    )
+                  : SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              const Spacer(),
+                              TapScale(
+                                onTap: () =>
+                                    setState(() => _sidePanelMode = 'none'),
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: tokens.surface,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: tokens.border),
+                                  ),
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 14,
+                                    color: tokens.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          InteractiveEngineeringChart(
+                            asignaturaNombre: subject.nombre,
+                            temaTitulo: activeTopicTitle,
+                            explicitHint: isMagistrales && currentMagistral != null
+                                ? currentMagistral.graficaInteractiva
+                                : (currentTema?.graficaInteractiva ?? ''),
+                            compact: true,
+                          ),
+                        ],
+                      ),
+                    ),
             ),
           ],
-        ),
+        ],
       ),
-  ],
-),
-);
+    );
   }
 }
 

@@ -18,6 +18,7 @@ class TemaEstudioModel extends TemaEstudioEntity {
     super.corte = 1,
     super.modalidad = 'tecnica',
     super.verbalizacionIngles = '',
+    super.graficaInteractiva = '',
     super.slides = const [],
   });
 

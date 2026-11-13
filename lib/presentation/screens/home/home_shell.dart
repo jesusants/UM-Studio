@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/constants/app_constants.dart';
@@ -10,7 +11,7 @@ import '../../../data/services/github_sync_service.dart';
 import '../../providers/app_scopes.dart';
 import 'package:flutter/foundation.dart';
 import '../../widgets/admin_env_console_modal.dart';
-import '../../widgets/global_broadcast_banner.dart';
+import '../../widgets/collapsible_spaces_dock.dart';
 import '../maintenance/maintenance_mode_screen.dart';
 import '../../../data/services/global_environment_service.dart';
 import '../../widgets/header_morph_avatar.dart';
@@ -39,6 +40,7 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   final PageController _pageController = PageController();
   int _tab = 0;
+  bool _dockCollapsed = false;
   bool _onboardingGateChecked = false;
 
   @override
@@ -587,10 +589,11 @@ class _HomeShellState extends State<HomeShell> {
 
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
+          child: Builder(
+            builder: (context) {
+              final screenWidth = MediaQuery.sizeOf(context).width;
               // Si el ancho horizontal >= 1024px: Despliega DesktopDashboardScreen a pantalla completa (100vw × 100vh)
-              if (constraints.maxWidth >= 1024) {
+              if (screenWidth >= 1024) {
                 return Scaffold(
                   backgroundColor: p.background,
                   body: DesktopDashboardScreen(
@@ -601,11 +604,12 @@ class _HomeShellState extends State<HomeShell> {
                 );
               }
 
-              final screenWidth = constraints.maxWidth;
               final wide = screenWidth > AppConstants.maxPhoneViewportWidth;
+              final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
 
               return Scaffold(
                 backgroundColor: p.background,
+                extendBody: true,
                 body: Center(
                   child: Container(
                     width: math.min(screenWidth, AppConstants.maxPhoneViewportWidth),
@@ -617,35 +621,65 @@ class _HomeShellState extends State<HomeShell> {
                             )
                           : null,
                     ),
-                    child: Column(
+                    child: Stack(
                       children: [
-                        _Header(
-                          syncStatus:
-                              session?.syncService.status ?? GitHubSyncStatus.idle,
-                          onTapIdentity: _openStudentProfileSheet,
-                          onTapMatricula: () => _openMiCuatrimestreModal(isMandatory: false),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: GlobalBroadcastBanner(),
-                        ),
-                        Expanded(
-                          child: PageView(
-                            controller: _pageController,
-                            physics: const BouncingScrollPhysics(),
-                            onPageChanged: (i) => setState(() => _tab = i),
-                            children: [
-                              ResumenTab(onOpenClaseViva: _openClaseViva),
-                              CalendarioTab(onOpenClaseViva: _openClaseViva),
-                              const ClasesTab(),
-                              EstudioTab(
-                                onOpenClaseViva: _openClaseViva,
-                                onOpenTemario: _openTemario,
+                        Column(
+                          children: [
+                            _Header(
+                              syncStatus: session?.syncService.status ??
+                                  GitHubSyncStatus.idle,
+                              onTapIdentity: _openStudentProfileSheet,
+                              onTapMatricula: () =>
+                                  _openMiCuatrimestreModal(isMandatory: false),
+                            ),
+                            Expanded(
+                              child: NotificationListener<UserScrollNotification>(
+                                onNotification: (notification) {
+                                  if (notification.metrics.axis == Axis.vertical) {
+                                    if (notification.direction ==
+                                            ScrollDirection.reverse &&
+                                        !_dockCollapsed) {
+                                      setState(() => _dockCollapsed = true);
+                                    }
+                                  }
+                                  return false;
+                                },
+                                child: PageView(
+                                  controller: _pageController,
+                                  physics: const BouncingScrollPhysics(),
+                                  onPageChanged: (i) =>
+                                      setState(() => _tab = i),
+                                  children: [
+                                    ResumenTab(onOpenClaseViva: _openClaseViva),
+                                    CalendarioTab(
+                                        onOpenClaseViva: _openClaseViva),
+                                    const ClasesTab(),
+                                    EstudioTab(
+                                      onOpenClaseViva: _openClaseViva,
+                                      onOpenTemario: _openTemario,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        _BottomNav(current: _tab, onSelect: _goToTab),
+                        if (!keyboardOpen)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: CollapsibleSpacesDock(
+                              currentIndex: _tab,
+                              isCollapsed: _dockCollapsed,
+                              onSelect: (index) {
+                                _goToTab(index);
+                              },
+                              onToggleCollapsed: () => setState(
+                                () => _dockCollapsed = !_dockCollapsed,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -696,7 +730,7 @@ class _Header extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 420;
+        final isCompact = constraints.maxWidth < 480;
         return Container(
           padding: EdgeInsets.fromLTRB(16, 14 + top, 16, 13),
           decoration: BoxDecoration(
@@ -864,77 +898,6 @@ class _Header extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _BottomNav extends StatelessWidget {
-  const _BottomNav({required this.current, required this.onSelect});
-
-  final int current;
-  final ValueChanged<int> onSelect;
-
-  static const _items = [
-    (Icons.today_rounded, 'Hoy'),
-    (Icons.calendar_month_rounded, 'Calendario'),
-    (Icons.school_rounded, 'Clases'),
-    (Icons.menu_book_rounded, 'Estudio'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Container(
-      decoration: BoxDecoration(
-        color: p.glass,
-        border: Border(top: BorderSide(color: p.cardBorder.o(0.8))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-          child: Row(
-            children: List.generate(_items.length, (i) {
-              final (icon, label) = _items[i];
-              final selected = i == current;
-              final color = selected ? p.textPrimary : p.textTertiary;
-              return Expanded(
-                child: TapScale(
-                  onTap: () => onSelect(i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 280),
-                    curve: kIosSpring,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      color: selected ? p.elevated : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(icon, size: 20, color: color),
-                        const SizedBox(height: 2),
-                        Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight:
-                                selected ? FontWeight.w600 : FontWeight.w500,
-                            color: color,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
     );
   }
 }

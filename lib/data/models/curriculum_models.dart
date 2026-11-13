@@ -69,6 +69,7 @@ class TemaClaseVivaModel {
     this.corte = 1,
     this.modalidad = 'tecnica',
     this.verbalizacionIngles = '',
+    this.graficaInteractiva = '',
     this.slides = const [],
   });
 
@@ -79,6 +80,7 @@ class TemaClaseVivaModel {
   final String objetivo;
   final String conceptoClaveLatex;
   final String verbalizacionIngles;
+  final String graficaInteractiva;
   final String ejemplo;
   final String bloqueSugerido;
   final List<SlideDeckItem> slides;
@@ -135,6 +137,7 @@ class TemaClaseVivaModel {
       objetivo: (map['objetivo'] ?? '').toString(),
       conceptoClaveLatex: (map['concepto_clave_latex'] ?? '').toString(),
       verbalizacionIngles: (map['verbalizacion_ingles'] ?? '').toString(),
+      graficaInteractiva: (map['grafica_interactiva'] ?? '').toString().trim(),
       ejemplo: (map['ejemplo'] ?? '').toString(),
       bloqueSugerido:
           (map['bloque_sugerido'] ?? map['bloque_estudio'] ?? 'Pomodoro 50/10')
@@ -167,6 +170,7 @@ class TemaClaseVivaModel {
       objetivo: objetivo,
       conceptoClaveLatex: conceptoClaveLatex,
       verbalizacionIngles: verbalizacionIngles,
+      graficaInteractiva: graficaInteractiva,
       ejemplo: ejemplo,
       bloqueSugerido: bloqueSugerido,
       codigoAsignatura: codigoAsignatura,

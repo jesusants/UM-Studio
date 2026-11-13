@@ -18,6 +18,7 @@ import '../../../domain/entities/tema_estudio_entity.dart';
 import '../../../domain/repositories/i_clase_viva_repository.dart';
 import '../../widgets/academic_solved_exercise_card.dart';
 import '../../widgets/conservative_energy_sim_widget.dart';
+import '../../widgets/interactive_engineering_chart.dart';
 import '../../widgets/minimal_slide_viewer.dart';
 import '../../widgets/mouse_scrollable_horizontal_bar.dart';
 import '../../providers/app_scopes.dart';
@@ -924,6 +925,14 @@ class _OfficialTopicSection extends StatelessWidget {
                 tema.modalidad == 'magistral' &&
                 tema.numeroTema == 7))
           const ConservativeEnergySimWidget(isDesktop: false),
+
+        // D.2.6 Botón Desplegable de Laboratorio Gráfico Interactivo
+        if (!tema.esInglesGeneral)
+          _TopicEngineeringLabExpander(
+            asignaturaNombre: tema.nombreAsignatura,
+            temaTitulo: tema.tituloTema,
+            explicitHint: tema.graficaInteractiva,
+          ),
 
         // D.3 Tarjeta Modular: EJEMPLO DE CÁTEDRA (radius: 18px)
         AcademicSolvedExerciseCard(
@@ -1891,6 +1900,93 @@ class _SheetOptionTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TopicEngineeringLabExpander extends StatefulWidget {
+  const _TopicEngineeringLabExpander({
+    required this.asignaturaNombre,
+    required this.temaTitulo,
+    this.explicitHint = '',
+  });
+
+  final String asignaturaNombre;
+  final String temaTitulo;
+  final String explicitHint;
+
+  @override
+  State<_TopicEngineeringLabExpander> createState() =>
+      _TopicEngineeringLabExpanderState();
+}
+
+class _TopicEngineeringLabExpanderState
+    extends State<_TopicEngineeringLabExpander> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TapScale(
+          onTap: () => setState(() => _open = !_open),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: _open ? p.indigo.o(0.14) : p.card,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _open ? p.indigo : p.cardBorder,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.insights_rounded,
+                  size: 18,
+                  color: _open ? p.indigo : p.green,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _open
+                        ? 'Ocultar Laboratorio Gráfico'
+                        : 'Abrir Laboratorio Gráfico Interactivo',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: p.textPrimary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _open
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                  color: p.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedCrossFade(
+          duration: const Duration(milliseconds: 240),
+          crossFadeState:
+              _open ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          firstChild: const SizedBox.shrink(),
+          secondChild: InteractiveEngineeringChart(
+            asignaturaNombre: widget.asignaturaNombre,
+            temaTitulo: widget.temaTitulo,
+            explicitHint: widget.explicitHint,
+          ),
+        ),
+      ],
     );
   }
 }

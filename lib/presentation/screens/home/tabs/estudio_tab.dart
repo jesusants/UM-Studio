@@ -81,7 +81,12 @@ class _EstudioTabState extends State<EstudioTab> {
 
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        104 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -514,7 +519,12 @@ class _LegacyFallbackEstudioList extends StatelessWidget {
     final p = context.palette;
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        104 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         Text(
           'Estudio Extraclase',

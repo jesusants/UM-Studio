@@ -46,7 +46,14 @@ class DesktopSidebar extends StatefulWidget {
 }
 
 class _DesktopSidebarState extends State<DesktopSidebar> {
+  final ScrollController _subjectsScrollController = ScrollController();
   bool _isFullscreen = false;
+
+  @override
+  void dispose() {
+    _subjectsScrollController.dispose();
+    super.dispose();
+  }
 
   void _toggleFullscreen() {
     HapticFeedback.lightImpact();
@@ -340,27 +347,38 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                       ),
                     ),
                   )
-                : ListView.separated(
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: widget.subjects.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final subject = widget.subjects[index];
-                      final isSelected =
-                          widget.selectedSubject?.codigo == subject.codigo;
-                      final progress = session?.subjectProgress(subject.codigo) ?? 0;
+                : Scrollbar(
+                    controller: _subjectsScrollController,
+                    thickness: 5,
+                    radius: const Radius.circular(999),
+                    child: ListView.separated(
+                      controller: _subjectsScrollController,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(right: 6),
+                      itemCount: widget.subjects.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final subject = widget.subjects[index];
+                        final isSelected =
+                            widget.selectedSubject?.codigo == subject.codigo;
+                        final progress =
+                            session?.subjectProgress(subject.codigo) ?? 0;
 
-                      return _SubjectDesktopCard(
-                        subject: subject,
-                        progress: progress,
-                        isSelected: isSelected,
-                        tokens: tokens,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          widget.onSelectSubject(subject);
-                        },
-                      );
-                    },
+                        return StaggeredEntranceItem(
+                          index: index,
+                          child: _SubjectDesktopCard(
+                            subject: subject,
+                            progress: progress,
+                            isSelected: isSelected,
+                            tokens: tokens,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              widget.onSelectSubject(subject);
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   ),
           ),
           const SizedBox(height: 12),

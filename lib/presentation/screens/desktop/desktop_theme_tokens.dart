@@ -65,9 +65,9 @@ class DesktopThemeTokens {
       return const DesktopThemeTokens(
         isDark: true,
         canvas: Color(0xFF000000),
-        surface: Color(0xD90D0E12),
-        surfaceElevated: Color(0xFF141720),
-        border: Color(0xFF1A1D24),
+        surface: Color(0xD90A0B0E),
+        surfaceElevated: Color(0xFF12141A),
+        border: Color(0xFF1E212A),
         borderSubtle: Color(0xFF14161C),
         textPrimary: Color(0xFFFFFFFF),
         textSecondary: Color(0xFF8E8E93),
@@ -81,7 +81,7 @@ class DesktopThemeTokens {
       return const DesktopThemeTokens(
         isDark: false,
         canvas: Color(0xFFF2F2F7),
-        surface: Color(0xE6FFFFFF),
+        surface: Color(0xFFFFFFFF),
         surfaceElevated: Color(0xFFF7F7FA),
         border: Color(0xFFE5E5EA),
         borderSubtle: Color(0xFFEBEBF0),
@@ -91,7 +91,7 @@ class DesktopThemeTokens {
         accentGreen: Color(0xFF28CD41),
         accentIndigo: Color(0xFF5856D6),
         alertAmber: Color(0xFFFF9500),
-        shadowColor: Color(0x14000000),
+        shadowColor: Color(0x0A000000),
       );
     }
   }

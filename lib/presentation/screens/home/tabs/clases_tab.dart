@@ -81,7 +81,12 @@ class _ClasesTabState extends State<ClasesTab> {
 
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        104 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         // Encabezado
         Row(

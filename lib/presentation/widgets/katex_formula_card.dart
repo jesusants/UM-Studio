@@ -25,6 +25,7 @@ class KatexFormulaCard extends StatefulWidget {
 
 class _KatexFormulaCardState extends State<KatexFormulaCard> {
   bool _copied = false;
+  bool _hovered = false;
 
   Future<void> _copyLatex() async {
     await Clipboard.setData(ClipboardData(text: widget.latex));
@@ -41,79 +42,100 @@ class _KatexFormulaCardState extends State<KatexFormulaCard> {
     final p = context.palette;
     final cleanLatex = InstitutionalValidator.sanitizeLatex(widget.latex);
 
-    return IosCard(
-      radius: 18,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(widget.label.toUpperCase(), style: sectionMicroStyle(p)),
-              const Spacer(),
-              TapScale(
-                onTap: _copyLatex,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: _copied ? p.green.o(0.12) : p.elevated,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: _copied ? p.green.o(0.35) : p.cardBorder,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: IosCard(
+        radius: 18,
+        padding: const EdgeInsets.all(16),
+        borderColor: _hovered ? p.strongBorder : p.cardBorder,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 24,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: sectionMicroStyle(p),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _copied ? Icons.check_rounded : Icons.copy_rounded,
-                        size: 11,
-                        color: _copied ? p.green : p.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _copied ? 'Copiado' : 'KaTeX',
-                        style: mono(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w500,
-                          color: _copied ? p.green : p.textSecondary,
+                  const SizedBox(width: 8),
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 160),
+                    opacity: _hovered || _copied ? 1.0 : 0.72,
+                    child: TapScale(
+                      onTap: _copyLatex,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _copied ? p.green.o(0.12) : p.elevated,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _copied ? p.green.o(0.35) : p.cardBorder,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _copied
+                                  ? Icons.check_rounded
+                                  : Icons.copy_rounded,
+                              size: 11,
+                              color: _copied ? p.green : p.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _copied ? 'Copiado' : 'Copiar LaTeX',
+                              style: mono(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w500,
+                                color: _copied ? p.green : p.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+              decoration: BoxDecoration(
+                color: p.background.o(0.45),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: p.cardBorder),
+              ),
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Math.tex(
+                  cleanLatex,
+                  mathStyle: MathStyle.display,
+                  textStyle: TextStyle(
+                    fontSize: 18.5,
+                    color: p.textPrimary,
+                  ),
+                  onErrorFallback: (_) => Text(
+                    cleanLatex,
+                    style: mono(fontSize: 15, color: p.textPrimary),
                   ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-            decoration: BoxDecoration(
-              color: p.background.o(0.45),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: p.cardBorder),
             ),
-            alignment: Alignment.center,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Math.tex(
-                cleanLatex,
-                mathStyle: MathStyle.display,
-                textStyle: TextStyle(
-                  fontSize: 18.5,
-                  color: p.textPrimary,
-                ),
-                onErrorFallback: (_) => Text(
-                  cleanLatex,
-                  style: mono(fontSize: 15, color: p.textPrimary),
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

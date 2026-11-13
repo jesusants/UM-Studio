@@ -82,6 +82,7 @@ class TemaEstudioEntity {
     this.corte = 1,
     this.modalidad = 'tecnica',
     this.verbalizacionIngles = '',
+    this.graficaInteractiva = '',
     this.slides = const [],
   });
 
@@ -100,6 +101,7 @@ class TemaEstudioEntity {
   final int corte;
   final String modalidad;
   final String verbalizacionIngles;
+  final String graficaInteractiva;
   final List<SlideDeckItem> slides;
 
   String get badgeTema => 'Tema $numeroTema';

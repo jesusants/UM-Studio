@@ -4,7 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/noticia_model.dart';
+import '../../../../data/services/global_environment_service.dart';
 import '../../../../data/services/unimagdalena_realtime_news_service.dart';
+import '../../../widgets/global_broadcast_banner.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../desktop_theme_tokens.dart';
 
@@ -22,6 +24,7 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed>
     with SingleTickerProviderStateMixin {
   final UnimagdalenaRealtimeNewsService _newsService =
       UnimagdalenaRealtimeNewsService.instance;
+  final ScrollController _scrollController = ScrollController();
   late final AnimationController _spinController;
 
   String _selectedCategory = 'TODAS';
@@ -38,6 +41,7 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed>
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _spinController.dispose();
     super.dispose();
   }
@@ -94,12 +98,17 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed>
     final tokens = DesktopThemeTokens.of(context);
 
     return ListenableBuilder(
-      listenable: _newsService,
+      listenable: Listenable.merge([
+        _newsService,
+        GlobalEnvironmentService.instance,
+      ]),
       builder: (context, _) {
         final allNews = _newsService.news;
         final filtered = _filterNews(allNews);
         final isLoading = _newsService.isLoading;
         final lastUpdateText = _formatTime(_newsService.lastUpdated);
+        final hasPinnedBanner = GlobalBroadcastBanner.isActive;
+        final totalItems = filtered.length + (hasPinnedBanner ? 1 : 0);
 
         return Container(
           decoration: BoxDecoration(
@@ -233,32 +242,56 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed>
               ),
               const SizedBox(height: 14),
 
-              // 3. Feed de Noticias con Desplazamiento Interno Inercial
+              // 3. Feed de Noticias con Desplazamiento Interno Inercial + Anuncio Admin en Posición 0
               Expanded(
-                child: filtered.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No hay publicaciones en esta categoría',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: tokens.textSecondary,
-                          ),
+                child: isLoading && filtered.isEmpty && !hasPinnedBanner
+                    ? ListView.separated(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 4,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (_, __) => const SkeletonShimmerBox(
+                          height: 104,
+                          radius: 16,
                         ),
                       )
-                    : ListView.separated(
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final item = filtered[index];
-                          final accent = _categoryColor(item.category, tokens);
-                          return _DesktopNewsCard(
-                            item: item,
-                            accentColor: accent,
-                            tokens: tokens,
-                          );
-                        },
-                      ),
+                    : totalItems == 0
+                        ? Center(
+                            child: Text(
+                              'No hay publicaciones en esta categoría',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: tokens.textSecondary,
+                              ),
+                            ),
+                          )
+                        : Scrollbar(
+                            controller: _scrollController,
+                            thickness: 5,
+                            radius: const Radius.circular(999),
+                            child: ListView.separated(
+                              controller: _scrollController,
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.only(right: 6),
+                              itemCount: totalItems,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 10),
+                              itemBuilder: (context, index) {
+                                if (hasPinnedBanner && index == 0) {
+                                  return const GlobalBroadcastBanner();
+                                }
+                                final newsIndex =
+                                    hasPinnedBanner ? index - 1 : index;
+                                final item = filtered[newsIndex];
+                                final accent =
+                                    _categoryColor(item.category, tokens);
+                                return _DesktopNewsCard(
+                                  item: item,
+                                  accentColor: accent,
+                                  tokens: tokens,
+                                );
+                              },
+                            ),
+                          ),
               ),
               const SizedBox(height: 12),
 
@@ -276,9 +309,9 @@ class _DesktopNewsFeedState extends State<DesktopNewsFeed>
                   spacing: 8,
                   runSpacing: 4,
                   children: [
+                    _KeyShortcutBadge(keyText: 'Ctrl+K', label: 'Buscar', tokens: tokens),
                     _KeyShortcutBadge(keyText: 'T', label: 'Tema', tokens: tokens),
                     _KeyShortcutBadge(keyText: 'F', label: 'Pantalla', tokens: tokens),
-                    _KeyShortcutBadge(keyText: 'Espacio', label: 'Timer', tokens: tokens),
                     _KeyShortcutBadge(keyText: 'Esc', label: 'Volver', tokens: tokens),
                   ],
                 ),

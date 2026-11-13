@@ -103,7 +103,12 @@ class _CalendarioTabState extends State<CalendarioTab> {
 
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        104 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         // Encabezado + botón + Agendar
         Row(

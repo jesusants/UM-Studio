@@ -635,16 +635,20 @@ class _TopicAiMarkdownRenderer extends StatelessWidget {
             alignment: PlaceholderAlignment.middle,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: Math.tex(
-                clean,
-                mathStyle: MathStyle.text,
-                textStyle: TextStyle(
-                  fontSize: 12.5,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onErrorFallback: (_) => Text(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Math.tex(
                   clean,
-                  style: mono(fontSize: 11, color: accentColor),
+                  mathStyle: MathStyle.text,
+                  textStyle: TextStyle(
+                    fontSize: 12.5,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                  onErrorFallback: (_) => Text(
+                    clean,
+                    style: mono(fontSize: 11, color: accentColor),
+                  ),
                 ),
               ),
             ),

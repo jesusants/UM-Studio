@@ -5,6 +5,9 @@ import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../providers/app_scopes.dart';
 
+/// Botón táctil con micro-escala `0.97` y respuesta háptica configurable.
+typedef TactileScaleButton = TapScale;
+
 /// Comportamiento táctil iOS Minimalist:
 /// Escalado elástico `scale(0.97)` de 140ms + `HapticFeedback.lightImpact()`.
 class TapScale extends StatefulWidget {
@@ -40,20 +43,25 @@ class _TapScaleState extends State<TapScale> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: widget.onTap != null ? (_) => _set(true) : null,
-      onTapUp: widget.onTap != null ? (_) => _set(false) : null,
-      onTapCancel: widget.onTap != null ? () => _set(false) : null,
-      onTap: widget.onTap != null ? _handleTap : null,
-      child: AnimatedScale(
-        scale: _pressed ? 0.97 : 1.0,
-        duration: AppConstants.tapScaleDuration,
-        curve: kIosSpring,
-        child: AnimatedOpacity(
-          opacity: _pressed ? 0.92 : 1.0,
+    return MouseRegion(
+      cursor: widget.onTap != null
+          ? SystemMouseCursors.click
+          : MouseCursor.defer,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: widget.onTap != null ? (_) => _set(true) : null,
+        onTapUp: widget.onTap != null ? (_) => _set(false) : null,
+        onTapCancel: widget.onTap != null ? () => _set(false) : null,
+        onTap: widget.onTap != null ? _handleTap : null,
+        child: AnimatedScale(
+          scale: _pressed ? 0.97 : 1.0,
           duration: AppConstants.tapScaleDuration,
-          child: widget.child,
+          curve: kIosSpring,
+          child: AnimatedOpacity(
+            opacity: _pressed ? 0.92 : 1.0,
+            duration: AppConstants.tapScaleDuration,
+            child: widget.child,
+          ),
         ),
       ),
     );
@@ -411,4 +419,118 @@ void showIosToast(BuildContext context, String message, {Color? accentColor}) {
         ),
       ),
     );
+}
+
+/// Esqueleto de carga (Shimmer) adaptado al modo OLED Dark y Crisp Light.
+class SkeletonShimmerBox extends StatefulWidget {
+  const SkeletonShimmerBox({
+    super.key,
+    this.width = double.infinity,
+    this.height = 16,
+    this.radius = 10,
+  });
+
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  State<SkeletonShimmerBox> createState() => _SkeletonShimmerBoxState();
+}
+
+class _SkeletonShimmerBoxState extends State<SkeletonShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1300),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final color = Color.lerp(
+            p.shimmerBase,
+            p.shimmerHighlight,
+            Curves.easeInOut.transform(_controller.value),
+          )!;
+          return Container(
+            width: widget.width,
+            height: widget.height,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(widget.radius),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Animación escalonada de entrada (fade + desplazamiento vertical sutil de 12px).
+class StaggeredEntranceItem extends StatefulWidget {
+  const StaggeredEntranceItem({
+    super.key,
+    required this.index,
+    required this.child,
+  });
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<StaggeredEntranceItem> createState() => _StaggeredEntranceItemState();
+}
+
+class _StaggeredEntranceItemState extends State<StaggeredEntranceItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 280),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    final delayMs = (widget.index.clamp(0, 8) * 32);
+    if (delayMs == 0) {
+      _ctrl.forward();
+    } else {
+      Future<void>.delayed(Duration(milliseconds: delayMs), () {
+        if (mounted) _ctrl.forward();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final curve = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
+    return FadeTransition(
+      opacity: curve,
+      child: AnimatedBuilder(
+        animation: curve,
+        builder: (_, child) => Transform.translate(
+          offset: Offset(0, 12.0 * (1.0 - curve.value)),
+          child: child,
+        ),
+        child: widget.child,
+      ),
+    );
+  }
 }

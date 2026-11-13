@@ -600,9 +600,24 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
     final isMagistral = widget.temaId.contains('_magistral_');
     final accent = isMagistral ? p.indigo : p.green;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () {
+          final focused = FocusManager.instance.primaryFocus?.context?.widget;
+          if (focused is! EditableText && canGoBack) {
+            _goToSlide(safeIndex - 1, total);
+          }
+        },
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () {
+          final focused = FocusManager.instance.primaryFocus?.context?.widget;
+          if (focused is! EditableText && canGoForward) {
+            _goToSlide(safeIndex + 1, total);
+          }
+        },
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         // Lienzo de la Diapositiva (Keynote Dark OLED / Light Mode)
         Container(
           height:
@@ -866,6 +881,7 @@ class _MinimalSlideViewerState extends State<MinimalSlideViewer> {
           ],
         ),
       ],
+    ),
     );
   }
 

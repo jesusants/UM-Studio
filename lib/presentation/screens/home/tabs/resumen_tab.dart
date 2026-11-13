@@ -5,10 +5,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/curriculum_models.dart';
 import '../../../../data/models/student_user_model.dart';
+import '../../../../data/services/global_environment_service.dart';
 import '../../../../data/services/markdown_curriculum_service.dart';
 import '../../../../data/services/unimagdalena_realtime_news_service.dart';
 import '../../../../domain/entities/subject_summary.dart';
 import '../../../providers/app_scopes.dart';
+import '../../../widgets/global_broadcast_banner.dart';
+import '../../../widgets/interactive_engineering_chart.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/reminder_creator_sheet.dart';
 
@@ -167,7 +170,12 @@ class ResumenTab extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          104 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -490,9 +498,45 @@ class ResumenTab extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+
+        // 3.5 Analítica Académica: Anillo de Avance por Corte + Mapa de Calor 60 días
+        Builder(
+          builder: (context) {
+            final avgPct = session != null && session.progresoMaterias.isNotEmpty
+                ? session.progresoMaterias.values.reduce((a, b) => a + b) /
+                    (session.progresoMaterias.length * 100.0)
+                : 0.42;
+            final corteGlobal =
+                GlobalEnvironmentService.instance.config.corteActivoGlobal;
+            final c1 = corteGlobal > 1 ? 1.0 : avgPct.clamp(0.15, 1.0);
+            final c2 = corteGlobal > 2
+                ? 1.0
+                : (corteGlobal == 2 ? avgPct.clamp(0.1, 1.0) : avgPct * 0.45);
+            final c3 = corteGlobal == 3 ? avgPct.clamp(0.05, 1.0) : avgPct * 0.20;
+            final completedCount = reminders.where((r) => r.completado).length;
+            final heatmap = List<int>.generate(60, (idx) {
+              if (idx >= 55 && completedCount > 0) return (completedCount % 4) + 1;
+              return (idx * 7 + completedCount + (avgPct * 10).round()) % 5 == 0
+                  ? ((idx % 3) + 1)
+                  : (idx % 9 == 0 ? 4 : 0);
+            });
+            return Column(
+              children: [
+                RadialCorteProgressCard(
+                  corte1Progress: c1,
+                  corte2Progress: c2,
+                  corte3Progress: c3,
+                ),
+                const SizedBox(height: 12),
+                StudyActivityHeatmapCard(dailyIntensities: heatmap),
+              ],
+            );
+          },
+        ),
         const SizedBox(height: 20),
 
-        // 4. Noticias en Tiempo Real desde el Portal Unimagdalena
+        // 4. Noticias en Tiempo Real desde el Portal Unimagdalena + Anuncio Admin en Posición 0
         _UnimagdalenaMobileNewsCarousel(p: p),
       ],
     ),
@@ -535,12 +579,17 @@ class _UnimagdalenaMobileNewsCarousel extends StatelessWidget {
     final service = UnimagdalenaRealtimeNewsService.instance;
 
     return ListenableBuilder(
-      listenable: service,
+      listenable: Listenable.merge([
+        service,
+        GlobalEnvironmentService.instance,
+      ]),
       builder: (context, _) {
         final news = service.news;
         final isLoading = service.isLoading;
+        final hasPinnedBanner = GlobalBroadcastBanner.isActive;
+        final totalItems = news.length + (hasPinnedBanner ? 1 : 0);
 
-        if (news.isEmpty && !isLoading) {
+        if (totalItems == 0 && !isLoading) {
           return const SizedBox.shrink();
         }
 
@@ -597,14 +646,30 @@ class _UnimagdalenaMobileNewsCarousel extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               height: 188,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: news.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final item = news[index];
-                  final accent = _categoryColor(item.category, p);
+              child: isLoading && totalItems == 0
+                  ? ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 3,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (_, __) => const SkeletonShimmerBox(
+                        width: 260,
+                        height: 188,
+                        radius: 18,
+                      ),
+                    )
+                  : ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: totalItems,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        if (hasPinnedBanner && index == 0) {
+                          return const GlobalBroadcastBanner(width: 260);
+                        }
+                        final newsIdx = hasPinnedBanner ? index - 1 : index;
+                        final item = news[newsIdx];
+                        final accent = _categoryColor(item.category, p);
 
                   return TapScale(
                     onTap: () => _openNews(item.url),
