@@ -5,87 +5,107 @@ import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 import 'ios_primitives.dart';
+import 'lab/painters_cuatrimestre_1_2.dart';
+import 'lab/painters_cuatrimestre_3_4.dart';
+import 'lab/subject_lab_registry.dart';
 
-/// Área de ingeniería soportada por el motor de gráficas interactivas.
+/// Enum legado conservado por compatibilidad con llamadas externas.
 enum EngineeringChartMode {
   acPhasor,
   calculusIntegral,
   thermoSolar,
 }
 
-extension EngineeringChartModeInfo on EngineeringChartMode {
-  String get shortLabel {
-    switch (this) {
-      case EngineeringChartMode.acPhasor:
-        return 'CA & Fasores';
-      case EngineeringChartMode.calculusIntegral:
-        return 'Cálculo / Tangente';
-      case EngineeringChartMode.thermoSolar:
-        return 'Energía / Termo';
-    }
+/// Abre el Laboratorio Gráfico Interactivo como modal móvil (height: 75%) sin overflows.
+Future<void> showSubjectLabBottomSheet({
+  required BuildContext context,
+  String asignaturaCodigo = '',
+  required String asignaturaNombre,
+  required String temaTitulo,
+  String explicitHint = '',
+}) async {
+  if (!SubjectLabRegistry.hasLabsForSubject(
+    codigo: asignaturaCodigo,
+    nombre: asignaturaNombre,
+  )) {
+    return;
   }
 
-  /// Determina automáticamente la gráfica más afín según YAML o nombre de materia/tema.
-  static EngineeringChartMode resolve({
-    required String asignaturaNombre,
-    required String temaTitulo,
-    String explicitHint = '',
-  }) {
-    final hint = explicitHint.toLowerCase().trim();
-    if (hint.contains('fasor') ||
-        hint.contains('ac') ||
-        hint.contains('ca') ||
-        hint.contains('circuito')) {
-      return EngineeringChartMode.acPhasor;
-    }
-    if (hint.contains('calculo') ||
-        hint.contains('integral') ||
-        hint.contains('derivada') ||
-        hint.contains('model')) {
-      return EngineeringChartMode.calculusIntegral;
-    }
-    if (hint.contains('solar') ||
-        hint.contains('termo') ||
-        hint.contains('transitorio') ||
-        hint.contains('energia')) {
-      return EngineeringChartMode.thermoSolar;
-    }
-
-    final text = '${asignaturaNombre.toLowerCase()} ${temaTitulo.toLowerCase()}';
-    if (text.contains('electric') ||
-        text.contains('circuito') ||
-        text.contains('fasor') ||
-        text.contains('potencia') ||
-        text.contains('electromag')) {
-      return EngineeringChartMode.acPhasor;
-    }
-    if (text.contains('cálculo') ||
-        text.contains('calculo') ||
-        text.contains('ecuaciones') ||
-        text.contains('álgebra') ||
-        text.contains('algebra') ||
-        text.contains('modelación') ||
-        text.contains('modelacion') ||
-        text.contains('integral') ||
-        text.contains('derivada')) {
-      return EngineeringChartMode.calculusIntegral;
-    }
-    return EngineeringChartMode.thermoSolar;
-  }
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) {
+      final p = ctx.palette;
+      final h = MediaQuery.sizeOf(ctx).height * 0.75;
+      return Container(
+        height: h,
+        decoration: BoxDecoration(
+          color: p.background,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: p.strongBorder),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                color: p.textSecondary.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
+                child: InteractiveEngineeringChart(
+                  asignaturaCodigo: asignaturaCodigo,
+                  asignaturaNombre: asignaturaNombre,
+                  temaTitulo: temaTitulo,
+                  explicitHint: explicitHint,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
-/// Motor de Gráficas Interactivas de Ingeniería en Flutter nativo (`CustomPainter`).
-/// Soporta retícula táctica/cursor (*crosshair*) con coordenadas `(x, y)` en vivo
-/// y sliders parametrizados a 60–120 FPS en Web, Desktop y Móvil.
+class _SliderDef {
+  const _SliderDef({
+    required this.label,
+    required this.min,
+    required this.max,
+    required this.value,
+    required this.unit,
+    required this.slot,
+  });
+
+  final String label;
+  final double min;
+  final double max;
+  final double value;
+  final String unit;
+  final int slot; // 0 -> paramA, 1 -> paramB, 2 -> paramC
+}
+
+/// Laboratorio Gráfico Contextual por Materia y Simulaciones Animadas en Tiempo Real (60 FPS).
 class InteractiveEngineeringChart extends StatefulWidget {
   const InteractiveEngineeringChart({
     super.key,
+    this.asignaturaCodigo = '',
     required this.asignaturaNombre,
     required this.temaTitulo,
     this.explicitHint = '',
     this.compact = false,
   });
 
+  final String asignaturaCodigo;
   final String asignaturaNombre;
   final String temaTitulo;
   final String explicitHint;
@@ -97,52 +117,327 @@ class InteractiveEngineeringChart extends StatefulWidget {
 }
 
 class _InteractiveEngineeringChartState
-    extends State<InteractiveEngineeringChart> {
-  late EngineeringChartMode _mode;
-  Offset? _pointerNormalized; // [0..1, 0..1] dentro del área de gráfica
+    extends State<InteractiveEngineeringChart>
+    with SingleTickerProviderStateMixin {
+  SubjectLabConfig? _labConfig;
+  late LabSimulatorDescriptor _activeSim;
 
-  // Parámetros CA & Fasores
-  double _vm = 120.0;
-  final double _im = 8.0;
-  double _freqHz = 60.0;
-  double _phaseDeg = 30.0;
+  late final AnimationController _animController;
+  Duration? _lastTickElapsed;
+  double _simTimeSec = 0.0;
+  bool _isPlaying = true;
+  double _speedMultiplier = 1.0;
 
-  // Parámetros Cálculo (Tangente + Integral)
-  int _calcFuncIndex = 0; // 0: cuadrática, 1: senoidal, 2: gaussiana
-  double _tangentX0 = 1.4;
-  double _integralB = 2.6;
-  double _calcZoom = 1.0;
+  double _paramA = 1.0;
+  double _paramB = 1.0;
+  double _paramC = 1.0;
+  int _subMode = 0;
+  Offset? _pointerNorm;
 
-  // Parámetros Termo / Solar / Transitorio
-  bool _thermoShowTransient = false;
-  double _irradiance = 1000.0; // W/m^2
-  double _cellTempC = 25.0; // °C
-  double _dampingZeta = 0.28;
+  final List<Offset> _customRegressionPoints = <Offset>[
+    const Offset(0.12, 0.20),
+    const Offset(0.25, 0.34),
+    const Offset(0.39, 0.37),
+    const Offset(0.54, 0.56),
+    const Offset(0.68, 0.65),
+    const Offset(0.83, 0.80),
+  ];
+
+  static const List<LabSimulatorDescriptor> _fallbackGeneralSims = [
+    LabSimulatorDescriptor(
+      id: LabSimId.fisicaMasaResorte,
+      shortTitle: 'Masa-Resorte y Energía',
+      fullTitle: 'Sistema Masa-Resorte y Conservación de la Energía',
+      formulaBadge: 'E_m = ½mv² + ½kx² + E_dis',
+      icon: Icons.compress_rounded,
+      keywords: ['energia', 'resorte'],
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _mode = EngineeringChartModeInfo.resolve(
-      asignaturaNombre: widget.asignaturaNombre,
+    _resolveSubjectAndTopic();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3600),
+    )..addListener(_onFrameTick);
+    _animController.repeat();
+  }
+
+  @override
+  void didUpdateWidget(covariant InteractiveEngineeringChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.asignaturaCodigo != widget.asignaturaCodigo ||
+        oldWidget.asignaturaNombre != widget.asignaturaNombre ||
+        oldWidget.temaTitulo != widget.temaTitulo ||
+        oldWidget.explicitHint != widget.explicitHint) {
+      _resolveSubjectAndTopic();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.removeListener(_onFrameTick);
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _onFrameTick() {
+    if (!_isPlaying || !mounted) return;
+    final elapsed = _animController.lastElapsedDuration;
+    if (elapsed == null) return;
+    final prev = _lastTickElapsed;
+    _lastTickElapsed = elapsed;
+    if (prev == null) return;
+
+    final dtMicros = (elapsed - prev).inMicroseconds;
+    if (dtMicros <= 0) return;
+    final dtSec = (dtMicros / 1e6).clamp(0.0, 0.1);
+    setState(() {
+      _simTimeSec += dtSec * _speedMultiplier;
+    });
+  }
+
+  void _resolveSubjectAndTopic() {
+    final resolved = SubjectLabRegistry.resolve(
+      codigo: widget.asignaturaCodigo,
+      nombre: widget.asignaturaNombre,
       temaTitulo: widget.temaTitulo,
       explicitHint: widget.explicitHint,
     );
+    _labConfig = resolved;
+    _activeSim = resolved?.initialSimulator ?? _fallbackGeneralSims.first;
+    _applyDefaultsForSimulator(_activeSim.id);
   }
 
-  void _updatePointer(Offset localPos, Size size) {
-    if (size.width <= 0 || size.height <= 0) return;
+  void _selectSimulator(LabSimulatorDescriptor sim) {
+    HapticFeedback.selectionClick();
     setState(() {
-      _pointerNormalized = Offset(
-        (localPos.dx / size.width).clamp(0.0, 1.0),
-        (localPos.dy / size.height).clamp(0.0, 1.0),
+      _activeSim = sim;
+      _simTimeSec = 0.0;
+      _lastTickElapsed = null;
+      _pointerNorm = null;
+      _applyDefaultsForSimulator(sim.id);
+    });
+  }
+
+  void _togglePlayPause() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isPlaying = !_isPlaying;
+      _lastTickElapsed = null;
+      if (_isPlaying) {
+        _animController.repeat();
+      } else {
+        _animController.stop();
+      }
+    });
+  }
+
+  void _resetSimulation() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _simTimeSec = 0.0;
+      _lastTickElapsed = null;
+      _applyDefaultsForSimulator(_activeSim.id);
+      if (!_isPlaying) {
+        _isPlaying = true;
+        _animController.repeat();
+      }
+    });
+  }
+
+  void _applyDefaultsForSimulator(LabSimId id) {
+    _subMode = 0;
+    switch (id) {
+      case LabSimId.calcDerivadaTangente:
+        _paramA = 0.0;
+        _paramB = 1.3;
+        _paramC = 1.0;
+        break;
+      case LabSimId.calcLimites:
+        _paramA = 0.2;
+        _paramB = 1.8;
+        _paramC = 1.0;
+        break;
+      case LabSimId.algebraTransformaciones2D:
+        _paramA = 1.4;
+        _paramB = 0.6;
+        _paramC = 0.3;
+        break;
+      case LabSimId.progOrdenamiento:
+        _paramA = 12.0;
+        _paramB = 1.2;
+        _paramC = 1.0;
+        break;
+      case LabSimId.progRegresionLineal:
+        _paramA = 0.55;
+        _paramB = 1.0;
+        _paramC = 1.0;
+        break;
+      case LabSimId.introFlujoEnergetico:
+        _paramA = 500.0;
+        _paramB = 68.0;
+        _paramC = 1.0;
+        break;
+      case LabSimId.fisicaMasaResorte:
+        _paramA = 2.0;
+        _paramB = 80.0;
+        _paramC = 0.08;
+        break;
+      case LabSimId.fisicaTiroParabolico:
+        _paramA = 45.0;
+        _paramB = 28.0;
+        _paramC = 9.8;
+        break;
+      case LabSimId.fisicaPlanoInclinadoDcl:
+        _paramA = 30.0;
+        _paramB = 0.20;
+        _paramC = 4.0;
+        break;
+      case LabSimId.fisicaColisiones1D:
+        _paramA = 4.0;
+        _paramB = 2.5;
+        _paramC = 0.90;
+        break;
+      case LabSimId.integralRiemann:
+        _paramA = 24.0;
+        _paramB = 2.6;
+        _paramC = 1.0;
+        break;
+      case LabSimId.integralSolidoRevolucion:
+        _paramA = 2.5;
+        _paramB = 14.0;
+        _paramC = 1.0;
+        break;
+      case LabSimId.quimicaGasesIdeales:
+        _paramA = 350.0;
+        _paramB = 5.0;
+        _paramC = 1.5;
+        break;
+      case LabSimId.elec1CircuitoDc:
+        _paramA = 24.0;
+        _paramB = 20.0;
+        _paramC = 30.0;
+        break;
+      case LabSimId.ondasViajerasArmonicos:
+        _paramA = 3.0;
+        _paramB = 0.75;
+        _paramC = 1.0;
+        break;
+      case LabSimId.ondasPenduloFase:
+        _paramA = 1.4;
+        _paramB = 35.0;
+        _paramC = 1.0;
+        break;
+      case LabSimId.modelacionOsciladorAmortiguado:
+        _paramA = 0.28;
+        _paramB = 2.5;
+        _paramC = 1.0;
+        break;
+      case LabSimId.elec2FasoresCa:
+        _paramA = 120.0;
+        _paramB = 30.0;
+        _paramC = 60.0;
+        break;
+      case LabSimId.elec2TransitorioRcRl:
+        _paramA = 1.0;
+        _paramB = 24.0;
+        _paramC = 1.0;
+        break;
+      case LabSimId.disenoProyeccion3D:
+        _paramA = 15.0;
+        _paramB = 25.0;
+        _paramC = 0.0;
+        break;
+      case LabSimId.emLeyFaraday:
+        _paramA = 6.0;
+        _paramB = 1.2;
+        _paramC = 1.0;
+        break;
+      case LabSimId.termoCicloPvPiston:
+        _paramA = 750.0;
+        _paramB = 6.0;
+        _paramC = 1.0;
+        break;
+      case LabSimId.probTableroGalton:
+        _paramA = 8.0;
+        _paramB = 0.50;
+        _paramC = 1.0;
+        break;
+      case LabSimId.hidraulicaVenturiBernoulli:
+        _paramA = 0.55;
+        _paramB = 2.8;
+        _paramC = 1.0;
+        break;
+    }
+  }
+
+  LabSimParams get _currentParams => LabSimParams(
+        timeSec: _simTimeSec,
+        paramA: _paramA,
+        paramB: _paramB,
+        paramC: _paramC,
+        subMode: _subMode,
+        customPoints: _customRegressionPoints,
+        pointerNorm: _pointerNorm,
       );
+
+  bool get _isCuatrimestre1Or2 {
+    switch (_activeSim.id) {
+      case LabSimId.calcDerivadaTangente:
+      case LabSimId.calcLimites:
+      case LabSimId.algebraTransformaciones2D:
+      case LabSimId.progOrdenamiento:
+      case LabSimId.progRegresionLineal:
+      case LabSimId.introFlujoEnergetico:
+      case LabSimId.fisicaMasaResorte:
+      case LabSimId.fisicaTiroParabolico:
+      case LabSimId.fisicaPlanoInclinadoDcl:
+      case LabSimId.fisicaColisiones1D:
+      case LabSimId.integralRiemann:
+      case LabSimId.integralSolidoRevolucion:
+      case LabSimId.quimicaGasesIdeales:
+      case LabSimId.elec1CircuitoDc:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  void _handleCanvasTap(Offset localPos, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+    final nx = (localPos.dx / size.width).clamp(0.05, 0.95);
+    final ny = (1.0 - (localPos.dy / size.height)).clamp(0.05, 0.95);
+    setState(() {
+      _pointerNorm = Offset(nx, 1.0 - ny);
+      if (_activeSim.id == LabSimId.progRegresionLineal) {
+        if (_customRegressionPoints.length >= 16) {
+          _customRegressionPoints.removeAt(0);
+        }
+        _customRegressionPoints.add(Offset(nx, ny));
+        _simTimeSec = 0.1;
+      } else if (_activeSim.id == LabSimId.elec2TransitorioRcRl) {
+        _subMode = (_subMode + 1) % 2;
+        _simTimeSec = 0.0;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!SubjectLabRegistry.hasLabsForSubject(
+      codigo: widget.asignaturaCodigo,
+      nombre: widget.asignaturaNombre,
+    )) {
+      return const SizedBox.shrink();
+    }
+
     final p = context.palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sims = _labConfig?.simulators ?? _fallbackGeneralSims;
+    final subjectTitle = _labConfig?.subjectName ?? widget.asignaturaNombre;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -152,35 +447,41 @@ class _InteractiveEngineeringChartState
         border: Border.all(color: p.strongBorder),
       ),
       child: Padding(
-        padding: EdgeInsets.all(widget.compact ? 12 : 16),
+        padding: EdgeInsets.all(widget.compact ? 11 : 15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildHeader(p),
+            _buildHeader(p, subjectTitle),
+            if (sims.length > 1) ...[
+              const SizedBox(height: 10),
+              _buildSubjectSimulatorChips(p, sims),
+            ],
             const SizedBox(height: 10),
-            _buildModePills(p),
-            const SizedBox(height: 12),
-            _buildChartCanvas(p, isDark),
+            _buildUniversalMotionBar(p),
             const SizedBox(height: 10),
-            _buildControlsAndMetrics(p),
+            _buildAnimatedCanvas(p, isDark),
+            const SizedBox(height: 10),
+            _buildFormulaAndSubModeRow(p),
+            const SizedBox(height: 8),
+            _buildParameterSliders(p),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(AppPalette p) {
+  Widget _buildHeader(AppPalette p, String subjectTitle) {
     return Row(
       children: [
         Container(
-          width: 28,
-          height: 28,
+          width: 30,
+          height: 30,
           decoration: BoxDecoration(
             color: p.indigo.o(0.14),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(9),
             border: Border.all(color: p.indigo.o(0.35)),
           ),
-          child: Icon(Icons.insights_rounded, size: 16, color: p.indigo),
+          child: Icon(_activeSim.icon, size: 16, color: p.indigo),
         ),
         const SizedBox(width: 9),
         Expanded(
@@ -188,23 +489,24 @@ class _InteractiveEngineeringChartState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'LABORATORIO GRÁFICO INTERACTIVO',
+                'LABORATORIO GRÁFICO INTERACTIVO • ${subjectTitle.toUpperCase()}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: mono(
-                  fontSize: 9.5,
+                  fontSize: 9.2,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 0.9,
+                  letterSpacing: 0.7,
                   color: p.indigo,
                 ),
               ),
+              const SizedBox(height: 1),
               Text(
-                widget.temaTitulo,
+                _activeSim.fullTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: p.textPrimary,
                 ),
               ),
@@ -215,34 +517,53 @@ class _InteractiveEngineeringChartState
     );
   }
 
-  Widget _buildModePills(AppPalette p) {
+  Widget _buildSubjectSimulatorChips(
+    AppPalette p,
+    List<LabSimulatorDescriptor> sims,
+  ) {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
       children: [
-        for (final mode in EngineeringChartMode.values)
+        for (final sim in sims)
           TapScale(
-            onTap: () => setState(() {
-              _mode = mode;
-              _pointerNormalized = null;
-            }),
+            onTap: () => _selectSimulator(sim),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
+              duration: const Duration(milliseconds: 160),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: _mode == mode ? p.indigo.o(0.18) : p.elevated,
+                color: _activeSim.id == sim.id ? p.indigo.o(0.18) : p.elevated,
                 borderRadius: BorderRadius.circular(9),
                 border: Border.all(
-                  color: _mode == mode ? p.indigo : p.cardBorder,
+                  color: _activeSim.id == sim.id ? p.indigo : p.cardBorder,
                 ),
               ),
-              child: Text(
-                mode.shortLabel,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: _mode == mode ? FontWeight.w700 : FontWeight.w500,
-                  color: _mode == mode ? p.indigo : p.textSecondary,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    sim.icon,
+                    size: 13,
+                    color: _activeSim.id == sim.id ? p.indigo : p.textSecondary,
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      sim.shortTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: _activeSim.id == sim.id
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: _activeSim.id == sim.id
+                            ? p.indigo
+                            : p.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -250,796 +571,821 @@ class _InteractiveEngineeringChartState
     );
   }
 
-  Widget _buildChartCanvas(AppPalette p, bool isDark) {
-    final chartHeight = widget.compact ? 205.0 : 235.0;
-    final readout = _computePointerReadout();
+  Widget _buildUniversalMotionBar(AppPalette p) {
+    final telemetry =
+        LabTelemetryBuilder.buildReadout(_activeSim.id, _currentParams);
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        height: chartHeight,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0A0B0E) : const Color(0xFFF8F9FC),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: p.cardBorder),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final canvasSize = Size(constraints.maxWidth, chartHeight);
-            return MouseRegion(
-              cursor: SystemMouseCursors.precise,
-              onHover: (e) => _updatePointer(e.localPosition, canvasSize),
-              onExit: (_) => setState(() => _pointerNormalized = null),
-              child: GestureDetector(
-                onTapDown: (d) => _updatePointer(d.localPosition, canvasSize),
-                onPanUpdate: (d) => _updatePointer(d.localPosition, canvasSize),
-                onPanEnd: (_) {},
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: RepaintBoundary(
-                        child: CustomPaint(
-                          painter: _EngineeringPlotPainter(
-                            mode: _mode,
-                            pointerNormalized: _pointerNormalized,
-                            palette: p,
-                            isDark: isDark,
-                            vm: _vm,
-                            im: _im,
-                            freqHz: _freqHz,
-                            phaseDeg: _phaseDeg,
-                            calcFuncIndex: _calcFuncIndex,
-                            tangentX0: _tangentX0,
-                            integralB: _integralB,
-                            calcZoom: _calcZoom,
-                            thermoShowTransient: _thermoShowTransient,
-                            irradiance: _irradiance,
-                            cellTempC: _cellTempC,
-                            dampingZeta: _dampingZeta,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: p.glass,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: p.cardBorder),
-                        ),
-                        child: Text(
-                          readout,
-                          style: mono(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w600,
-                            color: p.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  String _computePointerReadout() {
-    switch (_mode) {
-      case EngineeringChartMode.acPhasor:
-        final tMs = (_pointerNormalized?.dx ?? 0.25) * 33.3;
-        final w = 2 * math.pi * _freqHz;
-        final vVal = _vm * math.sin(w * (tMs / 1000.0));
-        final phaseRad = _phaseDeg * math.pi / 180.0;
-        final pf = math.cos(phaseRad);
-        return 't=${tMs.toStringAsFixed(1)} ms • v(t)=${vVal.toStringAsFixed(1)} V • FP=${pf.toStringAsFixed(2)}';
-      case EngineeringChartMode.calculusIntegral:
-        final xMin = -0.5 / _calcZoom;
-        final xMax = 3.5 / _calcZoom;
-        final x = xMin + (_pointerNormalized?.dx ?? 0.5) * (xMax - xMin);
-        final y = _evalCalc(_calcFuncIndex, x);
-        final integral = _integrateCalc(_calcFuncIndex, 0.0, _integralB);
-        return '(${x.toStringAsFixed(2)}, ${y.toStringAsFixed(2)}) • ∫₀ᵇf(x)dx = ${integral.toStringAsFixed(2)}';
-      case EngineeringChartMode.thermoSolar:
-        if (_thermoShowTransient) {
-          final t = (_pointerNormalized?.dx ?? 0.4) * 10.0;
-          final y = _evalTransient(t, _dampingZeta);
-          return 't=${t.toStringAsFixed(2)} s • y(t)=${y.toStringAsFixed(3)} • ζ=${_dampingZeta.toStringAsFixed(2)}';
-        } else {
-          final voc = (38.0 - 0.12 * (_cellTempC - 25.0)).clamp(20.0, 45.0);
-          final v = (_pointerNormalized?.dx ?? 0.78) * voc;
-          final iVal = _evalSolarCurrent(v, _irradiance, _cellTempC);
-          final pVal = v * iVal;
-          return 'V=${v.toStringAsFixed(1)} V • I=${iVal.toStringAsFixed(2)} A • P=${pVal.toStringAsFixed(1)} W';
-        }
-    }
-  }
-
-  Widget _buildControlsAndMetrics(AppPalette p) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
         color: p.elevated,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(11),
         border: Border.all(color: p.cardBorder),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_mode == EngineeringChartMode.acPhasor) ...[
-            _ChartSlider(
-              label: 'Vₘ (Voltaje)',
-              valueLabel: '${_vm.toStringAsFixed(0)} V',
-              value: _vm,
-              min: 20,
-              max: 220,
-              accent: p.green,
-              palette: p,
-              onChanged: (v) => setState(() => _vm = v),
-            ),
-            _ChartSlider(
-              label: 'Desfase φ',
-              valueLabel: '${_phaseDeg.toStringAsFixed(0)}°',
-              value: _phaseDeg,
-              min: -85,
-              max: 85,
-              accent: p.indigo,
-              palette: p,
-              onChanged: (v) => setState(() => _phaseDeg = v),
-            ),
-            _ChartSlider(
-              label: 'Frecuencia f',
-              valueLabel: '${_freqHz.toStringAsFixed(0)} Hz',
-              value: _freqHz,
-              min: 20,
-              max: 120,
-              accent: p.orange,
-              palette: p,
-              onChanged: (v) => setState(() => _freqHz = v),
-            ),
-          ] else if (_mode == EngineeringChartMode.calculusIntegral) ...[
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final entry in const [
-                  (0, '0.25x² + 0.5'),
-                  (1, 'sin(x) + 1.5'),
-                  (2, '2.5·e^(-0.3x²)'),
-                ])
-                  TapScale(
-                    onTap: () => setState(() => _calcFuncIndex = entry.$1),
+          Row(
+            children: [
+              // Play / Pause [ ▶ / ⏸ ]
+              TapScale(
+                onTap: _togglePlayPause,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: _isPlaying ? p.green.o(0.18) : p.indigo.o(0.18),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _isPlaying ? p.green : p.indigo,
+                    ),
+                  ),
+                  child: Icon(
+                    _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    size: 16,
+                    color: _isPlaying ? p.green : p.indigo,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              // Reset [ ↺ ]
+              TapScale(
+                onTap: _resetSimulation,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: p.card,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: p.cardBorder),
+                  ),
+                  child: Icon(
+                    Icons.restart_alt_rounded,
+                    size: 15,
+                    color: p.textSecondary,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              // Speed Selector [ 0.5x | 1.0x | 2.0x ]
+              for (final spd in const [0.5, 1.0, 2.0]) ...[
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: TapScale(
+                    onTap: () => setState(() => _speedMultiplier = spd),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 7,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: _calcFuncIndex == entry.$1
-                            ? p.indigo.o(0.18)
+                        color: _speedMultiplier == spd
+                            ? p.indigo.o(0.20)
                             : p.card,
                         borderRadius: BorderRadius.circular(7),
                         border: Border.all(
-                          color: _calcFuncIndex == entry.$1
+                          color: _speedMultiplier == spd
                               ? p.indigo
                               : p.cardBorder,
                         ),
                       ),
                       child: Text(
-                        entry.$2,
+                        '${spd}x',
                         style: mono(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: _calcFuncIndex == entry.$1
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          color: _speedMultiplier == spd
                               ? p.indigo
                               : p.textSecondary,
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            _ChartSlider(
-              label: 'Tangente x₀',
-              valueLabel: _tangentX0.toStringAsFixed(2),
-              value: _tangentX0,
-              min: 0.0,
-              max: 3.0,
-              accent: p.orange,
-              palette: p,
-              onChanged: (v) => setState(() => _tangentX0 = v),
-            ),
-            _ChartSlider(
-              label: 'Límite ∫₀ᵇ b',
-              valueLabel: _integralB.toStringAsFixed(2),
-              value: _integralB,
-              min: 0.4,
-              max: 3.2,
-              accent: p.green,
-              palette: p,
-              onChanged: (v) => setState(() => _integralB = v),
-            ),
-            _ChartSlider(
-              label: 'Zoom',
-              valueLabel: '${_calcZoom.toStringAsFixed(1)}×',
-              value: _calcZoom,
-              min: 0.6,
-              max: 1.8,
-              accent: p.indigo,
-              palette: p,
-              onChanged: (v) => setState(() => _calcZoom = v),
-            ),
-          ] else ...[
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                TapScale(
-                  onTap: () => setState(() => _thermoShowTransient = false),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: !_thermoShowTransient ? p.green.o(0.18) : p.card,
-                      borderRadius: BorderRadius.circular(7),
-                      border: Border.all(
-                        color: !_thermoShowTransient ? p.green : p.cardBorder,
-                      ),
-                    ),
-                    child: Text(
-                      'Panel Solar I-V / P-V',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color:
-                            !_thermoShowTransient ? p.green : p.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-                TapScale(
-                  onTap: () => setState(() => _thermoShowTransient = true),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _thermoShowTransient ? p.orange.o(0.18) : p.card,
-                      borderRadius: BorderRadius.circular(7),
-                      border: Border.all(
-                        color: _thermoShowTransient ? p.orange : p.cardBorder,
-                      ),
-                    ),
-                    child: Text(
-                      'Transitorio 2° Orden',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color:
-                            _thermoShowTransient ? p.orange : p.textSecondary,
-                      ),
-                    ),
-                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: 6),
-            if (!_thermoShowTransient) ...[
-              _ChartSlider(
-                label: 'Irradiancia G',
-                valueLabel: '${_irradiance.toStringAsFixed(0)} W/m²',
-                value: _irradiance,
-                min: 200,
-                max: 1100,
-                accent: p.green,
-                palette: p,
-                onChanged: (v) => setState(() => _irradiance = v),
-              ),
-              _ChartSlider(
-                label: 'Temp. Celda T',
-                valueLabel: '${_cellTempC.toStringAsFixed(0)} °C',
-                value: _cellTempC,
-                min: 15,
-                max: 65,
-                accent: p.orange,
-                palette: p,
-                onChanged: (v) => setState(() => _cellTempC = v),
-              ),
-            ] else ...[
-              _ChartSlider(
-                label: 'Amortiguamiento ζ',
-                valueLabel: _dampingZeta.toStringAsFixed(2),
-                value: _dampingZeta,
-                min: 0.08,
-                max: 1.40,
-                accent: p.orange,
-                palette: p,
-                onChanged: (v) => setState(() => _dampingZeta = v),
-              ),
             ],
-          ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            telemetry,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: mono(
+              fontSize: 10.2,
+              fontWeight: FontWeight.w600,
+              color: p.green,
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-double _evalCalc(int fnIndex, double x) {
-  switch (fnIndex) {
-    case 1:
-      return math.sin(x * 1.4) + 1.5;
-    case 2:
-      return 2.5 * math.exp(-0.32 * x * x);
-    case 0:
-    default:
-      return 0.25 * x * x + 0.5;
+  Widget _buildAnimatedCanvas(AppPalette p, bool isDark) {
+    final canvasHeight = widget.compact ? 196.0 : 228.0;
+    return RepaintBoundary(
+      child: LayoutBuilder(
+        builder: (ctx, constraints) {
+          final size = Size(constraints.maxWidth, canvasHeight);
+          return GestureDetector(
+            onTapDown: (d) => _handleCanvasTap(d.localPosition, size),
+            child: Container(
+              height: canvasHeight,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF07090E)
+                    : const Color(0xFFF6F8FC),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: p.cardBorder),
+              ),
+              child: CustomPaint(
+                size: size,
+                painter: _isCuatrimestre1Or2
+                    ? Cuatrimestre1And2LabPainter(
+                        simId: _activeSim.id,
+                        params: _currentParams,
+                        palette: p,
+                        isDark: isDark,
+                      )
+                    : Cuatrimestre3And4LabPainter(
+                        simId: _activeSim.id,
+                        params: _currentParams,
+                        palette: p,
+                        isDark: isDark,
+                      ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
-}
 
-double _evalCalcDerivative(int fnIndex, double x) {
-  const h = 1e-4;
-  return (_evalCalc(fnIndex, x + h) - _evalCalc(fnIndex, x - h)) / (2 * h);
-}
-
-double _integrateCalc(int fnIndex, double a, double b) {
-  const steps = 60;
-  final h = (b - a) / steps;
-  var sum = 0.0;
-  for (var i = 0; i < steps; i++) {
-    final x0 = a + i * h;
-    final x1 = x0 + h;
-    sum += 0.5 * (_evalCalc(fnIndex, x0) + _evalCalc(fnIndex, x1)) * h;
-  }
-  return sum;
-}
-
-double _evalSolarCurrent(double v, double irradiance, double tempC) {
-  final voc = (38.0 - 0.12 * (tempC - 25.0)).clamp(20.0, 45.0);
-  final isc = 9.2 * (irradiance / 1000.0);
-  if (v >= voc || v < 0) return 0.0;
-  final norm = (v / voc).clamp(0.0, 1.0);
-  return isc * (1.0 - math.pow(norm, 7.5).toDouble());
-}
-
-double _evalTransient(double t, double zeta) {
-  const wn = 2.2;
-  if (t <= 0) return 0.0;
-  if (zeta < 0.99) {
-    final wd = wn * math.sqrt(1.0 - zeta * zeta);
-    return 1.0 -
-        math.exp(-zeta * wn * t) *
-            (math.cos(wd * t) +
-                (zeta / math.sqrt(1.0 - zeta * zeta)) * math.sin(wd * t));
-  } else if ((zeta - 1.0).abs() <= 0.02) {
-    return 1.0 - math.exp(-wn * t) * (1.0 + wn * t);
-  } else {
-    final sq = math.sqrt(zeta * zeta - 1.0);
-    final s1 = wn * (-zeta + sq);
-    final s2 = wn * (-zeta - sq);
-    return 1.0 + (s2 * math.exp(s1 * t) - s1 * math.exp(s2 * t)) / (s1 - s2);
-  }
-}
-
-class _ChartSlider extends StatelessWidget {
-  const _ChartSlider({
-    required this.label,
-    required this.valueLabel,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.accent,
-    required this.palette,
-    required this.onChanged,
-  });
-
-  final String label;
-  final String valueLabel;
-  final double value;
-  final double min;
-  final double max;
-  final Color accent;
-  final AppPalette palette;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget _buildFormulaAndSubModeRow(AppPalette p) {
+    final subModes = _subModesFor(_activeSim.id);
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        SizedBox(
-          width: 102,
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 11, color: palette.textBody),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: p.indigo.o(0.10),
+            borderRadius: BorderRadius.circular(7),
           ),
-        ),
-        Expanded(
-          child: SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 3,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 11),
-              activeTrackColor: accent,
-              inactiveTrackColor: palette.cardBorder,
-              thumbColor: accent,
-            ),
-            child: Slider(
-              value: value.clamp(min, max),
-              min: min,
-              max: max,
-              onChanged: onChanged,
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 66,
           child: Text(
-            valueLabel,
-            textAlign: TextAlign.right,
+            _activeSim.formulaBadge,
             style: mono(
-              fontSize: 10.5,
+              fontSize: 9.8,
               fontWeight: FontWeight.w700,
-              color: palette.textPrimary,
+              color: p.indigo,
             ),
           ),
         ),
+        for (int i = 0; i < subModes.length; i++)
+          TapScale(
+            onTap: () => setState(() {
+              _subMode = i;
+              if (_activeSim.id == LabSimId.elec2TransitorioRcRl) {
+                _simTimeSec = 0.0;
+              }
+            }),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: _subMode == i ? p.green.o(0.18) : p.elevated,
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(
+                  color: _subMode == i ? p.green : p.cardBorder,
+                ),
+              ),
+              child: Text(
+                subModes[i],
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: _subMode == i ? p.green : p.textSecondary,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  List<String> _subModesFor(LabSimId id) {
+    switch (id) {
+      case LabSimId.calcDerivadaTangente:
+        return const ['Polinómica', 'Senoidal', 'Exponencial'];
+      case LabSimId.calcLimites:
+        return const ['Hueco Puntual', 'Salto Lateral'];
+      case LabSimId.algebraTransformaciones2D:
+        return const ['det > 0', 'Reflexión'];
+      case LabSimId.progOrdenamiento:
+        return const ['Bubble Sort', 'QuickSort'];
+      case LabSimId.elec1CircuitoDc:
+        return const ['Serie', 'Paralelo'];
+      case LabSimId.ondasViajerasArmonicos:
+        return const ['Estacionaria', 'Viajera'];
+      case LabSimId.elec2TransitorioRcRl:
+        return const ['Carga ON', 'Descarga OFF'];
+      default:
+        return const [];
+    }
+  }
+
+  List<_SliderDef> _slidersFor(LabSimId id) {
+    switch (id) {
+      case LabSimId.calcDerivadaTangente:
+        return [
+          _SliderDef(
+            label: 'Tangente x₀',
+            min: -1.5,
+            max: 1.5,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Amplitud Oscilación',
+            min: 0.2,
+            max: 2.0,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.calcLimites:
+        return [
+          _SliderDef(
+            label: 'Punto objetivo a',
+            min: -1.2,
+            max: 1.2,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Zoom Vecindad (1/δ)',
+            min: 1.0,
+            max: 6.0,
+            value: _paramB,
+            unit: 'x',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.algebraTransformaciones2D:
+        return [
+          _SliderDef(
+            label: 'a (Escala X)',
+            min: -2.0,
+            max: 2.0,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'b (Cizalla X)',
+            min: -1.5,
+            max: 1.5,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'c (Cizalla Y)',
+            min: -1.5,
+            max: 1.5,
+            value: _paramC,
+            unit: '',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.progOrdenamiento:
+        return [
+          _SliderDef(
+            label: 'Elementos N',
+            min: 6,
+            max: 20,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Ritmo de Pasos',
+            min: 0.5,
+            max: 3.0,
+            value: _paramB,
+            unit: 'x',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.progRegresionLineal:
+        return [
+          _SliderDef(
+            label: 'Tasa Aprendizaje α',
+            min: 0.1,
+            max: 1.0,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+        ];
+      case LabSimId.introFlujoEnergetico:
+        return [
+          _SliderDef(
+            label: 'Entrada Primaria',
+            min: 100,
+            max: 1000,
+            value: _paramA,
+            unit: ' MW',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Eficiencia Planta η',
+            min: 20,
+            max: 95,
+            value: _paramB,
+            unit: '%',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.fisicaMasaResorte:
+        return [
+          _SliderDef(
+            label: 'Masa m',
+            min: 0.5,
+            max: 8.0,
+            value: _paramA,
+            unit: ' kg',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Constante Resorte k',
+            min: 20,
+            max: 180,
+            value: _paramB,
+            unit: ' N/m',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'Fricción μ_k',
+            min: 0.0,
+            max: 0.45,
+            value: _paramC,
+            unit: '',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.fisicaTiroParabolico:
+        return [
+          _SliderDef(
+            label: 'Ángulo Disparo θ',
+            min: 15,
+            max: 80,
+            value: _paramA,
+            unit: '°',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Velocidad Inicial v₀',
+            min: 10,
+            max: 50,
+            value: _paramB,
+            unit: ' m/s',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'Gravedad g',
+            min: 4.0,
+            max: 20.0,
+            value: _paramC,
+            unit: ' m/s²',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.fisicaPlanoInclinadoDcl:
+        return [
+          _SliderDef(
+            label: 'Inclinación θ',
+            min: 10,
+            max: 55,
+            value: _paramA,
+            unit: '°',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Fricción μ_k',
+            min: 0.0,
+            max: 0.75,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'Masa Bloque m',
+            min: 1.0,
+            max: 10.0,
+            value: _paramC,
+            unit: ' kg',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.fisicaColisiones1D:
+        return [
+          _SliderDef(
+            label: 'Masa m₁',
+            min: 1.0,
+            max: 10.0,
+            value: _paramA,
+            unit: ' kg',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Masa m₂',
+            min: 1.0,
+            max: 10.0,
+            value: _paramB,
+            unit: ' kg',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'Restitución e',
+            min: 0.0,
+            max: 1.0,
+            value: _paramC,
+            unit: '',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.integralRiemann:
+        return [
+          _SliderDef(
+            label: 'Rectángulos n',
+            min: 4,
+            max: 100,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Límite Superior b',
+            min: 0.8,
+            max: 3.0,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.integralSolidoRevolucion:
+        return [
+          _SliderDef(
+            label: 'Longitud Axial b',
+            min: 1.0,
+            max: 3.0,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Discos / Arandelas',
+            min: 6,
+            max: 24,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.quimicaGasesIdeales:
+        return [
+          _SliderDef(
+            label: 'Temperatura T',
+            min: 150,
+            max: 900,
+            value: _paramA,
+            unit: ' K',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Volumen Pistón V',
+            min: 1.5,
+            max: 10.0,
+            value: _paramB,
+            unit: ' L',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'Moles de Gas n',
+            min: 0.5,
+            max: 3.5,
+            value: _paramC,
+            unit: ' mol',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.elec1CircuitoDc:
+        return [
+          _SliderDef(
+            label: 'Fuente DC V',
+            min: 5,
+            max: 60,
+            value: _paramA,
+            unit: ' V',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Resistencia R₁',
+            min: 5,
+            max: 100,
+            value: _paramB,
+            unit: ' Ω',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'Resistencia R₂',
+            min: 5,
+            max: 100,
+            value: _paramC,
+            unit: ' Ω',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.ondasViajerasArmonicos:
+        return [
+          _SliderDef(
+            label: 'Modo Armónico n',
+            min: 1,
+            max: 6,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Amplitud A',
+            min: 0.2,
+            max: 1.0,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.ondasPenduloFase:
+        return [
+          _SliderDef(
+            label: 'Longitud Cuerda L',
+            min: 0.5,
+            max: 3.0,
+            value: _paramA,
+            unit: ' m',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Amplitud θ₀',
+            min: 10,
+            max: 60,
+            value: _paramB,
+            unit: '°',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.modelacionOsciladorAmortiguado:
+        return [
+          _SliderDef(
+            label: 'Amortiguamiento ζ',
+            min: 0.05,
+            max: 1.80,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Frecuencia Natural ω_n',
+            min: 1.0,
+            max: 5.0,
+            value: _paramB,
+            unit: ' rad/s',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.elec2FasoresCa:
+        return [
+          _SliderDef(
+            label: 'Vₘ (Voltaje)',
+            min: 40,
+            max: 220,
+            value: _paramA,
+            unit: ' V',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Ángulo Desfase φ',
+            min: -85,
+            max: 85,
+            value: _paramB,
+            unit: '°',
+            slot: 1,
+          ),
+          _SliderDef(
+            label: 'Frecuencia f',
+            min: 20,
+            max: 120,
+            value: _paramC,
+            unit: ' Hz',
+            slot: 2,
+          ),
+        ];
+      case LabSimId.elec2TransitorioRcRl:
+        return [
+          _SliderDef(
+            label: 'Constante τ = RC',
+            min: 0.3,
+            max: 2.8,
+            value: _paramA,
+            unit: ' s',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Voltaje Fuente V_s',
+            min: 5,
+            max: 50,
+            value: _paramB,
+            unit: ' V',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.disenoProyeccion3D:
+        return [
+          _SliderDef(
+            label: 'Inclinación Eje X',
+            min: -45,
+            max: 45,
+            value: _paramA,
+            unit: '°',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Ángulo Base Eje Y',
+            min: -90,
+            max: 90,
+            value: _paramB,
+            unit: '°',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.emLeyFaraday:
+        return [
+          _SliderDef(
+            label: 'Espiras Bobina N',
+            min: 2,
+            max: 12,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Velocidad Imán f',
+            min: 0.4,
+            max: 3.0,
+            value: _paramB,
+            unit: ' Hz',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.termoCicloPvPiston:
+        return [
+          _SliderDef(
+            label: 'Foco Caliente T_H',
+            min: 400,
+            max: 1200,
+            value: _paramA,
+            unit: ' K',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Relación Compresión r',
+            min: 2.0,
+            max: 10.0,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.probTableroGalton:
+        return [
+          _SliderDef(
+            label: 'Niveles Clavijas',
+            min: 5,
+            max: 10,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Sesgo Binomial p',
+            min: 0.25,
+            max: 0.75,
+            value: _paramB,
+            unit: '',
+            slot: 1,
+          ),
+        ];
+      case LabSimId.hidraulicaVenturiBernoulli:
+        return [
+          _SliderDef(
+            label: 'Relación Garganta D₂/D₁',
+            min: 0.38,
+            max: 0.85,
+            value: _paramA,
+            unit: '',
+            slot: 0,
+          ),
+          _SliderDef(
+            label: 'Velocidad Entrada v₁',
+            min: 1.0,
+            max: 6.0,
+            value: _paramB,
+            unit: ' m/s',
+            slot: 1,
+          ),
+        ];
+    }
+  }
+
+  Widget _buildParameterSliders(AppPalette p) {
+    final sliders = _slidersFor(_activeSim.id);
+    return Column(
+      children: [
+        for (final s in sliders)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 118,
+                  child: Text(
+                    s.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: p.textSecondary,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 3,
+                      thumbShape: const RoundSliderThumbShape(
+                        enabledThumbRadius: 6,
+                      ),
+                      overlayShape: const RoundSliderOverlayShape(
+                        overlayRadius: 12,
+                      ),
+                      activeTrackColor: p.indigo,
+                      thumbColor: p.indigo,
+                      inactiveTrackColor: p.cardBorder,
+                    ),
+                    child: Slider(
+                      value: s.value.clamp(s.min, s.max),
+                      min: s.min,
+                      max: s.max,
+                      onChanged: (v) {
+                        setState(() {
+                          if (s.slot == 0) _paramA = v;
+                          if (s.slot == 1) _paramB = v;
+                          if (s.slot == 2) _paramC = v;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 58,
+                  child: Text(
+                    '${s.value.toStringAsFixed(s.max >= 20 ? 0 : 2)}${s.unit}',
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: mono(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: p.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
 }
 
-class _EngineeringPlotPainter extends CustomPainter {
-  _EngineeringPlotPainter({
-    required this.mode,
-    required this.pointerNormalized,
-    required this.palette,
-    required this.isDark,
-    required this.vm,
-    required this.im,
-    required this.freqHz,
-    required this.phaseDeg,
-    required this.calcFuncIndex,
-    required this.tangentX0,
-    required this.integralB,
-    required this.calcZoom,
-    required this.thermoShowTransient,
-    required this.irradiance,
-    required this.cellTempC,
-    required this.dampingZeta,
-  });
-
-  final EngineeringChartMode mode;
-  final Offset? pointerNormalized;
-  final AppPalette palette;
-  final bool isDark;
-  final double vm;
-  final double im;
-  final double freqHz;
-  final double phaseDeg;
-  final int calcFuncIndex;
-  final double tangentX0;
-  final double integralB;
-  final double calcZoom;
-  final bool thermoShowTransient;
-  final double irradiance;
-  final double cellTempC;
-  final double dampingZeta;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    _paintGrid(canvas, size);
-
-    switch (mode) {
-      case EngineeringChartMode.acPhasor:
-        _paintAcAndPhasor(canvas, size);
-      case EngineeringChartMode.calculusIntegral:
-        _paintCalculus(canvas, size);
-      case EngineeringChartMode.thermoSolar:
-        if (thermoShowTransient) {
-          _paintTransient(canvas, size);
-        } else {
-          _paintSolarCurves(canvas, size);
-        }
-    }
-
-    if (pointerNormalized != null) {
-      final px = pointerNormalized!.dx * size.width;
-      final py = pointerNormalized!.dy * size.height;
-      final crossPaint = Paint()
-        ..color = palette.textSecondary.o(0.45)
-        ..strokeWidth = 1.0;
-      canvas.drawLine(Offset(px, 0), Offset(px, size.height), crossPaint);
-      canvas.drawLine(Offset(0, py), Offset(size.width, py), crossPaint);
-      canvas.drawCircle(Offset(px, py), 4, Paint()..color = palette.indigo);
-    }
-  }
-
-  void _paintGrid(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..color = palette.cardBorder.o(isDark ? 0.5 : 0.7)
-      ..strokeWidth = 0.8;
-    const cols = 8;
-    const rows = 5;
-    for (var i = 1; i < cols; i++) {
-      final x = size.width * (i / cols);
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (var j = 1; j < rows; j++) {
-      final y = size.height * (j / rows);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-  }
-
-  void _paintAcAndPhasor(Canvas canvas, Size size) {
-    final waveWidth = size.width * 0.66;
-    final midY = size.height * 0.54;
-    final maxAmpPx = size.height * 0.36;
-
-    // Eje cero horizontal
-    canvas.drawLine(
-      Offset(10, midY),
-      Offset(waveWidth - 8, midY),
-      Paint()..color = palette.strongBorder..strokeWidth = 1.2,
-    );
-
-    final w = 2 * math.pi * freqHz;
-    final phaseRad = phaseDeg * math.pi / 180.0;
-    final vPath = Path();
-    final iPath = Path();
-    const steps = 120;
-    for (var k = 0; k <= steps; k++) {
-      final u = k / steps;
-      final t = u * 0.0333; // ~33.3 ms ventana
-      final x = 10 + u * (waveWidth - 18);
-      final vy = midY - (vm / 220.0) * maxAmpPx * math.sin(w * t);
-      final iy = midY - (im / 25.0) * maxAmpPx * 0.85 * math.sin(w * t - phaseRad);
-      if (k == 0) {
-        vPath.moveTo(x, vy);
-        iPath.moveTo(x, iy);
-      } else {
-        vPath.lineTo(x, vy);
-        iPath.lineTo(x, iy);
-      }
-    }
-
-    canvas.drawPath(
-      vPath,
-      Paint()
-        ..color = palette.green
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2,
-    );
-    canvas.drawPath(
-      iPath,
-      Paint()
-        ..color = palette.indigo
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0,
-    );
-
-    // Diagrama fasorial complejo a la derecha
-    final phasorCenter = Offset(waveWidth + (size.width - waveWidth) * 0.5, midY);
-    final radius = math.min((size.width - waveWidth) * 0.38, size.height * 0.34);
-
-    canvas.drawCircle(
-      phasorCenter,
-      radius,
-      Paint()
-        ..color = palette.strongBorder
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0,
-    );
-    canvas.drawLine(
-      phasorCenter - Offset(radius, 0),
-      phasorCenter + Offset(radius, 0),
-      Paint()..color = palette.cardBorder,
-    );
-    canvas.drawLine(
-      phasorCenter - Offset(0, radius),
-      phasorCenter + Offset(0, radius),
-      Paint()..color = palette.cardBorder,
-    );
-
-    final vLen = radius * (vm / 220.0).clamp(0.35, 1.0);
-    final iLen = radius * 0.82;
-    final vTip = phasorCenter + Offset(vLen, 0);
-    final iTip = phasorCenter +
-        Offset(iLen * math.cos(phaseRad), iLen * math.sin(phaseRad));
-
-    _arrow(canvas, phasorCenter, vTip, palette.green);
-    _arrow(canvas, phasorCenter, iTip, palette.indigo);
-  }
-
-  void _paintCalculus(Canvas canvas, Size size) {
-    final xMin = -0.5 / calcZoom;
-    final xMax = 3.5 / calcZoom;
-    const yMin = -0.3;
-    const yMax = 3.6;
-
-    double toSx(double x) => 16 + ((x - xMin) / (xMax - xMin)) * (size.width - 32);
-    double toSy(double y) =>
-        size.height - 16 - ((y - yMin) / (yMax - yMin)) * (size.height - 44);
-
-    // Ejes X/Y
-    final y0 = toSy(0).clamp(12.0, size.height - 12);
-    final x0Px = toSx(0).clamp(12.0, size.width - 12);
-    final axisPaint = Paint()..color = palette.strongBorder..strokeWidth = 1.2;
-    canvas.drawLine(Offset(12, y0), Offset(size.width - 12, y0), axisPaint);
-    canvas.drawLine(Offset(x0Px, 24), Offset(x0Px, size.height - 12), axisPaint);
-
-    // Área bajo la curva [0, integralB]
-    final shadePath = Path()..moveTo(toSx(0), y0);
-    const areaSteps = 60;
-    for (var i = 0; i <= areaSteps; i++) {
-      final x = (integralB * i) / areaSteps;
-      shadePath.lineTo(toSx(x), toSy(_evalCalc(calcFuncIndex, x)));
-    }
-    shadePath
-      ..lineTo(toSx(integralB), y0)
-      ..close();
-    canvas.drawPath(shadePath, Paint()..color = palette.green.o(0.22));
-
-    // Curva principal f(x)
-    final curvePath = Path();
-    const curveSteps = 100;
-    for (var i = 0; i <= curveSteps; i++) {
-      final x = xMin + (xMax - xMin) * (i / curveSteps);
-      final sx = toSx(x);
-      final sy = toSy(_evalCalc(calcFuncIndex, x));
-      if (i == 0) {
-        curvePath.moveTo(sx, sy);
-      } else {
-        curvePath.lineTo(sx, sy);
-      }
-    }
-    canvas.drawPath(
-      curvePath,
-      Paint()
-        ..color = palette.indigo
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4,
-    );
-
-    // Recta tangente móvil en tangentX0
-    final f0 = _evalCalc(calcFuncIndex, tangentX0);
-    final slope = _evalCalcDerivative(calcFuncIndex, tangentX0);
-    const dxSpan = 0.85;
-    final t1 = Offset(toSx(tangentX0 - dxSpan), toSy(f0 - slope * dxSpan));
-    final t2 = Offset(toSx(tangentX0 + dxSpan), toSy(f0 + slope * dxSpan));
-    canvas.drawLine(
-      t1,
-      t2,
-      Paint()
-        ..color = palette.orange
-        ..strokeWidth = 2.0,
-    );
-    canvas.drawCircle(
-      Offset(toSx(tangentX0), toSy(f0)),
-      4.5,
-      Paint()..color = palette.orange,
-    );
-  }
-
-  void _paintSolarCurves(Canvas canvas, Size size) {
-    final voc = (38.0 - 0.12 * (cellTempC - 25.0)).clamp(20.0, 45.0);
-    const maxP = 340.0;
-    const maxI = 11.0;
-
-    double toSx(double v) => 16 + (v / 44.0) * (size.width - 32);
-    double toSyI(double i) => size.height - 16 - (i / maxI) * (size.height - 46);
-    double toSyP(double p) => size.height - 16 - (p / maxP) * (size.height - 46);
-
-    final iPath = Path();
-    final pPath = Path();
-    var mppV = 0.0;
-    var mppP = 0.0;
-    const steps = 90;
-    for (var k = 0; k <= steps; k++) {
-      final v = (voc * k) / steps;
-      final cur = _evalSolarCurrent(v, irradiance, cellTempC);
-      final pow = v * cur;
-      if (pow > mppP) {
-        mppP = pow;
-        mppV = v;
-      }
-      final sx = toSx(v);
-      final syI = toSyI(cur);
-      final syP = toSyP(pow);
-      if (k == 0) {
-        iPath.moveTo(sx, syI);
-        pPath.moveTo(sx, syP);
-      } else {
-        iPath.lineTo(sx, syI);
-        pPath.lineTo(sx, syP);
-      }
-    }
-
-    canvas.drawPath(
-      iPath,
-      Paint()
-        ..color = palette.indigo
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2,
-    );
-    canvas.drawPath(
-      pPath,
-      Paint()
-        ..color = palette.green
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4,
-    );
-
-    final mppOffset = Offset(toSx(mppV), toSyP(mppP));
-    canvas.drawCircle(mppOffset, 5, Paint()..color = palette.orange);
-  }
-
-  void _paintTransient(Canvas canvas, Size size) {
-    const tMax = 10.0;
-    double toSx(double t) => 16 + (t / tMax) * (size.width - 32);
-    double toSy(double y) => size.height - 16 - (y / 1.8) * (size.height - 44);
-
-    // Línea de referencia unitaria (y = 1.0)
-    final yRef = toSy(1.0);
-    canvas.drawLine(
-      Offset(16, yRef),
-      Offset(size.width - 16, yRef),
-      Paint()..color = palette.green.o(0.55)..strokeWidth = 1.2,
-    );
-
-    final path = Path();
-    const steps = 120;
-    for (var k = 0; k <= steps; k++) {
-      final t = (tMax * k) / steps;
-      final sx = toSx(t);
-      final sy = toSy(_evalTransient(t, dampingZeta));
-      if (k == 0) {
-        path.moveTo(sx, sy);
-      } else {
-        path.lineTo(sx, sy);
-      }
-    }
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = palette.orange
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4,
-    );
-  }
-
-  void _arrow(Canvas canvas, Offset a, Offset b, Color c) {
-    canvas.drawLine(a, b, Paint()..color = c..strokeWidth = 2.2);
-    canvas.drawCircle(b, 3.2, Paint()..color = c);
-  }
-
-  @override
-  bool shouldRepaint(covariant _EngineeringPlotPainter oldDelegate) {
-    return oldDelegate.mode != mode ||
-        oldDelegate.pointerNormalized != pointerNormalized ||
-        oldDelegate.isDark != isDark ||
-        oldDelegate.vm != vm ||
-        oldDelegate.im != im ||
-        oldDelegate.freqHz != freqHz ||
-        oldDelegate.phaseDeg != phaseDeg ||
-        oldDelegate.calcFuncIndex != calcFuncIndex ||
-        oldDelegate.tangentX0 != tangentX0 ||
-        oldDelegate.integralB != integralB ||
-        oldDelegate.calcZoom != calcZoom ||
-        oldDelegate.thermoShowTransient != thermoShowTransient ||
-        oldDelegate.irradiance != irradiance ||
-        oldDelegate.cellTempC != cellTempC ||
-        oldDelegate.dampingZeta != dampingZeta;
-  }
-}
-
-/// Gráfica Radial interactiva de progreso acumulado por Corte (30% / 30% / 40%).
-class RadialCorteProgressCard extends StatefulWidget {
+/// Tarjeta Radial de Avance por Corte Académico (1°, 2° y 3° Corte).
+class RadialCorteProgressCard extends StatelessWidget {
   const RadialCorteProgressCard({
     super.key,
     required this.corte1Progress,
@@ -1047,71 +1393,47 @@ class RadialCorteProgressCard extends StatefulWidget {
     required this.corte3Progress,
   });
 
-  final double corte1Progress; // 0..1
-  final double corte2Progress; // 0..1
-  final double corte3Progress; // 0..1
-
-  @override
-  State<RadialCorteProgressCard> createState() =>
-      _RadialCorteProgressCardState();
-}
-
-class _RadialCorteProgressCardState extends State<RadialCorteProgressCard> {
-  int? _hoveredIndex;
+  final double corte1Progress;
+  final double corte2Progress;
+  final double corte3Progress;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final segments = [
-      ('Corte 1 • 30%', widget.corte1Progress, p.green),
-      ('Corte 2 • 30%', widget.corte2Progress, p.indigo),
-      ('Corte 3 • 40%', widget.corte3Progress, p.orange),
-    ];
-    final overall = (widget.corte1Progress * 0.30 +
-            widget.corte2Progress * 0.30 +
-            widget.corte3Progress * 0.40) *
-        100;
-
-    return IosCard(
-      radius: 18,
-      padding: const EdgeInsets.all(14),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: p.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: p.cardBorder),
+      ),
       child: Row(
         children: [
-          RepaintBoundary(
-            child: SizedBox(
-              width: 92,
-              height: 92,
+          SizedBox(
+            width: 84,
+            height: 84,
+            child: RepaintBoundary(
               child: CustomPaint(
-                painter: _RadialCortePainter(
-                  c1: widget.corte1Progress,
-                  c2: widget.corte2Progress,
-                  c3: widget.corte3Progress,
-                  hoveredIndex: _hoveredIndex,
+                painter: _ConcentricRingsPainter(
+                  c1: corte1Progress.clamp(0.0, 1.0),
+                  c2: corte2Progress.clamp(0.0, 1.0),
+                  c3: corte3Progress.clamp(0.0, 1.0),
                   palette: p,
                 ),
                 child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${overall.round()}%',
-                        style: mono(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: p.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'Global',
-                        style: TextStyle(fontSize: 9.5, color: p.textSecondary),
-                      ),
-                    ],
+                  child: Text(
+                    '${(((corte1Progress + corte2Progress + corte3Progress) / 3) * 100).round()}%',
+                    style: mono(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: p.textPrimary,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1121,63 +1443,18 @@ class _RadialCorteProgressCardState extends State<RadialCorteProgressCard> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: mono(
-                    fontSize: 9.5,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 0.9,
                     color: p.textSecondary,
+                    letterSpacing: 0.7,
                   ),
                 ),
                 const SizedBox(height: 8),
-                for (var i = 0; i < segments.length; i++)
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    onEnter: (_) => setState(() => _hoveredIndex = i),
-                    onExit: (_) => setState(() => _hoveredIndex = null),
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        setState(() => _hoveredIndex = _hoveredIndex == i ? null : i);
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 160),
-                        margin: const EdgeInsets.only(bottom: 5),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _hoveredIndex == i
-                              ? segments[i].$3.o(0.14)
-                              : p.elevated,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Dot(color: segments[i].$3, size: 7),
-                            const SizedBox(width: 7),
-                            Expanded(
-                              child: Text(
-                                segments[i].$1,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: p.textPrimary,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '${(segments[i].$2 * 100).round()}%',
-                              style: mono(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: segments[i].$3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                _buildRingLegend(p, '1° Corte (Fundamentos)', corte1Progress, p.green),
+                const SizedBox(height: 5),
+                _buildRingLegend(p, '2° Corte (Modelado)', corte2Progress, p.indigo),
+                const SizedBox(height: 5),
+                _buildRingLegend(p, '3° Corte (Proyecto)', corte3Progress, p.orange),
               ],
             ),
           ),
@@ -1185,182 +1462,158 @@ class _RadialCorteProgressCardState extends State<RadialCorteProgressCard> {
       ),
     );
   }
+
+  Widget _buildRingLegend(AppPalette p, String label, double progress, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: p.textPrimary,
+            ),
+          ),
+        ),
+        Text(
+          '${(progress.clamp(0.0, 1.0) * 100).round()}%',
+          style: mono(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class _RadialCortePainter extends CustomPainter {
-  _RadialCortePainter({
+class _ConcentricRingsPainter extends CustomPainter {
+  const _ConcentricRingsPainter({
     required this.c1,
     required this.c2,
     required this.c3,
-    required this.hoveredIndex,
     required this.palette,
   });
 
   final double c1;
   final double c2;
   final double c3;
-  final int? hoveredIndex;
   final AppPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width * 0.5, size.height * 0.5);
-    final radius = math.min(size.width, size.height) * 0.42;
-    const strokeW = 9.0;
-
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..color = palette.cardBorder
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeW,
-    );
-
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    const totalGap = 0.18;
-    final sweepSlots = [
-      (0.30 * 2 * math.pi - totalGap / 3, c1.clamp(0.05, 1.0), palette.green),
-      (0.30 * 2 * math.pi - totalGap / 3, c2.clamp(0.05, 1.0), palette.indigo),
-      (0.40 * 2 * math.pi - totalGap / 3, c3.clamp(0.05, 1.0), palette.orange),
+    final center = Offset(size.width / 2, size.height / 2);
+    final rings = [
+      (radius: size.width * 0.44, progress: c1, color: palette.green),
+      (radius: size.width * 0.33, progress: c2, color: palette.indigo),
+      (radius: size.width * 0.22, progress: c3, color: palette.orange),
     ];
 
-    var start = -math.pi / 2;
-    for (var i = 0; i < sweepSlots.length; i++) {
-      final (slotSpan, fillFrac, color) = sweepSlots[i];
+    for (final r in rings) {
+      final bgPaint = Paint()
+        ..color = r.color.withValues(alpha: 0.16)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 6.0;
+      canvas.drawCircle(center, r.radius, bgPaint);
+
+      final fgPaint = Paint()
+        ..color = r.color
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 6.0;
       canvas.drawArc(
-        rect,
-        start,
-        slotSpan * fillFrac,
+        Rect.fromCircle(center: center, radius: r.radius),
+        -math.pi / 2,
+        2 * math.pi * r.progress,
         false,
-        Paint()
-          ..color = hoveredIndex == null || hoveredIndex == i
-              ? color
-              : color.o(0.35)
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..strokeWidth = hoveredIndex == i ? strokeW + 2.5 : strokeW,
+        fgPaint,
       );
-      start += slotSpan + totalGap / 3;
     }
   }
 
   @override
-  bool shouldRepaint(covariant _RadialCortePainter oldDelegate) {
-    return oldDelegate.c1 != c1 ||
-        oldDelegate.c2 != c2 ||
-        oldDelegate.c3 != c3 ||
-        oldDelegate.hoveredIndex != hoveredIndex;
+  bool shouldRepaint(covariant _ConcentricRingsPainter oldDelegate) {
+    return oldDelegate.c1 != c1 || oldDelegate.c2 != c2 || oldDelegate.c3 != c3;
   }
 }
 
-/// Mapa de Calor minimalista de constancia de estudio (últimos 60 días) en esmeralda.
-class StudyActivityHeatmapCard extends StatefulWidget {
+/// Mapa de Calor de Constancia de Estudio (60 días).
+class StudyActivityHeatmapCard extends StatelessWidget {
   const StudyActivityHeatmapCard({
     super.key,
-    required this.dailyIntensities, // longitud <= 60, valores 0..4
+    required this.dailyIntensities,
   });
 
   final List<int> dailyIntensities;
-
-  @override
-  State<StudyActivityHeatmapCard> createState() =>
-      _StudyActivityHeatmapCardState();
-}
-
-class _StudyActivityHeatmapCardState extends State<StudyActivityHeatmapCard> {
-  int? _selectedDayIndex;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final cells = List<int>.generate(
       60,
-      (i) => i < widget.dailyIntensities.length
-          ? widget.dailyIntensities[i].clamp(0, 4)
-          : 0,
+      (i) => i < dailyIntensities.length ? dailyIntensities[i].clamp(0, 4) : 0,
     );
-    final activeDays = cells.where((v) => v > 0).length;
 
-    return IosCard(
-      radius: 18,
+    return Container(
       padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: p.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: p.cardBorder),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Dot(color: p.green, size: 7),
-              const SizedBox(width: 7),
+              Icon(Icons.grid_view_rounded, size: 14, color: p.green),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'CONSTANCIA DE ESTUDIO (60 DÍAS)',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: mono(
-                    fontSize: 9.5,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 0.9,
                     color: p.textSecondary,
+                    letterSpacing: 0.7,
                   ),
-                ),
-              ),
-              Text(
-                _selectedDayIndex != null
-                    ? 'Día -${59 - _selectedDayIndex!}: Niv. ${cells[_selectedDayIndex!]}'
-                    : '$activeDays/60 días activos',
-                style: mono(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: p.green,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          RepaintBoundary(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                const cols = 12;
-                const rows = 5;
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: cols,
-                    mainAxisSpacing: 4,
-                    crossAxisSpacing: 4,
-                    childAspectRatio: 1.35,
-                  ),
-                  itemCount: cols * rows,
-                  itemBuilder: (context, index) {
-                    final level = cells[index];
-                    final cellColor = level == 0
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              for (final level in cells)
+                Container(
+                  width: 11,
+                  height: 11,
+                  decoration: BoxDecoration(
+                    color: level == 0
                         ? p.elevated
-                        : p.green.o(0.22 + level * 0.19);
-                    return MouseRegion(
-                      onEnter: (_) => setState(() => _selectedDayIndex = index),
-                      onExit: (_) => setState(() => _selectedDayIndex = null),
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedDayIndex = index),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: cellColor,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: _selectedDayIndex == index
-                                  ? p.textPrimary
-                                  : p.cardBorder,
-                              width: _selectedDayIndex == index ? 1.2 : 0.6,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                        : p.green.withValues(alpha: 0.22 + level * 0.19),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(
+                      color: level == 0 ? p.cardBorder : Colors.transparent,
+                      width: 0.5,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

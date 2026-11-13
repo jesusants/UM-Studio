@@ -15,6 +15,7 @@ import 'package:um_studio/presentation/widgets/ai_graphic_block.dart';
 import 'package:um_studio/presentation/widgets/collapsible_spaces_dock.dart';
 import 'package:um_studio/presentation/widgets/interactive_engineering_chart.dart';
 import 'package:um_studio/presentation/widgets/ios_primitives.dart';
+import 'package:um_studio/presentation/widgets/lab/subject_lab_registry.dart';
 
 void main() {
   setUpAll(() {
@@ -124,7 +125,58 @@ void main() {
   });
 
   group('FASE 5: Motor de Gráficas Interactivas y Analítica', () {
-    testWidgets('InteractiveEngineeringChart cambia entre los 3 laboratorios y sliders sin overflow',
+    testWidgets('SubjectLabRegistry aísla simuladores por asignatura y oculta materias no gráficas',
+        (tester) async {
+      // Materias humanísticas / idiomas no tienen laboratorio gráfico
+      expect(
+        SubjectLabRegistry.hasLabsForSubject(
+          codigo: '01011801',
+          nombre: 'Procesos Lectores y Escriturales',
+        ),
+        isFalse,
+      );
+      expect(
+        SubjectLabRegistry.hasLabsForSubject(
+          codigo: '01021802',
+          nombre: 'General English I',
+        ),
+        isFalse,
+      );
+      expect(
+        SubjectLabRegistry.hasLabsForSubject(
+          codigo: '01011899',
+          nombre: 'Constitución Política y Legislación',
+        ),
+        isFalse,
+      );
+
+      // Las 16 asignaturas de Cuatrimestres 1 al 4 cuentan con simuladores aislados
+      const codes = [
+        '02011807', // Cálculo Diferencial
+        '02011809', // Álgebra Lineal
+        '03011813', // Fundamentos de Programación e IA
+        '04011822', // Introducción a la Ingeniería Energética
+        '02021810', // Física Mecánica
+        '02011808', // Cálculo Integral
+        '02031812', // Química Aplicada
+        '03041819', // Fundamentos de la Electricidad I
+        '02021811', // Calor y Ondas
+        '04021825', // Modelación Matemática para Ingeniería
+        '03041820', // Fundamentos de Electricidad II
+        '04021823', // Ingeniería del Diseño y Modelado en 3D
+        '03041821', // Electricidad y Magnetismo
+        '03021817', // Termodinámica
+        '03031818', // Probabilidad y Estadística
+        '03021815', // Fundamentos de Hidráulica y Neumática
+      ];
+      for (final code in codes) {
+        final cfg = SubjectLabRegistry.resolve(codigo: code, nombre: '');
+        expect(cfg, isNotNull, reason: 'Falta configuración de lab para $code');
+        expect(cfg!.simulators, isNotEmpty);
+      }
+    });
+
+    testWidgets('InteractiveEngineeringChart muestra exclusivamente simuladores de la materia activa y controles de movimiento 60 FPS',
         (tester) async {
       tester.view.devicePixelRatio = 1.0;
       tester.view.physicalSize = const Size(420, 900);
@@ -138,30 +190,67 @@ void main() {
           const SingleChildScrollView(
             padding: EdgeInsets.all(12),
             child: InteractiveEngineeringChart(
+              asignaturaCodigo: '03041820',
               asignaturaNombre: 'Fundamentos de Electricidad II',
               temaTitulo: 'Circuitos CA y Fasores',
             ),
           ),
         ),
       );
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
+      // Solo muestra los 2 simuladores de Electricidad II y NO mezcla Cálculo ni Termodinámica
+      expect(find.text('Fasores Rotatorios CA'), findsOneWidget);
+      expect(find.text('Transitorio RC / RL'), findsOneWidget);
+      expect(find.text('Derivada y Tangente'), findsNothing);
+      expect(find.text('Ciclo P-V + Pistón'), findsNothing);
       expect(find.text('Vₘ (Voltaje)'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Cálculo / Tangente'));
-      await tester.tap(find.text('Cálculo / Tangente'));
-      await tester.pump();
-      expect(find.text('Tangente x₀'), findsOneWidget);
+      // Controles universales de movimiento presentes (0.5x, 1.0x, 2.0x)
+      expect(find.text('0.5x'), findsOneWidget);
+      expect(find.text('1.0x'), findsOneWidget);
+      expect(find.text('2.0x'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Energía / Termo'));
-      await tester.tap(find.text('Energía / Termo'));
-      await tester.pump();
-      expect(find.text('Irradiancia G'), findsOneWidget);
+      // Cambiar al segundo simulador de la misma materia (Transitorio RC / RL)
+      await tester.ensureVisible(find.text('Transitorio RC / RL'));
+      await tester.tap(find.text('Transitorio RC / RL'));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.text('Constante τ = RC'), findsOneWidget);
+    });
 
-      await tester.ensureVisible(find.text('Transitorio 2° Orden'));
-      await tester.tap(find.text('Transitorio 2° Orden'));
-      await tester.pump();
-      expect(find.text('Amortiguamiento ζ'), findsOneWidget);
+    testWidgets('Física Mecánica (02021810) carga sus 4 simuladores y preselecciona según el tema sin overflow',
+        (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(420, 900);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        wrapWithApp(
+          const SingleChildScrollView(
+            padding: EdgeInsets.all(12),
+            child: InteractiveEngineeringChart(
+              asignaturaCodigo: '02021810',
+              asignaturaNombre: 'Física Mecánica',
+              temaTitulo: 'Fuerzas Conservativas y Resorte',
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('Masa-Resorte y Energía'), findsOneWidget);
+      expect(find.text('Tiro Parabólico'), findsOneWidget);
+      expect(find.text('Plano Inclinado y DCL'), findsOneWidget);
+      expect(find.text('Colisiones 1D'), findsOneWidget);
+      expect(find.text('Constante Resorte k'), findsOneWidget);
+
+      // Cambiar a Tiro Parabólico
+      await tester.tap(find.text('Tiro Parabólico'));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.text('Velocidad Inicial v₀'), findsOneWidget);
     });
 
     testWidgets('RadialCorteProgressCard y StudyActivityHeatmapCard renderizan correctamente',

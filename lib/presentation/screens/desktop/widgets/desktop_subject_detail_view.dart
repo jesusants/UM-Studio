@@ -12,6 +12,7 @@ import '../../../widgets/conservative_energy_sim_widget.dart';
 import '../../../widgets/interactive_engineering_chart.dart';
 import '../../../widgets/ios_primitives.dart';
 import '../../../widgets/katex_formula_card.dart';
+import '../../../widgets/lab/subject_lab_registry.dart';
 import '../../../widgets/minimal_slide_viewer.dart';
 import '../../../widgets/topic_ai_assistant_widget.dart';
 import '../../../widgets/mouse_scrollable_horizontal_bar.dart';
@@ -67,6 +68,13 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
         oldWidget.initialTemaNumero != widget.initialTemaNumero ||
         oldWidget.initialMagistral != widget.initialMagistral) {
       _initSelectedTopic();
+      if (!SubjectLabRegistry.hasLabsForSubject(
+            codigo: widget.subject.codigo,
+            nombre: widget.subject.nombre,
+          ) &&
+          _sidePanelMode == 'chart') {
+        _sidePanelMode = 'none';
+      }
       if (_temasScrollController.hasClients) {
         _temasScrollController.jumpTo(0.0);
       }
@@ -182,6 +190,10 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
     final activeTopicTitle = isMagistrales && currentMagistral != null
         ? currentMagistral.titulo
         : (currentTema?.titulo ?? subject.nombre);
+    final hasSubjectLab = SubjectLabRegistry.hasLabsForSubject(
+      codigo: subject.codigo,
+      nombre: subject.nombre,
+    );
 
     final activeContext = isMagistrales && currentMagistral != null
         ? GroqTopicAssistantService.buildTopicContext(
@@ -276,7 +288,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                 ),
               ),
               const Spacer(),
-              if (canShowAi) ...[
+              if (canShowAi && hasSubjectLab) ...[
                 TapScale(
                   onTap: () => setState(
                     () => _sidePanelMode =
@@ -323,6 +335,8 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                   ),
                 ),
                 const SizedBox(width: 6),
+              ],
+              if (canShowAi) ...[
                 TopicAiTriggerButton(
                   isOpen: _sidePanelMode == 'ai',
                   accentColor: isMagistrales
@@ -1160,12 +1174,14 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
       ],
     ),
           ),
-          if (canShowAi && _sidePanelMode != 'none') ...[
+          if (canShowAi &&
+              _sidePanelMode != 'none' &&
+              (_sidePanelMode != 'chart' || hasSubjectLab)) ...[
             const SizedBox(width: 14),
             AnimatedContainer(
               duration: const Duration(milliseconds: 240),
               curve: Curves.easeOutCubic,
-              width: 350,
+              width: _sidePanelMode == 'chart' ? 420 : 350,
               decoration: BoxDecoration(
                 color: tokens.surfaceElevated,
                 borderRadius: BorderRadius.circular(18),
@@ -1212,6 +1228,7 @@ class _DesktopSubjectDetailViewState extends State<DesktopSubjectDetailView> {
                           ),
                           const SizedBox(height: 6),
                           InteractiveEngineeringChart(
+                            asignaturaCodigo: subject.codigo,
                             asignaturaNombre: subject.nombre,
                             temaTitulo: activeTopicTitle,
                             explicitHint: isMagistrales && currentMagistral != null

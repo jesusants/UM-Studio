@@ -19,6 +19,7 @@ import '../../../domain/repositories/i_clase_viva_repository.dart';
 import '../../widgets/academic_solved_exercise_card.dart';
 import '../../widgets/conservative_energy_sim_widget.dart';
 import '../../widgets/interactive_engineering_chart.dart';
+import '../../widgets/lab/subject_lab_registry.dart';
 import '../../widgets/minimal_slide_viewer.dart';
 import '../../widgets/mouse_scrollable_horizontal_bar.dart';
 import '../../providers/app_scopes.dart';
@@ -927,8 +928,13 @@ class _OfficialTopicSection extends StatelessWidget {
           const ConservativeEnergySimWidget(isDesktop: false),
 
         // D.2.6 Botón Desplegable de Laboratorio Gráfico Interactivo
-        if (!tema.esInglesGeneral)
+        if (!tema.esInglesGeneral &&
+            SubjectLabRegistry.hasLabsForSubject(
+              codigo: tema.codigoAsignatura,
+              nombre: tema.nombreAsignatura,
+            ))
           _TopicEngineeringLabExpander(
+            asignaturaCodigo: tema.codigoAsignatura,
             asignaturaNombre: tema.nombreAsignatura,
             temaTitulo: tema.tituloTema,
             explicitHint: tema.graficaInteractiva,
@@ -1897,11 +1903,13 @@ class _SheetOptionTile extends StatelessWidget {
 
 class _TopicEngineeringLabExpander extends StatefulWidget {
   const _TopicEngineeringLabExpander({
+    this.asignaturaCodigo = '',
     required this.asignaturaNombre,
     required this.temaTitulo,
     this.explicitHint = '',
   });
 
+  final String asignaturaCodigo;
   final String asignaturaNombre;
   final String temaTitulo;
   final String explicitHint;
@@ -1955,6 +1963,24 @@ class _TopicEngineeringLabExpanderState
                     ),
                   ),
                 ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => showSubjectLabBottomSheet(
+                    context: context,
+                    asignaturaCodigo: widget.asignaturaCodigo,
+                    asignaturaNombre: widget.asignaturaNombre,
+                    temaTitulo: widget.temaTitulo,
+                    explicitHint: widget.explicitHint,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    child: Icon(
+                      Icons.open_in_full_rounded,
+                      size: 15,
+                      color: p.indigo,
+                    ),
+                  ),
+                ),
                 Icon(
                   _open
                       ? Icons.keyboard_arrow_up_rounded
@@ -1972,6 +1998,7 @@ class _TopicEngineeringLabExpanderState
               _open ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           firstChild: const SizedBox.shrink(),
           secondChild: InteractiveEngineeringChart(
+            asignaturaCodigo: widget.asignaturaCodigo,
             asignaturaNombre: widget.asignaturaNombre,
             temaTitulo: widget.temaTitulo,
             explicitHint: widget.explicitHint,
