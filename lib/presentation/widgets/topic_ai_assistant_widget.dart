@@ -1,13 +1,16 @@
 import 'dart:ui';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/institutional_validator.dart';
+import '../../data/services/global_environment_service.dart';
 import '../../domain/entities/topic_chat_message.dart';
 import '../providers/app_scopes.dart';
 import '../providers/topic_ai_assistant_controller.dart';
+import 'ai_graphic_block.dart';
 import 'ios_primitives.dart';
 
 /// Botón minimalista de disparo del asistente contextual
@@ -88,6 +91,7 @@ class TopicAiChatView extends StatefulWidget {
     required this.temaContextoCompleto,
     this.accentColor,
     this.onClose,
+    this.controller,
   });
 
   final String topicKey;
@@ -96,6 +100,7 @@ class TopicAiChatView extends StatefulWidget {
   final String temaContextoCompleto;
   final Color? accentColor;
   final VoidCallback? onClose;
+  final TopicAiAssistantController? controller;
 
   @override
   State<TopicAiChatView> createState() => _TopicAiChatViewState();
@@ -106,8 +111,12 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
   final ScrollController _scrollCtrl = ScrollController();
   final FocusNode _focusNode = FocusNode();
 
-  final TopicAiAssistantController _controller =
-      TopicAiAssistantController.instance;
+  Uint8List? _pendingImageBytes;
+  String? _pendingImageMime;
+  String? _pendingImageName;
+
+  TopicAiAssistantController get _controller =>
+      widget.controller ?? TopicAiAssistantController.instance;
 
   @override
   void initState() {
@@ -118,8 +127,16 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
   @override
   void didUpdateWidget(covariant TopicAiChatView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      (oldWidget.controller ?? TopicAiAssistantController.instance)
+          .removeListener(_onControllerUpdate);
+      _controller.addListener(_onControllerUpdate);
+    }
     if (oldWidget.topicKey != widget.topicKey) {
       _textCtrl.clear();
+      _pendingImageBytes = null;
+      _pendingImageMime = null;
+      _pendingImageName = null;
       _scrollToBottom();
     }
   }
@@ -151,20 +168,95 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
     });
   }
 
+  String _resolveStudentFullName(BuildContext context) {
+    final session = SessionScope.maybeOf(context);
+    if (session == null || !session.isAuthenticated) return '';
+    final full = session.displayName.trim();
+    if (full.isNotEmpty) return full;
+    return session.primerNombre.trim();
+  }
+
+  String _resolveStudentFirstName(BuildContext context) {
+    final session = SessionScope.maybeOf(context);
+    if (session == null || !session.isAuthenticated) return '';
+    final first = session.primerNombre.trim();
+    if (first.isNotEmpty) return first;
+    return session.displayName.trim();
+  }
+
+  Future<void> _pickImageAttachment() async {
+    try {
+      final result = await FilePicker.pickFile(
+        dialogTitle: 'Adjuntar diagrama, ecuación o imagen al asistente',
+        type: FileType.image,
+      );
+      if (result == null) return;
+      final bytes = await result.readAsBytes();
+      if (bytes.isEmpty) return;
+      if (bytes.length > 4 * 1024 * 1024) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('La imagen supera 4 MB. Selecciona una más liviana.'),
+          ),
+        );
+        return;
+      }
+      final ext = (result.extension ?? 'png').toLowerCase();
+      final mime = (ext == 'jpg' || ext == 'jpeg')
+          ? 'image/jpeg'
+          : ext == 'webp'
+              ? 'image/webp'
+              : 'image/png';
+      if (!mounted) return;
+      setState(() {
+        _pendingImageBytes = bytes;
+        _pendingImageMime = mime;
+        _pendingImageName = result.name;
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _insertGraphicElement() async {
+    final generatedPrompt = await showAiGraphicComposerDialog(
+      context,
+      temaTitulo: widget.temaTitulo,
+    );
+    if (!mounted || generatedPrompt == null || generatedPrompt.trim().isEmpty) {
+      return;
+    }
+    _submitMessage(generatedPrompt);
+  }
+
   void _submitMessage([String? preset]) {
-    final query = preset ?? _textCtrl.text.trim();
-    if (query.isEmpty) return;
+    final query = (preset ?? _textCtrl.text).trim();
+    final imgBytes = _pendingImageBytes;
+    final imgMime = _pendingImageMime;
+    final imgName = _pendingImageName;
+    if (query.isEmpty && (imgBytes == null || imgBytes.isEmpty)) return;
 
     if (preset == null) {
       _textCtrl.clear();
     }
+    if (_pendingImageBytes != null) {
+      setState(() {
+        _pendingImageBytes = null;
+        _pendingImageMime = null;
+        _pendingImageName = null;
+      });
+    }
 
+    final studentName = _resolveStudentFullName(context);
     _controller.sendQuestion(
       topicKey: widget.topicKey,
       asignaturaNombre: widget.asignaturaNombre,
       temaTitulo: widget.temaTitulo,
       temaContextoCompleto: widget.temaContextoCompleto,
       pregunta: query,
+      studentName: studentName.isNotEmpty ? studentName : null,
+      imageBytes: imgBytes,
+      imageMimeType: imgMime,
+      imageName: imgName,
     );
   }
 
@@ -276,9 +368,9 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
                 ),
         ),
 
-        // 3. Barra de Entrada de Texto
+        // 3. Barra de Entrada de Texto + Elementos Gráficos
         Container(
-          padding: const EdgeInsets.fromLTRB(12, 8, 10, 10),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0F1117) : const Color(0xFFF9FAFB),
             border: Border(
@@ -288,59 +380,170 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
               ),
             ),
           ),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+              if (_pendingImageBytes != null) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF181B24) : Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF262B38) : const Color(0xFFE2E4E9),
-                      width: 1,
-                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: accent.o(0.35)),
                   ),
-                  child: TextField(
-                    controller: _textCtrl,
-                    focusNode: _focusNode,
-                    minLines: 1,
-                    maxLines: 4,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _submitMessage(),
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white : p.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Preguntar sobre este tema...',
-                      hintStyle: TextStyle(
-                        fontSize: 12.5,
-                        color: p.textSecondary,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.memory(
+                          _pendingImageBytes!,
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 9),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          _pendingImageName ?? 'Imagen adjunta',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : p.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      InkWell(
+                        onTap: () => setState(() {
+                          _pendingImageBytes = null;
+                          _pendingImageMime = null;
+                          _pendingImageName = null;
+                        }),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 16,
+                          color: p.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              Row(
+                children: [
+                  if (GlobalEnvironmentService.instance.config.allowAiGraphics) ...[
+                    Tooltip(
+                      message: 'Adjuntar imagen o captura',
+                      child: TapScale(
+                        onTap: isLoading ? null : _pickImageAttachment,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF181B24)
+                                : Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF262B38)
+                                  : const Color(0xFFE2E4E9),
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 16,
+                            color: p.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Tooltip(
+                      message: 'Añadir elemento gráfico o diagrama',
+                      child: TapScale(
+                        onTap: isLoading ? null : _insertGraphicElement,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: accent.o(0.12),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: accent.o(0.35)),
+                          ),
+                          child: Icon(
+                            Icons.auto_graph_rounded,
+                            size: 16,
+                            color: accent,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF181B24) : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF262B38)
+                              : const Color(0xFFE2E4E9),
+                          width: 1,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _textCtrl,
+                        focusNode: _focusNode,
+                        minLines: 1,
+                        maxLines: 4,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _submitMessage(),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.white : p.textPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Preguntar sobre este tema...',
+                          hintStyle: TextStyle(
+                            fontSize: 12.5,
+                            color: p.textSecondary,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 9),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              TapScale(
-                onTap: isLoading ? null : () => _submitMessage(),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: isLoading ? p.cardBorder : accent,
-                    shape: BoxShape.circle,
+                  const SizedBox(width: 6),
+                  TapScale(
+                    onTap: isLoading ? null : () => _submitMessage(),
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: isLoading ? p.cardBorder : accent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.arrow_upward_rounded,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ),
+                ],
               ),
             ],
           ),
@@ -355,10 +558,18 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
     bool isDark,
   ) {
     final p = context.palette;
+    final allowGraphics =
+        GlobalEnvironmentService.instance.config.allowAiGraphics;
+    final registeredFull = _resolveStudentFullName(context);
+    final registeredFirst = _resolveStudentFirstName(context);
+    final greetingName =
+        registeredFull.isNotEmpty ? registeredFull : registeredFirst;
+
     final suggestions = [
       'Explicar la fórmula principal',
       'Desglosar el ejercicio paso a paso',
       '¿Qué significa cada variable?',
+      if (allowGraphics) 'Graficar una función o diagrama del tema',
     ];
 
     return SingleChildScrollView(
@@ -389,6 +600,18 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
               color: isDark ? Colors.white : p.textPrimary,
             ),
           ),
+          if (greetingName.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              '¡Hola, $greetingName!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: accent,
+              ),
+            ),
+          ],
           const SizedBox(height: 4),
           Text(
             'Respuestas rigurosas basadas únicamente en las diapositivas y notas de esta sesión.',
@@ -537,8 +760,25 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
                   width: 1,
                 ),
               ),
-              child: isUser
-                  ? Text(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (msg.hasImage) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 190),
+                        child: Image.memory(
+                          msg.imageBytes!,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  if (isUser && !msg.content.contains('```um-grafica'))
+                    Text(
                       msg.content,
                       style: TextStyle(
                         fontSize: 13,
@@ -546,11 +786,16 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
                         color: isDark ? Colors.white : p.textPrimary,
                       ),
                     )
-                  : _TopicAiMarkdownRenderer(
+                  else
+                    _TopicAiMarkdownRenderer(
                       content: msg.content,
                       accentColor: accent,
                       isDark: isDark,
+                      asignaturaNombre: widget.asignaturaNombre,
+                      temaTitulo: widget.temaTitulo,
                     ),
+                ],
+              ),
             ),
           ),
         ],
@@ -559,32 +804,64 @@ class _TopicAiChatViewState extends State<TopicAiChatView> {
   }
 }
 
-/// Renderizador de respuestas con fórmulas KaTeX y negritas
+/// Renderizador de respuestas con fórmulas KaTeX, elementos gráficos y negritas
 class _TopicAiMarkdownRenderer extends StatelessWidget {
   const _TopicAiMarkdownRenderer({
     required this.content,
     required this.accentColor,
     required this.isDark,
+    this.asignaturaNombre = 'Ingeniería',
+    this.temaTitulo = 'Tema',
   });
 
   final String content;
   final Color accentColor;
   final bool isDark;
+  final String asignaturaNombre;
+  final String temaTitulo;
 
   @override
   Widget build(BuildContext context) {
-    // Dividir contenido en bloques de display math $$...$$ y texto
     final blocks = _splitBlocks(content);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (final block in blocks)
-          if (block.isDisplayMath)
+          if (block.type == _AiBlockType.graphic)
+            _buildGraphicBlock(block.text)
+          else if (block.type == _AiBlockType.displayMath)
             _buildDisplayFormula(block.text)
           else
             _buildParagraph(block.text),
       ],
+    );
+  }
+
+  Widget _buildGraphicBlock(String rawGraphic) {
+    final spec = AiGraphicSpec.tryParse(rawGraphic);
+    if (spec != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: AiGraphicBlockWidget(
+          spec: spec,
+          asignaturaNombre: asignaturaNombre,
+          temaTitulo: temaTitulo,
+        ),
+      );
+    }
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0C0E14) : const Color(0xFFECEFF4),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        rawGraphic,
+        style: mono(fontSize: 11, color: accentColor),
+      ),
     );
   }
 
@@ -691,31 +968,56 @@ class _TopicAiMarkdownRenderer extends StatelessWidget {
 
   List<_AiBlock> _splitBlocks(String raw) {
     final list = <_AiBlock>[];
+    final graphicPattern = RegExp(
+      r'```(?:um-grafica|um_grafica|grafica)\s*([\s\S]*?)```',
+      caseSensitive: false,
+    );
+    int lastEnd = 0;
+
+    for (final gm in graphicPattern.allMatches(raw)) {
+      if (gm.start > lastEnd) {
+        _appendMathAndTextBlocks(raw.substring(lastEnd, gm.start), list);
+      }
+      final body = (gm.group(1) ?? '').trim();
+      if (body.isNotEmpty) {
+        list.add(_AiBlock(text: body, type: _AiBlockType.graphic));
+      }
+      lastEnd = gm.end;
+    }
+
+    if (lastEnd < raw.length) {
+      _appendMathAndTextBlocks(raw.substring(lastEnd), list);
+    }
+
+    return list.isNotEmpty
+        ? list
+        : [_AiBlock(text: raw, type: _AiBlockType.paragraph)];
+  }
+
+  void _appendMathAndTextBlocks(String segment, List<_AiBlock> out) {
     final pattern = RegExp(r'\$\$(.*?)\$\$', dotAll: true);
     int lastEnd = 0;
 
-    for (final m in pattern.allMatches(raw)) {
+    for (final m in pattern.allMatches(segment)) {
       if (m.start > lastEnd) {
-        final txt = raw.substring(lastEnd, m.start).trim();
+        final txt = segment.substring(lastEnd, m.start).trim();
         if (txt.isNotEmpty) {
-          list.add(_AiBlock(text: txt, isDisplayMath: false));
+          out.add(_AiBlock(text: txt, type: _AiBlockType.paragraph));
         }
       }
       final formula = m.group(1)!.trim();
       if (formula.isNotEmpty) {
-        list.add(_AiBlock(text: formula, isDisplayMath: true));
+        out.add(_AiBlock(text: formula, type: _AiBlockType.displayMath));
       }
       lastEnd = m.end;
     }
 
-    if (lastEnd < raw.length) {
-      final txt = raw.substring(lastEnd).trim();
+    if (lastEnd < segment.length) {
+      final txt = segment.substring(lastEnd).trim();
       if (txt.isNotEmpty) {
-        list.add(_AiBlock(text: txt, isDisplayMath: false));
+        out.add(_AiBlock(text: txt, type: _AiBlockType.paragraph));
       }
     }
-
-    return list.isNotEmpty ? list : [_AiBlock(text: raw, isDisplayMath: false)];
   }
 
   List<_AiToken> _tokenize(String raw) {
@@ -764,10 +1066,12 @@ class _TopicAiMarkdownRenderer extends StatelessWidget {
   }
 }
 
+enum _AiBlockType { paragraph, displayMath, graphic }
+
 class _AiBlock {
-  const _AiBlock({required this.text, required this.isDisplayMath});
+  const _AiBlock({required this.text, required this.type});
   final String text;
-  final bool isDisplayMath;
+  final _AiBlockType type;
 }
 
 enum _AiTokenType { text, bold, inlineMath }

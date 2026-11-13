@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/models/global_env_config.dart';
 import '../../data/services/global_environment_service.dart';
+import 'interactive_engineering_chart.dart';
 
 /// Tarjeta fijada de Comunicado Global Oficial del Administrador (`global_banner_*`).
 /// Se inserta como Posición 0 dentro del feed de Noticias tanto en PC como en móvil,
@@ -126,10 +130,83 @@ class GlobalBroadcastBanner extends StatelessWidget {
                   ),
                 ),
               ],
+              ..._buildGraphicalExtras(config, p),
             ],
           ),
         );
       },
     );
+  }
+
+  List<Widget> _buildGraphicalExtras(GlobalEnvConfig config, AppPalette p) {
+    final widgets = <Widget>[];
+    final imageUrl = config.globalBannerImageUrl.trim();
+    if (imageUrl.isNotEmpty) {
+      final decoded = _decodeDataUri(imageUrl);
+      widgets.add(const SizedBox(height: 10));
+      widgets.add(
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 168),
+            child: decoded != null
+                ? Image.memory(
+                    decoded,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                  )
+                : Image.network(
+                    imageUrl,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                  ),
+          ),
+        ),
+      );
+    }
+
+    final chartMode = config.globalBannerChartMode.trim();
+    if (chartMode.isNotEmpty && chartMode != 'none') {
+      final hint = _chartHintFromMode(chartMode);
+      if (hint != null) {
+        widgets.add(const SizedBox(height: 10));
+        widgets.add(
+          InteractiveEngineeringChart(
+            asignaturaNombre: 'Anuncio Académico',
+            temaTitulo: hint.$1,
+            explicitHint: hint.$2,
+            compact: true,
+          ),
+        );
+      }
+    }
+
+    return widgets;
+  }
+
+  Uint8List? _decodeDataUri(String uri) {
+    if (!uri.startsWith('data:image/')) return null;
+    final commaIdx = uri.indexOf(',');
+    if (commaIdx < 0 || commaIdx + 1 >= uri.length) return null;
+    try {
+      return base64Decode(uri.substring(commaIdx + 1));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  (String, String)? _chartHintFromMode(String mode) {
+    switch (mode) {
+      case 'acPhasor':
+        return ('Fasores y Circuitos AC', 'fasor ac voltaje');
+      case 'calculusIntegral':
+        return ('Curva e Integral Definida', 'integral derivada curva');
+      case 'thermoSolar':
+        return ('Rendimiento Térmico / Solar', 'termodinamica solar');
+      default:
+        return null;
+    }
   }
 }

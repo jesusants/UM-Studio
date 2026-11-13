@@ -7,6 +7,7 @@ class GlobalEnvConfig {
     this.aiTemperature = 0.2,
     this.aiMaxTokens = 1024,
     this.aiCustomSystemPrompt = '',
+    this.allowAiGraphics = true,
     this.periodoAcademicoActual = '2026-III',
     this.corteActivoGlobal = 1,
     this.portalEstudiantesUrl =
@@ -16,6 +17,8 @@ class GlobalEnvConfig {
     this.globalBannerMessage =
         'Consulta tus clases magistrales y temas del corte en curso.',
     this.globalBannerType = 'info',
+    this.globalBannerImageUrl = '',
+    this.globalBannerChartMode = 'none',
     this.newsSourceUrl =
         'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias',
     this.newsCorsProxy = 'https://api.allorigins.win/raw?url=',
@@ -29,6 +32,18 @@ class GlobalEnvConfig {
     this.updatedBy = '',
   });
 
+  static const String defaultWorkingGeminiModel = 'gemini-3.5-flash-lite';
+
+  /// Normaliza nombres de modelos legados (`gemini-2.0-*`, `gemini-2.5-*`) que ya
+  /// devuelven 404 en la API de Google hacia el modelo activo vigente.
+  static String normalizeModelName(String? rawModel) {
+    final clean = (rawModel ?? '').trim().replaceFirst('models/', '');
+    if (clean.isEmpty || clean.startsWith('gemini-2.')) {
+      return defaultWorkingGeminiModel;
+    }
+    return clean;
+  }
+
   final bool aiEnabled;
   final String aiProvider;
   final String aiModelName;
@@ -36,6 +51,7 @@ class GlobalEnvConfig {
   final double aiTemperature;
   final int aiMaxTokens;
   final String aiCustomSystemPrompt;
+  final bool allowAiGraphics;
 
   final String periodoAcademicoActual;
   final int corteActivoGlobal;
@@ -45,6 +61,8 @@ class GlobalEnvConfig {
   final String globalBannerTitle;
   final String globalBannerMessage;
   final String globalBannerType;
+  final String globalBannerImageUrl;
+  final String globalBannerChartMode;
 
   final String newsSourceUrl;
   final String newsCorsProxy;
@@ -62,7 +80,7 @@ class GlobalEnvConfig {
     return GlobalEnvConfig(
       aiEnabled: json['ai_enabled'] ?? true,
       aiProvider: (json['ai_provider'] ?? 'gemini').toString(),
-      aiModelName: (json['ai_model_name'] ?? 'gemini-3.5-flash-lite').toString(),
+      aiModelName: normalizeModelName(json['ai_model_name']?.toString()),
       aiApiKeyOverride: (json['ai_api_key_override'] ?? '').toString(),
       aiTemperature: (json['ai_temperature'] is num)
           ? (json['ai_temperature'] as num).toDouble()
@@ -71,6 +89,7 @@ class GlobalEnvConfig {
           ? (json['ai_max_tokens'] as num).toInt()
           : 1024,
       aiCustomSystemPrompt: (json['ai_custom_system_prompt'] ?? '').toString(),
+      allowAiGraphics: json['allow_ai_graphics'] ?? true,
       periodoAcademicoActual:
           (json['periodo_academico_actual'] ?? '2026-III').toString(),
       corteActivoGlobal: (json['corte_activo_global'] is num)
@@ -83,6 +102,9 @@ class GlobalEnvConfig {
       globalBannerTitle: (json['global_banner_title'] ?? 'Aviso Oficial').toString(),
       globalBannerMessage: (json['global_banner_message'] ?? '').toString(),
       globalBannerType: (json['global_banner_type'] ?? 'info').toString(),
+      globalBannerImageUrl: (json['global_banner_image_url'] ?? '').toString(),
+      globalBannerChartMode:
+          (json['global_banner_chart_mode'] ?? 'none').toString(),
       newsSourceUrl: (json['news_source_url'] ??
               'https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias')
           .toString(),
@@ -115,6 +137,7 @@ class GlobalEnvConfig {
       'ai_temperature': aiTemperature,
       'ai_max_tokens': aiMaxTokens,
       'ai_custom_system_prompt': aiCustomSystemPrompt,
+      'allow_ai_graphics': allowAiGraphics,
       'periodo_academico_actual': periodoAcademicoActual,
       'corte_activo_global': corteActivoGlobal,
       'portal_estudiantes_url': portalEstudiantesUrl,
@@ -122,6 +145,8 @@ class GlobalEnvConfig {
       'global_banner_title': globalBannerTitle,
       'global_banner_message': globalBannerMessage,
       'global_banner_type': globalBannerType,
+      'global_banner_image_url': globalBannerImageUrl,
+      'global_banner_chart_mode': globalBannerChartMode,
       'news_source_url': newsSourceUrl,
       'news_cors_proxy': newsCorsProxy,
       'news_refresh_minutes': newsRefreshMinutes,
@@ -143,6 +168,7 @@ class GlobalEnvConfig {
     double? aiTemperature,
     int? aiMaxTokens,
     String? aiCustomSystemPrompt,
+    bool? allowAiGraphics,
     String? periodoAcademicoActual,
     int? corteActivoGlobal,
     String? portalEstudiantesUrl,
@@ -150,6 +176,8 @@ class GlobalEnvConfig {
     String? globalBannerTitle,
     String? globalBannerMessage,
     String? globalBannerType,
+    String? globalBannerImageUrl,
+    String? globalBannerChartMode,
     String? newsSourceUrl,
     String? newsCorsProxy,
     int? newsRefreshMinutes,
@@ -164,11 +192,14 @@ class GlobalEnvConfig {
     return GlobalEnvConfig(
       aiEnabled: aiEnabled ?? this.aiEnabled,
       aiProvider: aiProvider ?? this.aiProvider,
-      aiModelName: aiModelName ?? this.aiModelName,
+      aiModelName: aiModelName != null
+          ? normalizeModelName(aiModelName)
+          : this.aiModelName,
       aiApiKeyOverride: aiApiKeyOverride ?? this.aiApiKeyOverride,
       aiTemperature: (aiTemperature ?? this.aiTemperature).clamp(0.0, 1.0),
       aiMaxTokens: (aiMaxTokens ?? this.aiMaxTokens).clamp(256, 4096),
       aiCustomSystemPrompt: aiCustomSystemPrompt ?? this.aiCustomSystemPrompt,
+      allowAiGraphics: allowAiGraphics ?? this.allowAiGraphics,
       periodoAcademicoActual:
           periodoAcademicoActual ?? this.periodoAcademicoActual,
       corteActivoGlobal: (corteActivoGlobal ?? this.corteActivoGlobal).clamp(1, 3),
@@ -177,6 +208,9 @@ class GlobalEnvConfig {
       globalBannerTitle: globalBannerTitle ?? this.globalBannerTitle,
       globalBannerMessage: globalBannerMessage ?? this.globalBannerMessage,
       globalBannerType: globalBannerType ?? this.globalBannerType,
+      globalBannerImageUrl: globalBannerImageUrl ?? this.globalBannerImageUrl,
+      globalBannerChartMode:
+          globalBannerChartMode ?? this.globalBannerChartMode,
       newsSourceUrl: newsSourceUrl ?? this.newsSourceUrl,
       newsCorsProxy: newsCorsProxy ?? this.newsCorsProxy,
       newsRefreshMinutes: (newsRefreshMinutes ?? this.newsRefreshMinutes).clamp(1, 60),

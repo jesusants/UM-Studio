@@ -4,8 +4,9 @@
   "ai_model_name": "gemini-3.5-flash-lite",
   "ai_api_key_override": "",
   "ai_temperature": 0.2,
-  "ai_max_tokens": 1024,
+  "ai_max_tokens": 2560,
   "ai_custom_system_prompt": "",
+  "allow_ai_graphics": true,
   "periodo_academico_actual": "2026-III",
   "corte_activo_global": 1,
   "portal_estudiantes_url": "https://admisiones.unimagdalena.edu.co/mEstudiantes/indexPrinc.jsp?rnd=315581080",
@@ -13,6 +14,8 @@
   "global_banner_title": "Bienvenido a UM Studio",
   "global_banner_message": "Consulta tus clases magistrales y temas del corte en curso.",
   "global_banner_type": "info",
+  "global_banner_image_url": "",
+  "global_banner_chart_mode": "none",
   "news_source_url": "https://www.unimagdalena.edu.co/PresentacionPublicacion/ListadoNoticias",
   "news_cors_proxy": "https://api.allorigins.win/raw?url=",
   "news_refresh_minutes": 15,
@@ -21,6 +24,6 @@
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
   "maintenance_mode": false,
-  "updated_at": "2026-11-01T22:00:00.000Z",
+  "updated_at": "2026-11-13T01:45:00.000Z",
   "updated_by": "jsierra"
 }

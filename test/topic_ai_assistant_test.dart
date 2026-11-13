@@ -1,8 +1,15 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:um_studio/core/theme/app_theme.dart';
+import 'package:um_studio/data/models/global_env_config.dart';
+import 'package:um_studio/data/models/student_user_model.dart';
+import 'package:um_studio/data/repositories/local_clase_viva_repository.dart';
 import 'package:um_studio/data/services/groq_topic_assistant_service.dart';
+import 'package:um_studio/data/services/markdown_curriculum_service.dart';
+import 'package:um_studio/presentation/providers/app_scopes.dart';
 import 'package:um_studio/presentation/providers/topic_ai_assistant_controller.dart';
+import 'package:um_studio/presentation/widgets/ai_graphic_block.dart';
 import 'package:um_studio/presentation/widgets/topic_ai_assistant_widget.dart';
 
 void main() {
@@ -186,6 +193,182 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('Modelos Gemini Disponibles, Saludo Personalizado y Elementos Gráficos', () {
+    test('GlobalEnvConfig.normalizeModelName migra modelos 2.0/2.5 retirados al activo', () {
+      expect(
+        GlobalEnvConfig.normalizeModelName('gemini-2.5-flash'),
+        equals('gemini-3.5-flash-lite'),
+      );
+      expect(
+        GlobalEnvConfig.normalizeModelName('models/gemini-2.0-flash-lite'),
+        equals('gemini-3.5-flash-lite'),
+      );
+      expect(
+        GlobalEnvConfig.normalizeModelName(''),
+        equals('gemini-3.5-flash-lite'),
+      );
+      expect(
+        GlobalEnvConfig.normalizeModelName('gemini-3.5-flash'),
+        equals('gemini-3.5-flash'),
+      );
+      expect(
+        GlobalEnvConfig.normalizeModelName('gemma-4-26b-a4b-it'),
+        equals('gemma-4-26b-a4b-it'),
+      );
+      for (final m in TopicAssistantService.curatedAvailableModels) {
+        expect(m.startsWith('gemini-2.'), isFalse);
+      }
+    });
+
+    test('AiGraphicSpec.tryParse analiza funcion, vectores, barras y lab (incluyendo comas colgantes)', () {
+      final funcionSpec = AiGraphicSpec.tryParse('''
+```um-grafica
+{
+  "tipo": "funcion",
+  "titulo": "Conservación E(x)",
+  "ejex": "Posición x (m)",
+  "ejey": "Energía (J)",
+  "series": [
+    {"nombre": "Em", "color": "green", "puntos": [[0, 10], [1, 10], [2, 10],]},
+  ],
+}
+```
+''');
+      expect(funcionSpec, isNotNull);
+      expect(funcionSpec!.tipo, equals('funcion'));
+      expect(funcionSpec.series.first.points.length, equals(3));
+
+      final vecSpec = AiGraphicSpec.tryParse('''
+{"tipo":"vectores","titulo":"DCL Plano Inclinado","vectores":[{"nombre":"N","angulo_deg":90,"magnitud":1.0,"color":"green"},{"nombre":"mg","angulo_deg":-90,"magnitud":1.2,"color":"orange"}]}
+''');
+      expect(vecSpec, isNotNull);
+      expect(vecSpec!.tipo, equals('vectores'));
+      expect(vecSpec.vectores.length, equals(2));
+
+      final barSpec = AiGraphicSpec.tryParse('''
+{"tipo":"barras","titulo":"Energía","barras":[{"label":"Ec","valor":65,"color":"indigo"},{"label":"Ep","valor":35,"color":"green"}]}
+''');
+      expect(barSpec, isNotNull);
+      expect(barSpec!.tipo, equals('barras'));
+      expect(barSpec.barras.length, equals(2));
+
+      final labSpec = AiGraphicSpec.tryParse('''
+{"tipo":"lab","titulo":"Simulador Fasorial","modo_lab":"acPhasor"}
+''');
+      expect(labSpec, isNotNull);
+      expect(labSpec!.tipo, equals('lab'));
+      expect(labSpec.modoLab, equals('acPhasor'));
+    });
+
+    testWidgets('TopicAiChatView saluda con el nombre registrado y renderiza gráficas de la IA sin overflow', (tester) async {
+      tester.view.physicalSize = const Size(390, 820);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.reset());
+
+      final recordingService = _RecordingTopicAssistantService();
+      final controller = TopicAiAssistantController(service: recordingService);
+      final session = _FakeSessionController(
+        user: const StudentUserModel(
+          nombre: 'Sofía Restrepo Mendoza',
+          email: 'srestrepo@unimagdalena.edu.co',
+          programa: 'Ingeniería Energética',
+          username: 'srestrepo',
+          pinHash: 'hash',
+          progresoMaterias: {},
+          recordatoriosCalendario: [],
+          apuntesPersonales: {},
+        ),
+      );
+
+      await tester.pumpWidget(
+        SessionScope(
+          controller: session,
+          child: MaterialApp(
+            theme: AppTheme.dark,
+            home: Scaffold(
+              body: SizedBox(
+                width: 360,
+                height: 600,
+                child: TopicAiChatView(
+                  topicKey: 'topic_saludo_grafica',
+                  asignaturaNombre: 'Física Mecánica',
+                  temaTitulo: 'Conservación de la Energía',
+                  temaContextoCompleto: 'E_m = K + U',
+                  controller: controller,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verifica saludo personalizado con nombre registrado del estudiante
+      expect(find.text('¡Hola, Sofía Restrepo Mendoza!'), findsOneWidget);
+
+      // Botón para abrir compositor gráfico sin overflow
+      await tester.tap(find.byIcon(Icons.auto_graph_rounded));
+      await tester.pumpAndSettle();
+      expect(find.text('Añadir Elemento Gráfico'), findsOneWidget);
+
+      await tester.tap(find.text('Insertar en chat'));
+      await tester.pumpAndSettle();
+
+      expect(recordingService.lastStudentName, equals('Sofía Restrepo Mendoza'));
+      expect(find.byType(AiGraphicBlockWidget), findsOneWidget);
+      expect(find.textContaining('Curva Energía vs Posición'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+}
+
+class _RecordingTopicAssistantService extends TopicAssistantService {
+  String? lastStudentName;
+
+  @override
+  Future<TopicAssistantReply> askTopicMultimodal({
+    required String asignaturaNombre,
+    required String temaTitulo,
+    required String temaContextoCompleto,
+    required List<Map<String, String>> historialReciente,
+    required String preguntaUsuario,
+    String? studentName,
+    Uint8List? imageBytes,
+    String? imageMimeType,
+  }) async {
+    lastStudentName = studentName;
+    return TopicAssistantReply(
+      text:
+          '¡Hola, ${studentName ?? 'estudiante'}! Aquí tienes la gráfica solicitada:\n\n'
+          '```um-grafica\n'
+          '{"tipo":"funcion","titulo":"Curva Energía vs Posición","ejex":"x (m)","ejey":"E (J)","series":[{"nombre":"Em","color":"green","puntos":[[0,10],[1,10],[2,10]]}]}\n'
+          '```',
+    );
+  }
+}
+
+class _FakeSessionController extends InstitutionalSessionController {
+  _FakeSessionController({required StudentUserModel user})
+      : _user = user,
+        super(
+          repository: LocalReactiveClaseVivaRepository(),
+          curriculumService: MarkdownCurriculumService(),
+        );
+
+  final StudentUserModel _user;
+
+  @override
+  bool get isAuthenticated => true;
+
+  @override
+  StudentUserModel? get currentUser => _user;
+
+  @override
+  String get displayName => _user.nombre;
+
+  @override
+  String get primerNombre => _user.primerNombre;
 }
 
 class _MockSlide {

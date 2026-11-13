@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/models/global_env_config.dart';
 import '../../data/services/global_environment_service.dart';
+import '../../data/services/groq_topic_assistant_service.dart';
 import '../providers/app_scopes.dart';
 import 'ios_primitives.dart';
 
@@ -36,6 +38,8 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
   int _selectedCategoryIndex = 0;
   bool _isPublishing = false;
   bool _hideApiKey = true;
+  bool _loadingModels = false;
+  bool _testingModel = false;
   String? _statusMessage;
   bool _statusIsError = false;
 
@@ -48,6 +52,7 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
   late TextEditingController _portalUrlCtrl;
   late TextEditingController _bannerTitleCtrl;
   late TextEditingController _bannerMessageCtrl;
+  late TextEditingController _bannerImageUrlCtrl;
   late TextEditingController _newsUrlCtrl;
   late TextEditingController _newsCorsCtrl;
 
@@ -60,17 +65,20 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
     'Inspector JSON',
   ];
 
-  final List<String> _aiModels = const [
-    'gemini-3.5-flash-lite',
-    'gemini-3.5-flash',
-    'gemini-2.5-flash',
-  ];
+  List<String> _availableModels =
+      List<String>.from(TopicAssistantService.curatedAvailableModels);
 
   @override
   void initState() {
     super.initState();
-    _config = GlobalEnvironmentService.instance.config;
+    final rawConfig = GlobalEnvironmentService.instance.config;
+    final safeModel = TopicAssistantService.normalizeModel(rawConfig.aiModelName);
+    _config = rawConfig.copyWith(aiModelName: safeModel);
+    if (!_availableModels.contains(safeModel)) {
+      _availableModels = [safeModel, ..._availableModels];
+    }
     _initControllers();
+    _refreshLiveModels(silent: true);
   }
 
   void _initControllers() {
@@ -80,6 +88,7 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
     _portalUrlCtrl = TextEditingController(text: _config.portalEstudiantesUrl);
     _bannerTitleCtrl = TextEditingController(text: _config.globalBannerTitle);
     _bannerMessageCtrl = TextEditingController(text: _config.globalBannerMessage);
+    _bannerImageUrlCtrl = TextEditingController(text: _config.globalBannerImageUrl);
     _newsUrlCtrl = TextEditingController(text: _config.newsSourceUrl);
     _newsCorsCtrl = TextEditingController(text: _config.newsCorsProxy);
   }
@@ -92,9 +101,118 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
     _portalUrlCtrl.dispose();
     _bannerTitleCtrl.dispose();
     _bannerMessageCtrl.dispose();
+    _bannerImageUrlCtrl.dispose();
     _newsUrlCtrl.dispose();
     _newsCorsCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshLiveModels({bool silent = false}) async {
+    if (_loadingModels) return;
+    setState(() {
+      _loadingModels = true;
+      if (!silent) _statusMessage = null;
+    });
+    try {
+      final fetched = await TopicAssistantService.fetchAvailableModels(
+        apiKeyOverride: _config.aiApiKeyOverride,
+      );
+      if (!mounted) return;
+      setState(() {
+        final current = TopicAssistantService.normalizeModel(_config.aiModelName);
+        final merged = <String>[...fetched];
+        if (!merged.contains(current)) {
+          merged.insert(0, current);
+        }
+        _availableModels = merged;
+        _config = _config.copyWith(aiModelName: current);
+        if (!silent) {
+          _statusMessage =
+              'Lista sincronizada: ${_availableModels.length} modelos Gemini/Gemma disponibles (sin 2.0/2.5 obsoletos).';
+          _statusIsError = false;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      if (!silent) {
+        setState(() {
+          _statusMessage = 'No se pudieron consultar los modelos en vivo: $e';
+          _statusIsError = true;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loadingModels = false);
+      }
+    }
+  }
+
+  Future<void> _testActiveModel() async {
+    if (_testingModel) return;
+    setState(() {
+      _testingModel = true;
+      _statusMessage = 'Probando conexión con ${_config.aiModelName}...';
+      _statusIsError = false;
+    });
+    final res = await TopicAssistantService.testModelConnection(
+      _config.aiModelName,
+      apiKeyOverride: _config.aiApiKeyOverride,
+    );
+    if (!mounted) return;
+    setState(() {
+      _testingModel = false;
+      _statusMessage = res.statusText;
+      _statusIsError = !res.ok;
+    });
+  }
+
+  Future<void> _pickBannerImage() async {
+    try {
+      final result = await FilePicker.pickFile(
+        dialogTitle: 'Seleccionar imagen o gráfica para el anuncio global',
+        type: FileType.image,
+      );
+      if (result == null) return;
+      final bytes = await result.readAsBytes();
+      if (bytes.isEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _statusMessage = 'No se pudieron leer los bytes de la imagen.';
+          _statusIsError = true;
+        });
+        return;
+      }
+      if (bytes.length > 300 * 1024) {
+        if (!mounted) return;
+        setState(() {
+          _statusMessage =
+              'La imagen supera 300 KB (${(bytes.length / 1024).toStringAsFixed(0)} KB). Usa una más liviana o una URL HTTPS.';
+          _statusIsError = true;
+        });
+        return;
+      }
+      final ext = (result.extension ?? 'png').toLowerCase();
+      final mime = (ext == 'jpg' || ext == 'jpeg')
+          ? 'image/jpeg'
+          : ext == 'webp'
+              ? 'image/webp'
+              : 'image/png';
+      final dataUri = 'data:$mime;base64,${base64Encode(bytes)}';
+      if (!mounted) return;
+      setState(() {
+        _bannerImageUrlCtrl.text = dataUri;
+        _config = _config.copyWith(globalBannerImageUrl: dataUri);
+        _statusMessage =
+            'Imagen adjuntada al anuncio (${(bytes.length / 1024).toStringAsFixed(1)} KB).';
+        _statusIsError = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _statusMessage = 'Error al seleccionar imagen: $e';
+        _statusIsError = true;
+      });
+    }
   }
 
   void _resetToDefaults() {
@@ -321,6 +439,12 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
   }
 
   Widget _buildAiSection(AppPalette p) {
+    final normalizedModel =
+        TopicAssistantService.normalizeModel(_config.aiModelName);
+    if (!_availableModels.contains(normalizedModel)) {
+      _availableModels = [normalizedModel, ..._availableModels];
+    }
+
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -331,12 +455,23 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
           onChanged: (val) => setState(() => _config = _config.copyWith(aiEnabled: val)),
           p: p,
         ),
+        const SizedBox(height: 14),
+        _buildSwitchRow(
+          title: 'Permitir Elementos Gráficos en IA',
+          subtitle:
+              'Habilita gráficas interactivas, diagramas vectoriales y adjuntos visuales en el chat IA.',
+          value: _config.allowAiGraphics,
+          onChanged: (val) =>
+              setState(() => _config = _config.copyWith(allowAiGraphics: val)),
+          p: p,
+        ),
         const SizedBox(height: 18),
         _buildDropdownRow(
-          title: 'Modelo Gemini Activo',
-          subtitle: 'LLM utilizado para tutorías y resúmenes de temas.',
-          value: _config.aiModelName,
-          items: _aiModels,
+          title: 'Modelo Gemini / Gemma Activo',
+          subtitle:
+              'Solo muestra modelos disponibles en v1beta (sin modelos 2.0/2.5 retirados).',
+          value: normalizedModel,
+          items: _availableModels,
           onChanged: (val) {
             if (val != null) {
               setState(() => _config = _config.copyWith(
@@ -346,6 +481,35 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
             }
           },
           p: p,
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            _buildActionPill(
+              icon: _loadingModels
+                  ? Icons.hourglass_top_rounded
+                  : Icons.sync_rounded,
+              label: _loadingModels
+                  ? 'Consultando modelos...'
+                  : 'Sincronizar Modelos en Vivo',
+              color: p.indigo,
+              onTap: _loadingModels ? null : () => _refreshLiveModels(),
+              p: p,
+            ),
+            _buildActionPill(
+              icon: _testingModel
+                  ? Icons.hourglass_bottom_rounded
+                  : Icons.verified_outlined,
+              label: _testingModel
+                  ? 'Probando $normalizedModel...'
+                  : 'Probar $normalizedModel',
+              color: p.green,
+              onTap: _testingModel ? null : _testActiveModel,
+              p: p,
+            ),
+          ],
         ),
         const SizedBox(height: 18),
         Text('API Key Override (Opcional)', style: _titleStyle(p)),
@@ -539,6 +703,95 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
           decoration: const InputDecoration(
             hintText: 'Se ha habilitado la descarga de apuntes y ejercicios resueltos...',
           ),
+        ),
+        const SizedBox(height: 18),
+        Text('Elemento Gráfico del Anuncio (Imagen / Diagrama)', style: _titleStyle(p)),
+        const SizedBox(height: 4),
+        Text(
+          'Pega una URL HTTPS o adjunta una imagen liviana (<= 300 KB) para mostrar dentro de Noticias.',
+          style: _subStyle(p),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _bannerImageUrlCtrl,
+          maxLines: 1,
+          onChanged: (v) =>
+              setState(() => _config = _config.copyWith(globalBannerImageUrl: v.trim())),
+          decoration: InputDecoration(
+            hintText: 'https://... o adjunta archivo local',
+            suffixIcon: _config.globalBannerImageUrl.isNotEmpty
+                ? IconButton(
+                    tooltip: 'Quitar imagen',
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    onPressed: () {
+                      _bannerImageUrlCtrl.clear();
+                      setState(() =>
+                          _config = _config.copyWith(globalBannerImageUrl: ''));
+                    },
+                  )
+                : null,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            _buildActionPill(
+              icon: Icons.add_photo_alternate_outlined,
+              label: 'Subir Imagen Local',
+              color: p.indigo,
+              onTap: _pickBannerImage,
+              p: p,
+            ),
+            if (_config.globalBannerImageUrl.isNotEmpty)
+              Text(
+                _config.globalBannerImageUrl.startsWith('data:image/')
+                    ? 'Imagen local embebida lista'
+                    : 'Imagen URL configurada',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: p.green,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Text('Gráfica Interactiva Adjunta al Anuncio', style: _titleStyle(p)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: const [
+            ('none', 'Sin gráfica'),
+            ('acPhasor', 'Fasores AC'),
+            ('calculusIntegral', 'Cálculo Integral'),
+            ('thermoSolar', 'Termo / Solar'),
+          ].map((entry) {
+            final isSel = _config.globalBannerChartMode == entry.$1;
+            return TapScale(
+              onTap: () => setState(
+                  () => _config = _config.copyWith(globalBannerChartMode: entry.$1)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: isSel ? p.indigo.o(0.18) : p.card,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: isSel ? p.indigo : p.cardBorder),
+                ),
+                child: Text(
+                  entry.$2,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: isSel ? p.indigo : p.textSecondary,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ],
     );
@@ -821,6 +1074,41 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
     );
   }
 
+  Widget _buildActionPill({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback? onTap,
+    required AppPalette p,
+  }) {
+    return TapScale(
+      onTap: onTap ?? () {},
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.o(0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.o(0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildDropdownRow({
     required String title,
     required String subtitle,
@@ -829,6 +1117,10 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
     required ValueChanged<String?> onChanged,
     required AppPalette p,
   }) {
+    final safeItems = items.isNotEmpty
+        ? items
+        : TopicAssistantService.curatedAvailableModels;
+    final safeValue = safeItems.contains(value) ? value : safeItems.first;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -845,11 +1137,14 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: items.contains(value) ? value : items.first,
+              value: safeValue,
               isExpanded: true,
+              menuMaxHeight: 340,
               dropdownColor: p.card,
               style: TextStyle(color: p.textPrimary, fontSize: 13),
-              items: items.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
+              items: safeItems
+                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                  .toList(),
               onChanged: onChanged,
             ),
           ),

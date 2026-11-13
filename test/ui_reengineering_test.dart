@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:um_studio/core/theme/app_theme.dart';
+import 'package:um_studio/data/models/curriculum_models.dart';
 import 'package:um_studio/data/repositories/local_clase_viva_repository.dart';
 import 'package:um_studio/data/services/markdown_curriculum_service.dart';
 import 'package:um_studio/presentation/providers/app_scopes.dart';
+import 'package:um_studio/presentation/screens/desktop/widgets/desktop_sidebar.dart';
+import 'package:um_studio/presentation/screens/desktop/widgets/desktop_subject_detail_view.dart';
 import 'package:um_studio/presentation/screens/home/home_shell.dart';
+import 'package:um_studio/presentation/screens/home/tabs/estudio_tab.dart';
+import 'package:um_studio/presentation/widgets/admin_env_console_modal.dart';
+import 'package:um_studio/presentation/widgets/ai_graphic_block.dart';
 import 'package:um_studio/presentation/widgets/collapsible_spaces_dock.dart';
 import 'package:um_studio/presentation/widgets/interactive_engineering_chart.dart';
+import 'package:um_studio/presentation/widgets/ios_primitives.dart';
 
 void main() {
   setUpAll(() {
@@ -188,4 +195,269 @@ void main() {
       expect(find.text('CONSTANCIA DE ESTUDIO (60 DÍAS)'), findsOneWidget);
     });
   });
+
+  group('Limpieza UI: Sin barras de avance ni porcentajes de asignaturas', () {
+    const sampleSubject = AsignaturaModel(
+      codigo: '02011807',
+      nombre: 'Física Mecánica',
+      cuatrimestre: 2,
+      creditos: 4,
+      obligatoria: true,
+      categoria: 'ciencias_basicas',
+      colorHex: '#30D158',
+      temas: [
+        TemaClaseVivaModel(
+          numeroTema: 1,
+          titulo: 'Cinemática y Leyes de Newton',
+          objetivo: 'Analizar el movimiento y las fuerzas.',
+          conceptoClaveLatex: r'\sum \vec{F} = m \vec{a}',
+          ejemplo: 'Bloque sobre plano inclinado.',
+          bloqueSugerido: 'Pomodoro 50/10',
+        ),
+      ],
+    );
+
+    testWidgets('Escritorio 1440px: DesktopSidebar y DesktopSubjectDetailView omiten barras y píldora de avance',
+        (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(1440, 900);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final repo = LocalReactiveClaseVivaRepository();
+      final curriculum = MarkdownCurriculumService();
+      final session = InstitutionalSessionController(
+        repository: repo,
+        curriculumService: curriculum,
+      );
+      final theme = ThemeController();
+
+      await tester.pumpWidget(
+        CurriculumScope(
+          service: curriculum,
+          child: ClaseVivaRepositoryScope(
+            repository: repo,
+            child: SessionScope(
+              controller: session,
+              child: ThemeScope(
+                controller: theme,
+                child: MaterialApp(
+                  theme: AppTheme.light,
+                  darkTheme: AppTheme.dark,
+                  themeMode: ThemeMode.dark,
+                  home: Scaffold(
+                    body: Row(
+                      children: [
+                        SizedBox(
+                          width: 340,
+                          child: DesktopSidebar(
+                            selectedCuatrimestre: 2,
+                            onSelectCuatrimestre: (_) {},
+                            subjects: const [sampleSubject],
+                            selectedSubject: sampleSubject,
+                            onSelectSubject: (_) {},
+                            onOpenStudentProfile: () {},
+                          ),
+                        ),
+                        Expanded(
+                          child: DesktopSubjectDetailView(
+                            subject: sampleSubject,
+                            onBackToDashboard: () {},
+                            onOpenClaseViva: (_) {},
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('02011807'), findsOneWidget);
+      expect(find.text('4 créd.'), findsOneWidget);
+      expect(find.text('Física Mecánica'), findsWidgets);
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(find.byType(ProgressBar), findsNothing);
+      expect(find.textContaining('Avance:'), findsNothing);
+      expect(find.text('0%'), findsNothing);
+    });
+
+    testWidgets('Móvil 390px: EstudioTab renderiza asignaturas sin ProgressBar ni etiquetas de porcentaje',
+        (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(390, 844);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final repo = LocalReactiveClaseVivaRepository();
+      final curriculum = _InMemoryCurriculumService(const [sampleSubject]);
+      final session = InstitutionalSessionController(
+        repository: repo,
+        curriculumService: curriculum,
+      );
+      final theme = ThemeController();
+
+      await tester.pumpWidget(
+        CurriculumScope(
+          service: curriculum,
+          child: ClaseVivaRepositoryScope(
+            repository: repo,
+            child: SessionScope(
+              controller: session,
+              child: ThemeScope(
+                controller: theme,
+                child: MaterialApp(
+                  theme: AppTheme.light,
+                  darkTheme: AppTheme.dark,
+                  themeMode: ThemeMode.dark,
+                  home: Scaffold(
+                    body: EstudioTab(
+                      onOpenClaseViva: (_) {},
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+
+      await tester.enterText(find.byType(TextField), 'Física');
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(find.text('Física Mecánica'), findsOneWidget);
+      expect(find.textContaining('02011807 • 4 cr'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(find.byType(ProgressBar), findsNothing);
+      expect(find.textContaining('Avance:'), findsNothing);
+      expect(find.text('0%'), findsNothing);
+    });
+  });
+
+  group('FASE 5: Menú Admin sin Gemini 2.x y Controles Gráficos', () {
+    testWidgets('AdminEnvConsoleModal expone modelos vigentes (sin 2.0/2.5) y elementos gráficos',
+        (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(1280, 860);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: ThemeMode.dark,
+          home: const Scaffold(
+            body: AdminEnvConsoleModal(),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // Verifica modelos vigentes en Admin y ausencia de modelos 2.x retirados
+      expect(find.text('gemini-3.5-flash-lite'), findsOneWidget);
+      expect(find.text('gemini-2.5-flash'), findsNothing);
+      expect(find.text('gemini-2.0-flash-lite'), findsNothing);
+      expect(find.text('Permitir Elementos Gráficos en IA'), findsOneWidget);
+      expect(find.text('Sincronizar Modelos en Vivo'), findsOneWidget);
+
+      // Cambia a pestaña Broadcast Global y verifica controles gráficos del banner
+      await tester.tap(find.text('Broadcast Global'));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      await tester.scrollUntilVisible(
+        find.text('Elemento Gráfico del Anuncio (Imagen / Diagrama)'),
+        180,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(
+        find.text('Elemento Gráfico del Anuncio (Imagen / Diagrama)'),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.text('Gráfica Interactiva Adjunta al Anuncio'),
+        180,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(
+        find.text('Gráfica Interactiva Adjunta al Anuncio'),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.text('Fasores AC'),
+        180,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('Fasores AC'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AiGraphicBlockWidget renderiza vectores y barras sin overflow en 350px',
+        (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(350, 800);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      const vectorSpec = AiGraphicSpec(
+        tipo: 'vectores',
+        titulo: 'Fuerzas en Rampa',
+        vectores: [
+          AiGraphicVector(name: 'N', angleDeg: 90, magnitude: 1.0, colorKey: 'green'),
+          AiGraphicVector(name: 'mg', angleDeg: -90, magnitude: 1.0, colorKey: 'orange'),
+        ],
+      );
+
+      const barSpec = AiGraphicSpec(
+        tipo: 'barras',
+        titulo: 'Balance Energético',
+        barras: [
+          AiGraphicBar(label: 'Ec', value: 70, colorKey: 'indigo'),
+          AiGraphicBar(label: 'Ep', value: 30, colorKey: 'green'),
+        ],
+      );
+
+      await tester.pumpWidget(
+        wrapWithApp(
+          const SingleChildScrollView(
+            padding: EdgeInsets.all(12),
+            child: Column(
+              children: [
+                AiGraphicBlockWidget(spec: vectorSpec),
+                SizedBox(height: 12),
+                AiGraphicBlockWidget(spec: barSpec),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Fuerzas en Rampa'), findsOneWidget);
+      expect(find.text('Balance Energético'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+}
+
+class _InMemoryCurriculumService extends MarkdownCurriculumService {
+  _InMemoryCurriculumService(this._subjects);
+
+  final List<AsignaturaModel> _subjects;
+
+  @override
+  List<AsignaturaModel> get allAsignaturas => _subjects;
 }

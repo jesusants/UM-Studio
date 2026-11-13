@@ -40,18 +40,29 @@ class TopicAiAssistantController extends ChangeNotifier {
     required String temaTitulo,
     required String temaContextoCompleto,
     required String pregunta,
+    String? studentName,
+    Uint8List? imageBytes,
+    String? imageMimeType,
+    String? imageName,
   }) async {
     final query = pregunta.trim();
-    if (query.isEmpty) return;
+    if (query.isEmpty && (imageBytes == null || imageBytes.isEmpty)) return;
+
+    final effectiveQuery = query.isNotEmpty
+        ? query
+        : 'Analiza este elemento gráfico o imagen adjunta respecto al tema actual.';
 
     final currentList = _historyByTopic.putIfAbsent(topicKey, () => []);
 
-    // 1. Añadir mensaje de usuario
+    // 1. Añadir mensaje de usuario (incluyendo imagen si adjuntó elemento gráfico)
     final userMsg = TopicChatMessage(
       id: 'msg_${DateTime.now().microsecondsSinceEpoch}',
       role: 'user',
-      content: query,
+      content: effectiveQuery,
       timestamp: DateTime.now(),
+      imageBytes: imageBytes,
+      imageMimeType: imageMimeType,
+      imageName: imageName,
     );
     currentList.add(userMsg);
     _loadingByTopic[topicKey] = true;
@@ -66,19 +77,24 @@ class TopicAiAssistantController extends ChangeNotifier {
         .toList();
 
     try {
-      final answer = await _service.askAboutCurrentTopic(
+      final reply = await _service.askTopicMultimodal(
         asignaturaNombre: asignaturaNombre,
         temaTitulo: temaTitulo,
         temaContextoCompleto: temaContextoCompleto,
         historialReciente: recentHistory,
-        preguntaUsuario: query,
+        preguntaUsuario: effectiveQuery,
+        studentName: studentName,
+        imageBytes: imageBytes,
+        imageMimeType: imageMimeType,
       );
 
       final assistantMsg = TopicChatMessage(
         id: 'msg_${DateTime.now().microsecondsSinceEpoch}',
         role: 'assistant',
-        content: answer,
+        content: reply.text,
         timestamp: DateTime.now(),
+        imageBytes: reply.imageBytes,
+        imageMimeType: reply.imageMimeType,
       );
       currentList.add(assistantMsg);
     } catch (e) {
