@@ -23,7 +23,7 @@
   "allow_user_attachments": true,
   "pomodoro_default_work_min": 25,
   "pomodoro_default_break_min": 5,
-  "maintenance_mode": true,
-  "updated_at": "2026-11-13T03:38:39.123",
+  "maintenance_mode": false,
+  "updated_at": "2026-11-13T03:38:48.880",
   "updated_by": "jasierra"
 }
