@@ -1,7 +1,7 @@
 {
   "ai_enabled": true,
-  "ai_provider": "groq",
-  "ai_model_name": "llama-3.3-70b-versatile",
+  "ai_provider": "gemini",
+  "ai_model_name": "gemini-2.5-flash-lite",
   "ai_api_key_override": "",
   "ai_temperature": 0.2,
   "ai_max_tokens": 1024,

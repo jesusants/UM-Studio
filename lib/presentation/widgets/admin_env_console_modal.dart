@@ -61,10 +61,9 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
   ];
 
   final List<String> _aiModels = const [
-    'llama-3.3-70b-versatile',
-    'llama-3.1-8b-instant',
-    'mixtral-8x7b-32768',
-    'gemma2-9b-it',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash-lite',
+    'gemini-2.5-flash',
   ];
 
   @override
@@ -326,7 +325,7 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
       padding: const EdgeInsets.all(24),
       children: [
         _buildSwitchRow(
-          title: 'Habilitar Asistente de IA (Groq)',
+          title: 'Habilitar Asistente de IA (Gemini)',
           subtitle: 'Desactivar para pausar respuestas automáticas globalmente.',
           value: _config.aiEnabled,
           onChanged: (val) => setState(() => _config = _config.copyWith(aiEnabled: val)),
@@ -334,19 +333,24 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
         ),
         const SizedBox(height: 18),
         _buildDropdownRow(
-          title: 'Modelo Groq Activo',
+          title: 'Modelo Gemini Activo',
           subtitle: 'LLM utilizado para tutorías y resúmenes de temas.',
           value: _config.aiModelName,
           items: _aiModels,
           onChanged: (val) {
-            if (val != null) setState(() => _config = _config.copyWith(aiModelName: val));
+            if (val != null) {
+              setState(() => _config = _config.copyWith(
+                    aiProvider: 'gemini',
+                    aiModelName: val,
+                  ));
+            }
           },
           p: p,
         ),
         const SizedBox(height: 18),
         Text('API Key Override (Opcional)', style: _titleStyle(p)),
         const SizedBox(height: 4),
-        Text('Reemplaza la clave de Groq por defecto si se agotan tokens.', style: _subStyle(p)),
+        Text('Reemplaza la clave de Gemini por defecto si se agota la cuota.', style: _subStyle(p)),
         const SizedBox(height: 8),
         TextField(
           controller: _aiApiKeyCtrl,
@@ -355,7 +359,7 @@ class _AdminEnvConsoleModalState extends State<AdminEnvConsoleModal> {
             aiApiKeyOverride: v.trim(),
           ),
           decoration: InputDecoration(
-            hintText: 'gsk_...',
+            hintText: 'AIzaSy... / AQ...',
             hintStyle: TextStyle(color: p.textSecondary.o(0.5)),
             suffixIcon: IconButton(
               icon: Icon(_hideApiKey ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 18),
